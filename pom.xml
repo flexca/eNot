@@ -19,7 +19,7 @@
 
     <modules>
         <module>core</module>
-        <module>asn1</module>
+        <module>ber-tlv</module>
     </modules>
 
     <dependencyManagement>

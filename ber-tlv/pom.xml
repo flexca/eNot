@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.flexca.enot</groupId>
-    <artifactId>enot-asn1</artifactId>
+    <artifactId>enot-ber-tlv</artifactId>
     <packaging>jar</packaging>
     <version>1.0.0</version>
     <name>eNot</name>
