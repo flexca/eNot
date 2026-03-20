@@ -12,6 +12,7 @@ public enum CommonEnotAttribute implements EnotAttribute {
 
     @Getter
     private final String name;
+
     @Getter
     private final ValueType valueType;
 }
