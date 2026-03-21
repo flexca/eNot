@@ -9,6 +9,6 @@
     <artifactId>enot-ber-tlv</artifactId>
     <packaging>jar</packaging>
     <version>1.0.0</version>
-    <name>eNot</name>
+    <name>eNot BER-TLV</name>
 
 </project>

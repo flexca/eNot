@@ -1,0 +1,22 @@
+{
+  "type": "asn.1",
+  "attributes": {
+    "tag": "sequence"
+  },
+  "body": [
+    {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "object_identifier"
+      },
+      "body": "2.5.4.3"
+    },
+    {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "utf8_string"
+      },
+      "body": "${common_name}"
+    }
+  ]
+}

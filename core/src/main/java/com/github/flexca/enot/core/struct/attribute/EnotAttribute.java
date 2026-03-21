@@ -8,4 +8,6 @@ public interface EnotAttribute {
     String getName();
 
     ValueType getValueType();
+
+    EnotAttribute fromName(String name);
 }
