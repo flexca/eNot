@@ -2,8 +2,8 @@ package com.github.flexca.enot.core.system;
 
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
-import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
+import com.github.flexca.enot.core.system.attribute.SystemAttribute;
 import com.github.flexca.enot.core.system.validation.SystemElementValidator;
 
 public class SystemTypeSpecification implements EnotTypeSpecification {
@@ -19,7 +19,7 @@ public class SystemTypeSpecification implements EnotTypeSpecification {
 
     @Override
     public EnotAttribute resolveAttributeByName(String name) {
-        return null;
+        return SystemAttribute.fromJsonString(name);
     }
 
     @Override

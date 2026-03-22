@@ -1,4 +1,4 @@
-package com.github.flexca.enot.core.asn1;
+package com.github.flexca.enot.core.system.attribute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -12,16 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public enum Asn1Attribute implements EnotAttribute {
+public enum SystemAttribute implements EnotAttribute {
 
-    TAG("tag", ValueType.TEXT),
-    OPTIONAL("optional", ValueType.BOOLEAN),
-    IMPLICIT("implicit", ValueType.INTEGER),
-    EXPLICIT("explicit", ValueType.INTEGER);
+    KIND("kind", ValueType.TEXT),
+    ITEMS("items", ValueType.TEXT);
 
-    private static final Map<String, Asn1Attribute> BY_NAME = new HashMap<>();
+    private static final Map<String, SystemAttribute> BY_NAME = new HashMap<>();
     static {
-        for(Asn1Attribute value : values()) {
+        for(SystemAttribute value : values()) {
             BY_NAME.put(value.getName(), value);
         }
     }
@@ -32,7 +30,7 @@ public enum Asn1Attribute implements EnotAttribute {
     private final ValueType valueType;
 
     @Override
-    public Asn1Attribute fromName(String name) {
+    public SystemAttribute fromName(String name) {
         return StringUtils.isBlank(name) ? null : BY_NAME.get(name.toLowerCase());
     }
 
@@ -42,7 +40,7 @@ public enum Asn1Attribute implements EnotAttribute {
     }
 
     @JsonCreator
-    public static Asn1Attribute fromJsonString(String name) {
+    public static SystemAttribute fromJsonString(String name) {
         return StringUtils.isBlank(name) ? null : BY_NAME.get(name.toLowerCase());
     }
 }

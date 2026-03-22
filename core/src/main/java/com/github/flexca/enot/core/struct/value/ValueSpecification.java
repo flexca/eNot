@@ -1,6 +1,5 @@
 package com.github.flexca.enot.core.struct.value;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -9,5 +8,5 @@ import lombok.RequiredArgsConstructor;
 public class ValueSpecification {
 
     private final ValueType type;
-    private final boolean array;
+    private final boolean allowMultipleValues;
 }

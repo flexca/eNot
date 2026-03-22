@@ -1,4 +1,4 @@
-package com.github.flexca.enot.core.asn1;
+package com.github.flexca.enot.core.asn1.attribute;
 
 import com.github.flexca.enot.core.struct.value.ValueSpecification;
 import com.github.flexca.enot.core.struct.value.ValueType;

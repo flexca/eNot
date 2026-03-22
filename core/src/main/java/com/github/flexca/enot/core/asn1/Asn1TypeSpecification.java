@@ -1,9 +1,9 @@
 package com.github.flexca.enot.core.asn1;
 
+import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.asn1.validation.Asn1ElementValidator;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
-import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 
 public class Asn1TypeSpecification implements EnotTypeSpecification {
