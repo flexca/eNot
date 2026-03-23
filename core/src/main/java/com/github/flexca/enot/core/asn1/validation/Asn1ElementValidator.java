@@ -32,11 +32,11 @@ public class Asn1ElementValidator implements EnotElementValidator {
         }
 
         Asn1Tag tag = Asn1Tag.fromString((String) tagObject);
+
         validateAttributes(tag, element);
 
         Object objectBody = element.getBody();
         ValueSpecification consumeValueSpecification = tag.getConsumeType();
-
         if (objectBody instanceof Collection<?> bodyCollection) {
             if (!consumeValueSpecification.isAllowMultipleValues()) {
 
