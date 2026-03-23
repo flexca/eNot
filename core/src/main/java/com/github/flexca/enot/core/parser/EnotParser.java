@@ -20,10 +20,12 @@ public class EnotParser {
     public static final String ENOT_ELEMENT_BODY_NAME = "body";
 
     private final EnotRegistry enotRegistry;
+    private final EnotParserValidator parserValidator;
     private final ObjectMapper objectMapper;
 
     public EnotParser(EnotRegistry enotRegistry, ObjectMapper objectMapper) {
         this.enotRegistry = enotRegistry;
+        this.parserValidator = new EnotParserValidator(enotRegistry);
         this.objectMapper = objectMapper;
     }
 
@@ -66,6 +68,22 @@ public class EnotParser {
             new EnotParseException("Element type not found"));
         element.setType(typeSpecification.getTypeName());
 
+        Map<EnotAttribute, Object> attributes = extractElementAttributes(jsonElement, typeSpecification);
+        element.setAttributes(attributes);
+
+        Optional<Object> elementBody = extractElementBody(jsonElement);
+        if(elementBody.isPresent()) {
+            element.setBody(elementBody);
+        }
+
+        parserValidator.validateElement(typeSpecification, element);
+        typeSpecification.getElementValidator().validateElement(element);
+
+        return element;
+    }
+
+    private Map<EnotAttribute, Object> extractElementAttributes(ObjectNode jsonElement, EnotTypeSpecification typeSpecification) {
+
         JsonNode attributesNode = jsonElement.get(ENOT_ELEMENT_ATTRIBUTES_NAME);
         if (!attributesNode.isObject()) {
             throw new EnotParseException("Element attributes must be JSON object");
@@ -79,31 +97,29 @@ public class EnotParser {
             }
             JsonNode attributeValueNode = attributesNode.asObject().get(attributeName);
             Optional<Object> attributeValue = extractPrimitiveValue(attributeValueNode);
-            if (attributeValue.isPresent()) {
-                attributes.put(attribute, attributeValue.get());
-            }
+            attributeValue.ifPresent(value -> attributes.put(attribute, value));
         }
-        element.setAttributes(attributes);
+        return attributes;
+    }
+
+    private Optional<Object> extractElementBody(ObjectNode jsonElement) {
 
         JsonNode bodyNode = jsonElement.get(ENOT_ELEMENT_BODY_NAME);
-        if (bodyNode.isArray()) {
-            element.setBody(parseElements(bodyNode.asArray()));
+        if (bodyNode.isNull() || bodyNode.isEmpty()) {
+            return Optional.empty();
+        } else if (bodyNode.isArray()) {
+            return Optional.of(parseElements(bodyNode.asArray()));
         } else if (bodyNode.isObject()) {
-            element.setBody(parseElement(bodyNode.asObject()));
-        } else if (bodyNode.isNull()) {
-            // We allow empty body
-        } else {
+            return Optional.of(parseElement(bodyNode.asObject()));
+        }  else {
             Object bodyValue = extractPrimitiveValue(bodyNode).orElseThrow(() ->
-                new EnotParseException("Unexpected eNot element body type, expecting one of: object, array, text, number, boolean"));
-            element.setBody(bodyValue);
+                    new EnotParseException("Unexpected eNot element body type, expecting one of: object, array, text, number, boolean"));
+            return Optional.of(bodyValue);
         }
-
-        typeSpecification.getElementValidator().validateElement(element);
-
-        return element;
     }
 
     private Optional<Object> extractPrimitiveValue(JsonNode valueNode) {
+
         if (valueNode.isString()) {
             return Optional.of(valueNode.asString());
         } else if (valueNode.isBigDecimal()) {

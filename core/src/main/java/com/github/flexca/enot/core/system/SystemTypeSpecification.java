@@ -1,7 +1,10 @@
 package com.github.flexca.enot.core.system;
 
+import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
+import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
+import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.system.attribute.SystemAttribute;
 import com.github.flexca.enot.core.system.validation.SystemElementValidator;
@@ -20,6 +23,18 @@ public class SystemTypeSpecification implements EnotTypeSpecification {
     @Override
     public EnotAttribute resolveAttributeByName(String name) {
         return SystemAttribute.fromJsonString(name);
+    }
+
+    @Override
+    public EnotElementSpecification getElementSpecification(EnotElement element) {
+        Object kindObject = element.getAttributes().get(SystemAttribute.KIND);
+        if (kindObject instanceof String kindString) {
+            SystemKind kind = SystemKind.fromString(kindString);
+            if (kind != null) {
+                return kind;
+            }
+        }
+        throw new EnotInvalidConfigurationException("Invalid or missing kind attribute for system element");
     }
 
     @Override

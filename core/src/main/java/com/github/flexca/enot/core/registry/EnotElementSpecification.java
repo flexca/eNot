@@ -1,8 +1,7 @@
-package com.github.flexca.enot.core.struct;
+package com.github.flexca.enot.core.registry;
 
 import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.struct.value.ValueSpecification;
-import lombok.Getter;
 
 import java.util.Set;
 

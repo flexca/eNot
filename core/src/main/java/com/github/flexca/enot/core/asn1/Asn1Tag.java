@@ -1,5 +1,9 @@
-package com.github.flexca.enot.core.asn1.attribute;
+package com.github.flexca.enot.core.asn1;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
+import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.struct.value.ValueSpecification;
 import com.github.flexca.enot.core.struct.value.ValueType;
 import lombok.Getter;
@@ -10,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RequiredArgsConstructor
-public enum Asn1Tag {
+public enum Asn1Tag implements EnotElementSpecification {
 
     SEQUENCE("sequence",
             new ValueSpecification(ValueType.ELEMENT, true),
@@ -119,10 +123,12 @@ public enum Asn1Tag {
     @Getter
     private final Set<Asn1Attribute> allowedAttributes;
 
+    @JsonValue
     public String getName() {
         return this.name;
     }
 
+    @JsonCreator
     public static Asn1Tag fromString(String name) {
         return name == null ? null : BY_NAME.get(name.toLowerCase());
     }
