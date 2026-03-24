@@ -73,7 +73,7 @@ public class EnotParser {
 
         Optional<Object> elementBody = extractElementBody(jsonElement);
         if(elementBody.isPresent()) {
-            element.setBody(elementBody);
+            element.setBody(elementBody.get());
         }
 
         parserValidator.validateElement(typeSpecification, element);
@@ -105,7 +105,7 @@ public class EnotParser {
     private Optional<Object> extractElementBody(ObjectNode jsonElement) {
 
         JsonNode bodyNode = jsonElement.get(ENOT_ELEMENT_BODY_NAME);
-        if (bodyNode.isNull() || bodyNode.isEmpty()) {
+        if (bodyNode.isNull()) {
             return Optional.empty();
         } else if (bodyNode.isArray()) {
             return Optional.of(parseElements(bodyNode.asArray()));

@@ -33,7 +33,7 @@
           "type": "system",
           "attributes": {
             "kind": "loop",
-            "items": "extended_key_usage"
+            "items_name": "extended_key_usage"
           },
           "body": {
             "type": "asn.1",

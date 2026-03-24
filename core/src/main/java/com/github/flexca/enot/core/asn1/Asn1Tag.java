@@ -120,9 +120,9 @@ public enum Asn1Tag implements EnotElementSpecification {
     @Getter
     private final ValueSpecification produceType;
     @Getter
-    private final Set<Asn1Attribute> requiredAttributes;
+    private final Set<EnotAttribute> requiredAttributes;
     @Getter
-    private final Set<Asn1Attribute> allowedAttributes;
+    private final Set<EnotAttribute> allowedAttributes;
 
     @JsonValue
     public String getName() {

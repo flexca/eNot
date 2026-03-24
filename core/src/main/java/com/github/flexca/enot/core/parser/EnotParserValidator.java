@@ -102,7 +102,7 @@ public class EnotParserValidator {
             } else if (ValueType.BINARY.equals(type)) {
                 if (childElementBody instanceof EnotElement child) {
                     ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
-                    return childValueProduceSpecification.getType().equals(ValueType.BOOLEAN);
+                    return childValueProduceSpecification.getType().equals(ValueType.BINARY);
                 }
             } else if (ValueType.INTEGER.equals(type)) {
                 if (childElementBody instanceof EnotElement child) {
