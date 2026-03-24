@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.util.*;
 
+/**
+ * Basic brick of eNot - EnotElement.
+ */
 @Data
 public class EnotElement {
 

@@ -20,8 +20,14 @@ public enum SystemKind implements EnotElementSpecification {
     LOOP("loop",
             new ValueSpecification(ValueType.ELEMENT, true),
             new ValueSpecification(ValueType.ELEMENT, true),
-            Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS),
-            Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS));
+            Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME),
+            Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME, SystemAttribute.MIN_ITEMS, SystemAttribute.MAX_ITEMS)),
+
+    REFERENCE("reference",
+            new ValueSpecification(ValueType.ELEMENT, true),
+            new ValueSpecification(ValueType.ELEMENT, true),
+            Set.of(SystemAttribute.KIND),
+            Set.of(SystemAttribute.KIND));
 
     private static final Map<String, SystemKind> BY_NAME = new HashMap<>();
     static {

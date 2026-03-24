@@ -1,18 +1,23 @@
 package com.github.flexca.enot.core.parser;
 
-import com.github.flexca.enot.core.asn1.Asn1Tag;
-import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.exception.EnotInvalidAttributeException;
+import com.github.flexca.enot.core.exception.EnotInvalidBodyException;
+import com.github.flexca.enot.core.exception.EnotParseException;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.struct.value.ValueSpecification;
+import com.github.flexca.enot.core.struct.value.ValueType;
 import com.github.flexca.enot.core.util.AttributeUtils;
+import com.github.flexca.enot.core.util.DateTimeUtils;
+import com.github.flexca.enot.core.util.OidUtils;
+import com.github.flexca.enot.core.util.PlaceholderUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 
@@ -64,11 +69,75 @@ public class EnotParserValidator {
         ValueSpecification consumeValueSpecification = elementSpecification.getConsumeType();
         if (objectBody instanceof Collection<?> bodyCollection) {
             if (!consumeValueSpecification.isAllowMultipleValues()) {
-
+                throw new EnotInvalidBodyException("Body of element with type " + element.getType() + " don't allow multiple values");
+            }
+            for (Object item : bodyCollection) {
+                if (!isValidConsumeType(consumeValueSpecification.getType(), item)) {
+                    throw new EnotInvalidBodyException("Body of element with type " + element.getType() + " don't allow multiple values");
+                }
             }
         } else {
-
+            if (!isValidConsumeType(consumeValueSpecification.getType(), objectBody)) {
+                throw new EnotInvalidBodyException("Body of element with type " + element.getType() + " expect " + consumeValueSpecification.getType());
+            }
         }
     }
 
+    private boolean isValidConsumeType(ValueType type, Object childElementBody) {
+
+        if (ValueType.ELEMENT.equals(type)) {
+            return (childElementBody instanceof EnotElement);
+        } else {
+            if (PlaceholderUtils.isPlaceholder(childElementBody)) {
+                // Placeholders can be validated only during runtime:
+                return true;
+            }
+
+            if (ValueType.BOOLEAN.equals(type)) {
+                if (childElementBody instanceof EnotElement child) {
+                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
+                    return childValueProduceSpecification.getType().equals(ValueType.BOOLEAN);
+                }
+                return (childElementBody instanceof Boolean);
+            } else if (ValueType.BINARY.equals(type)) {
+                if (childElementBody instanceof EnotElement child) {
+                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
+                    return childValueProduceSpecification.getType().equals(ValueType.BOOLEAN);
+                }
+            } else if (ValueType.INTEGER.equals(type)) {
+                if (childElementBody instanceof EnotElement child) {
+                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
+                    return childValueProduceSpecification.getType().equals(ValueType.INTEGER);
+                }
+                return (childElementBody instanceof Integer) || (childElementBody instanceof Long)
+                        || (childElementBody instanceof BigInteger);
+            } else if (ValueType.TEXT.equals(type)) {
+                if (childElementBody instanceof EnotElement child) {
+                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
+                    return childValueProduceSpecification.getType().equals(ValueType.TEXT);
+                }
+                return (childElementBody instanceof String);
+            } else if (ValueType.OBJECT_IDENTIFIER.equals(type)) {
+                if (childElementBody instanceof EnotElement child) {
+                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
+                    return childValueProduceSpecification.getType().equals(ValueType.OBJECT_IDENTIFIER);
+                }
+                return OidUtils.isValidOid(childElementBody);
+            } else if (ValueType.DATE_TIME.equals(type)) {
+                if (childElementBody instanceof EnotElement child) {
+                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
+                    return childValueProduceSpecification.getType().equals(ValueType.DATE_TIME);
+                }
+                return DateTimeUtils.isValidDateTime(childElementBody);
+            }
+        }
+        return false;
+    }
+
+    private ValueSpecification getElementProduceValueSpecification(EnotElement element) {
+
+        EnotTypeSpecification typeSpecification = enotRegistry.getTypeSpecification(element.getType()).orElseThrow(() ->
+                new EnotParseException("Element type not found"));
+        return typeSpecification.getElementSpecification(element).getProduceType();
+    }
 }

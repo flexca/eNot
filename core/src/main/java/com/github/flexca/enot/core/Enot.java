@@ -7,6 +7,7 @@ import com.github.flexca.enot.core.struct.EnotElement;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.Map;
 
 public class Enot {
 
@@ -16,7 +17,7 @@ public class Enot {
 
     public Enot(EnotRegistry enotRegistry, ObjectMapper objectMapper) {
         this.enotRegistry = enotRegistry;
-        enotParser = new EnotParser(enotRegistry, objectMapper);
+        enotParser = new EnotParser(this.enotRegistry, objectMapper);
         enotSerializer = new EnotSerializer();
     }
 
@@ -24,7 +25,23 @@ public class Enot {
         return enotParser.parse(json);
     }
 
-    public byte[] serialize() {
+    public byte[] serialize(String json, Map<String, Object> values) {
+        return null;
+    }
+
+    public byte[] serialize(EnotElement element, Map<String, Object> values) {
+        return null;
+    }
+
+    public byte[] serialize(List<EnotElement> elements, Map<String, Object> values) {
+        return null;
+    }
+
+    public Map<String, Object> getValuesExample(EnotElement element) {
+        return null;
+    }
+
+    public Map<String, Object> getValuesExample(List<EnotElement> elements) {
         return null;
     }
 

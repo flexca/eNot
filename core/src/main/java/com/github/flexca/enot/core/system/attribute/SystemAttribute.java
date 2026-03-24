@@ -15,7 +15,9 @@ import java.util.Map;
 public enum SystemAttribute implements EnotAttribute {
 
     KIND("kind", ValueType.TEXT),
-    ITEMS("items", ValueType.TEXT);
+    ITEMS_NAME("items_name", ValueType.TEXT),
+    MIN_ITEMS("min_items", ValueType.TEXT),
+    MAX_ITEMS("max_items", ValueType.TEXT);
 
     private static final Map<String, SystemAttribute> BY_NAME = new HashMap<>();
     static {

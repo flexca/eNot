@@ -1,6 +1,6 @@
 package com.github.flexca.enot.core.registry;
 
-import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
+import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.struct.value.ValueSpecification;
 
 import java.util.Set;
@@ -11,7 +11,7 @@ public interface EnotElementSpecification {
 
     ValueSpecification getProduceType();
 
-    Set<Asn1Attribute> getRequiredAttributes();
+    Set<EnotAttribute> getRequiredAttributes();
 
-    Set<Asn1Attribute> getAllowedAttributes();
+    Set<EnotAttribute> getAllowedAttributes();
 }
