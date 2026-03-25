@@ -13,7 +13,8 @@ public enum ValueType {
     PLACEHOLDER("placeholder"),
     OBJECT_IDENTIFIER("object_identifier"),
     DATE_TIME("date_time"),
-    ELEMENT("element");
+    ELEMENT("element"),
+    EMPTY("empty");
 
     @Getter
     private final String name;

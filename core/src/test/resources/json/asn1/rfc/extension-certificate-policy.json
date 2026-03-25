@@ -1,0 +1,186 @@
+{
+  "type": "asn.1",
+  "attributes": {
+    "tag": "sequence"
+  },
+  "body": [
+    {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "object_identifier"
+      },
+      "body": "2.5.29.32"
+    },
+    {
+      "type": "asn.1",
+      "attributes": {
+        "optional": true,
+        "tag": "boolean"
+      },
+      "body": "${certificate_policy.critical}"
+    },
+    {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "octet_string"
+      },
+      "body": {
+        "type": "asn.1",
+        "attributes": {
+          "tag": "sequence"
+        },
+        "body": {
+          "type": "asn.1",
+          "attributes": {
+            "tag": "sequence",
+            "optional": true
+          },
+          "body": {
+            "type": "system",
+            "attributes": {
+              "items_name": "certificate_policy",
+              "kind": "loop"
+            },
+            "body": [
+              {
+                "type": "asn.1",
+                "attributes": {
+                  "tag": "sequence"
+                },
+                "body": [
+                  {
+                    "type": "asn.1",
+                    "attributes": {
+                      "tag": "object_identifier"
+                    },
+                    "body": "${policy_oid}"
+                  },
+                  {
+                    "type": "asn.1",
+                    "attributes": {
+                      "tag": "sequence",
+                      "optional": true
+                    },
+                    "body": [
+                      {
+                        "type": "system",
+                        "attributes": {
+                          "items_name": "cps_qualifiers",
+                          "kind": "loop"
+                        },
+                        "body": [
+                          {
+                            "type": "asn.1",
+                            "attributes": {
+                              "tag": "sequence",
+                              "optional": true
+                            },
+                            "body": [
+                              {
+                                "type": "asn.1",
+                                "attributes": {
+                                  "tag": "object_identifier"
+                                },
+                                "body": "1.3.6.1.5.5.7.2.1"
+                              },
+                              {
+                                "type": "asn.1",
+                                "attributes": {
+                                  "tag": "ia5_string"
+                                },
+                                "body": "${cps}"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "system",
+                        "attributes": {
+                          "items_name": "unotice_qualifiers",
+                          "kind": "loop"
+                        },
+                        "body": [
+                          {
+                            "type": "asn.1",
+                            "attributes": {
+                              "tag": "sequence",
+                              "optional": true
+                            },
+                            "body": [
+                              {
+                                "type": "asn.1",
+                                "attributes": {
+                                  "tag": "object_identifier"
+                                },
+                                "body": "1.3.6.1.5.5.7.2.2"
+                              },
+                              {
+                                "type": "asn.1",
+                                "attributes": {
+                                  "tag": "sequence"
+                                },
+                                "body": [
+                                  {
+                                    "type": "asn.1",
+                                    "attributes": {
+                                      "tag": "sequence"
+                                    },
+                                    "body": [
+                                      {
+                                        "type": "asn.1",
+                                        "attributes": {
+                                          "tag": "ia5_string"
+                                        },
+                                        "body": "${organization}"
+                                      },
+                                      {
+                                        "type": "asn.1",
+                                        "attributes": {
+                                          "tag": "sequence",
+                                          "optional": true
+                                        },
+                                        "body": {
+                                          "type": "system",
+                                          "attributes": {
+                                            "items_name": "notice_numbers",
+                                            "kind": "loop"
+                                          },
+                                          "body": [
+                                            {
+                                              "type": "asn.1",
+                                              "attributes": {
+                                                "tag": "integer"
+                                              },
+                                              "body": "${number}"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "asn.1",
+                                    "attributes": {
+                                      "tag": "visible_string",
+                                      "optional": true
+                                    },
+                                    "body": "${explicit_text}"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

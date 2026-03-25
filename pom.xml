@@ -27,6 +27,7 @@
     <modules>
         <module>core</module>
         <module>ber-tlv</module>
+        <module>web-tool</module>
     </modules>
 
     <dependencyManagement>
