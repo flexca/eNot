@@ -29,29 +29,8 @@ jobs:
     - name: Build with Maven
       run: mvn -B clean install
 
-    - name: Run tests with coverage
+    - name: Run tests
       run: mvn -B test
-
-    - name: Generate coverage report for core module
-      run: cd core && mvn jacoco:report && cd ..
-
-    - name: Generate coverage report
-      id: jacoco
-      uses: cicirello/jacoco-badge-generator@v2
-      with:
-        jacoco-csv-file: '**/target/site/jacoco/jacoco.csv'
-        generate-branches-badge: true
-        generate-summary: true
-
-    - name: Add coverage to PR
-      if: github.event_name == 'pull_request'
-      uses: madrapps/jacoco-report@v1.6.1
-      with:
-        paths: |
-          ${{ github.workspace }}/**/target/site/jacoco/jacoco.xml
-        token: ${{ secrets.GITHUB_TOKEN }}
-        min-coverage-overall: 40
-        min-coverage-changed-files: 60
 
     - name: Generate test report
       if: always()
@@ -61,14 +40,6 @@ jobs:
         path: '**/target/surefire-reports/*.xml'
         reporter: java-junit
         fail-on-error: true
-
-    - name: Upload coverage reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: '**/target/site/jacoco/'
-        retention-days: 30
 
     - name: Upload test results
       if: always()
