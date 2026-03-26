@@ -28,7 +28,6 @@ public interface EnotTypeSpecification {
      * @param element - element to get specification for
      * @return EnotElementSpecification object, when implementation return null then no generic validation is performed
      * for attributes and body value of the element
-     * attributes, implementation can return null, in this case
      */
     EnotElementSpecification getElementSpecification(EnotElement element);
 

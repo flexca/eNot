@@ -5,6 +5,7 @@ import com.github.flexca.enot.core.asn1.Asn1Tag;
 import com.github.flexca.enot.core.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.exception.EnotInvalidAttributeException;
 import com.github.flexca.enot.core.exception.EnotUnsupportedElementTypeException;
+import com.github.flexca.enot.core.parser.JsonError;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
@@ -18,7 +19,7 @@ import java.util.List;
 public class Asn1ElementValidator implements EnotElementValidator {
 
     @Override
-    public void validateElement(EnotElement element) {
+    public void validateElement(EnotElement element, String parentPath, List<JsonError> jsonErrors) {
 
         if(!Asn1TypeSpecification.TYPE_NAME.equalsIgnoreCase(element.getType())) {
             throw new EnotUnsupportedElementTypeException("Unsupported element type. Expecting ASN.1");

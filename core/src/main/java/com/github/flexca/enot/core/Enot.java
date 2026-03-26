@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core;
 
+import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.serializer.EnotSerializer;
@@ -21,7 +22,7 @@ public class Enot {
         enotSerializer = new EnotSerializer(this.enotRegistry);
     }
 
-    public List<EnotElement> parse(String json) {
+    public List<EnotElement> parse(String json) throws EnotParsingException {
         return enotParser.parse(json);
     }
 

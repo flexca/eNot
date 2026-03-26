@@ -2,7 +2,7 @@ package com.github.flexca.enot.core.parser;
 
 import com.github.flexca.enot.core.exception.EnotInvalidAttributeException;
 import com.github.flexca.enot.core.exception.EnotInvalidBodyException;
-import com.github.flexca.enot.core.exception.EnotParseException;
+import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
@@ -20,29 +20,31 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class EnotParserValidator {
 
     private final EnotRegistry enotRegistry;
 
-    public void validateElement(EnotTypeSpecification typeSpecification, EnotElement element) {
+    public void validateElement(EnotTypeSpecification typeSpecification, EnotElement element, String parentPath, List<JsonError> jsonErrors) {
 
         EnotElementSpecification elementSpecification = typeSpecification.getElementSpecification(element);
         if (elementSpecification != null) {
-            validateAttributes(elementSpecification, element);
-            validateBody(elementSpecification, element);
+            validateAttributes(elementSpecification, element, parentPath, jsonErrors);
+            validateBody(elementSpecification, element, parentPath, jsonErrors);
         }
     }
 
-    private void validateAttributes(EnotElementSpecification elementSpecification, EnotElement element) {
+    private void validateAttributes(EnotElementSpecification elementSpecification, EnotElement element, String parentPath,
+                                    List<JsonError> jsonErrors) {
 
         if (CollectionUtils.isNotEmpty(elementSpecification.getRequiredAttributes())) {
             List<String> missingRequiredAttributes = elementSpecification.getRequiredAttributes().stream()
                     .filter(attribute -> !element.getAttributes().containsKey(attribute))
                     .map(EnotAttribute::getName).toList();
             if (CollectionUtils.isNotEmpty(missingRequiredAttributes)) {
-                throw new EnotInvalidAttributeException("Missing required attributes for ASN.1 element: " + missingRequiredAttributes);
+                throw new EnotInvalidAttributeException("missing required attributes for ASN.1 element: " + missingRequiredAttributes);
             }
         }
 
@@ -63,29 +65,37 @@ public class EnotParserValidator {
         });
     }
 
-    private void validateBody(EnotElementSpecification elementSpecification, EnotElement element) {
+    private void validateBody(EnotElementSpecification elementSpecification, EnotElement element, String parentPath,
+                              List<JsonError> jsonErrors) {
 
         Object objectBody = element.getBody();
         ValueSpecification consumeValueSpecification = elementSpecification.getConsumeType();
+        String currentPath = parentPath + "/" + EnotParser.ENOT_ELEMENT_BODY_NAME;
         if (objectBody instanceof Collection<?> bodyCollection) {
             if (!consumeValueSpecification.isAllowMultipleValues()) {
-                throw new EnotInvalidBodyException("Body of element with type " + element.getType() + " don't allow multiple values");
+                jsonErrors.add(JsonError.of(currentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                        + " don't allow multiple values"));
             }
+            int i = 0;
             for (Object item : bodyCollection) {
-                if (!isValidConsumeType(consumeValueSpecification.getType(), item)) {
-                    throw new EnotInvalidBodyException("Body of element with type " + element.getType() + " don't allow multiple values");
+                String itemPath = currentPath + "/" + i;
+                if (!isValidConsumeType(consumeValueSpecification.getType(), item, itemPath, jsonErrors)) {
+                    jsonErrors.add(JsonError.of(itemPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                            + " type must be of type " + consumeValueSpecification.getType()));
                 }
+                i++;
             }
         } else {
-            if (!isValidConsumeType(consumeValueSpecification.getType(), objectBody)) {
-                throw new EnotInvalidBodyException("Body of element with type " + element.getType() + " expect " + consumeValueSpecification.getType());
+            if (!isValidConsumeType(consumeValueSpecification.getType(), objectBody, currentPath, jsonErrors)) {
+                jsonErrors.add(JsonError.of(currentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                        + " type must be of type " + consumeValueSpecification.getType()));
             }
         }
     }
 
-    private boolean isValidConsumeType(ValueType type, Object childElementBody) {
+    private boolean isValidConsumeType(ValueType consumeType, Object childElementBody, String parentPath, List<JsonError> jsonErrors) {
 
-        if (ValueType.ELEMENT.equals(type)) {
+        if (ValueType.ELEMENT.equals(consumeType)) {
             return (childElementBody instanceof EnotElement);
         } else {
             if (PlaceholderUtils.isPlaceholder(childElementBody)) {
@@ -93,51 +103,38 @@ public class EnotParserValidator {
                 return true;
             }
 
-            if (ValueType.BOOLEAN.equals(type)) {
-                if (childElementBody instanceof EnotElement child) {
-                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
-                    return childValueProduceSpecification.getType().equals(ValueType.BOOLEAN);
+            if (childElementBody instanceof EnotElement child) {
+                Optional<EnotTypeSpecification> typeSpecification = enotRegistry.getTypeSpecification(child.getType());
+                if (typeSpecification.isEmpty()) {
+                    jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported eNot element type"));
+                    // Returning true here as we don't want extra invalid consume type error to be added, as root cause
+                    // here is missing type specification:
+                    return true;
                 }
-                return (childElementBody instanceof Boolean);
-            } else if (ValueType.BINARY.equals(type)) {
-                if (childElementBody instanceof EnotElement child) {
-                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
-                    return childValueProduceSpecification.getType().equals(ValueType.BINARY);
+
+                EnotElementSpecification elementSpecification = typeSpecification.get().getElementSpecification(child);
+                if (elementSpecification == null || elementSpecification.getProduceType() == null) {
+                    return true;
                 }
-            } else if (ValueType.INTEGER.equals(type)) {
-                if (childElementBody instanceof EnotElement child) {
-                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
-                    return childValueProduceSpecification.getType().equals(ValueType.INTEGER);
+
+                ValueSpecification childValueProduceSpecification = elementSpecification.getProduceType();
+                return childValueProduceSpecification.getType().equals(consumeType);
+
+            } else {
+                if (ValueType.BOOLEAN.equals(consumeType)) {
+                    return (childElementBody instanceof Boolean);
+                } else if (ValueType.INTEGER.equals(consumeType)) {
+                    return (childElementBody instanceof Integer) || (childElementBody instanceof Long)
+                            || (childElementBody instanceof BigInteger);
+                } else if (ValueType.TEXT.equals(consumeType)) {
+                    return (childElementBody instanceof String);
+                } else if (ValueType.OBJECT_IDENTIFIER.equals(consumeType)) {
+                    return OidUtils.isValidOid(childElementBody);
+                } else if (ValueType.DATE_TIME.equals(consumeType)) {
+                    return DateTimeUtils.isValidDateTime(childElementBody);
                 }
-                return (childElementBody instanceof Integer) || (childElementBody instanceof Long)
-                        || (childElementBody instanceof BigInteger);
-            } else if (ValueType.TEXT.equals(type)) {
-                if (childElementBody instanceof EnotElement child) {
-                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
-                    return childValueProduceSpecification.getType().equals(ValueType.TEXT);
-                }
-                return (childElementBody instanceof String);
-            } else if (ValueType.OBJECT_IDENTIFIER.equals(type)) {
-                if (childElementBody instanceof EnotElement child) {
-                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
-                    return childValueProduceSpecification.getType().equals(ValueType.OBJECT_IDENTIFIER);
-                }
-                return OidUtils.isValidOid(childElementBody);
-            } else if (ValueType.DATE_TIME.equals(type)) {
-                if (childElementBody instanceof EnotElement child) {
-                    ValueSpecification childValueProduceSpecification = getElementProduceValueSpecification(child);
-                    return childValueProduceSpecification.getType().equals(ValueType.DATE_TIME);
-                }
-                return DateTimeUtils.isValidDateTime(childElementBody);
             }
         }
         return false;
-    }
-
-    private ValueSpecification getElementProduceValueSpecification(EnotElement element) {
-
-        EnotTypeSpecification typeSpecification = enotRegistry.getTypeSpecification(element.getType()).orElseThrow(() ->
-                new EnotParseException("Element type not found"));
-        return typeSpecification.getElementSpecification(element).getProduceType();
     }
 }

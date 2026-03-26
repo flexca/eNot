@@ -1,6 +1,6 @@
 package com.github.flexca.enot.core.exception;
 
-public class EnotInvalidAttributeException extends EnotException {
+public class EnotInvalidAttributeException extends EnotRuntimeException {
 
     public EnotInvalidAttributeException(String message) {
         super(message);

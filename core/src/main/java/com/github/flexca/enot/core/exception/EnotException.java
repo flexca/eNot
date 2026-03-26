@@ -1,6 +1,6 @@
 package com.github.flexca.enot.core.exception;
 
-public abstract class EnotException extends RuntimeException {
+public class EnotException extends Exception {
 
     protected EnotException(String message) {
         super(message);
