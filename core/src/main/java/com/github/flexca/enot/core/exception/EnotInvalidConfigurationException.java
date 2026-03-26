@@ -1,6 +1,6 @@
 package com.github.flexca.enot.core.exception;
 
-public class EnotInvalidConfigurationException extends EnotException {
+public class EnotInvalidConfigurationException extends EnotRuntimeException {
 
     public EnotInvalidConfigurationException(String message) {
         super(message);
