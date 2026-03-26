@@ -195,7 +195,7 @@ public class EnotParser {
             return CollectionUtils.isEmpty(elements) ? Optional.empty() : Optional.of(elements);
         } else if (bodyNode.isObject()) {
             Optional<EnotElement> element = parseElement(bodyNode.asObject(), currentPath, jsonErrors);
-            return element.isEmpty() ? Optional.empty() : Optional.of(element);
+            return element.isEmpty() ? Optional.empty() : Optional.of(element.get());
         }  else {
             Optional<Object> objectBody = extractPrimitiveValue(bodyNode);
             if (objectBody.isEmpty()) {
