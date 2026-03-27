@@ -1,7 +1,6 @@
 package com.github.flexca.enot.core.struct.attribute;
 
-import com.github.flexca.enot.core.struct.value.ValueType;
-import lombok.Getter;
+import com.github.flexca.enot.core.struct.value.EnotValueType;
 
 /**
  * Defines a contract for an attribute key used in an {@link com.github.flexca.enot.core.struct.EnotElement}.
@@ -32,7 +31,7 @@ public interface EnotAttribute {
      *
      * @return The {@link ValueType} that this attribute's value must conform to.
      */
-    ValueType getValueType();
+    EnotValueType getValueType();
 
     /**
      * A factory-like method to retrieve an attribute instance from its string name.

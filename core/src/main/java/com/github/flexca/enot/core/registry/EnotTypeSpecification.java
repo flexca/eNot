@@ -2,6 +2,9 @@ package com.github.flexca.enot.core.registry;
 
 import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
+import com.github.flexca.enot.core.struct.value.EnotValueType;
+
+import java.util.List;
 
 /**
  * Enot element type specification is used to describe specific type of elements. Used during parsing and validation
@@ -14,6 +17,12 @@ public interface EnotTypeSpecification {
      * @return name of elements type, implementation must not return null or blank value
      */
     String getTypeName();
+
+    /**
+     * Provide list of additional value types
+     * @return list of ValueType specific for this eNot element. Can return null
+     */
+    List<EnotValueType> getValueTypes();
 
     /**
      * Resolve attribute by its name and provide information about attribute name and value type
