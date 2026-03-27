@@ -6,10 +6,9 @@ import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.struct.value.ValueSpecification;
-import com.github.flexca.enot.core.struct.value.ValueType;
+import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.bouncycastle.asn1.ASN1Null;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,98 +18,98 @@ import java.util.Set;
 public enum Asn1Tag implements EnotElementSpecification {
 
     SEQUENCE("sequence",
-            new ValueSpecification(ValueType.BINARY, true),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, true),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     SET("set",
-            new ValueSpecification(ValueType.BINARY, true),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, true),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     OBJECT_IDENTIFIER("object_identifier",
-            new ValueSpecification(ValueType.OBJECT_IDENTIFIER, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.OBJECT_IDENTIFIER, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     BOOLEAN("boolean",
-            new ValueSpecification(ValueType.BOOLEAN, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.BOOLEAN, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     INTEGER("integer",
-            new ValueSpecification(ValueType.INTEGER, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.INTEGER, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     OCTET_STRING("octet_string",
-            new ValueSpecification(ValueType.BINARY, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.BINARY, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     PRINTABLE_STRING("printable_string",
-            new ValueSpecification(ValueType.TEXT, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.TEXT, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     IA5_STRING("ia5_string",
-            new ValueSpecification(ValueType.TEXT, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.TEXT, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     VISIBLE_STRING("visible_string",
-            new ValueSpecification(ValueType.TEXT, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.TEXT, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     UTF8_STRING("utf8_string",
-            new ValueSpecification(ValueType.TEXT, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.TEXT, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     BMP_STRING("bmp_string",
-            new ValueSpecification(ValueType.TEXT, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.TEXT, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     BIT_STRING("bit_string",
-            new ValueSpecification(ValueType.BINARY, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.BINARY, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     GENERALIZED_TIME("generalized_time",
-            new ValueSpecification(ValueType.TEXT, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.TEXT, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     UTC_TIME("utc_time",
-            new ValueSpecification(ValueType.TEXT, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.TEXT, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL)),
 
     NULL("null",
-            new ValueSpecification(ValueType.EMPTY, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(CommonEnotValueType.EMPTY, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG)),
 
     TAGGED_OBJECT("tagged_object",
-            new ValueSpecification(ValueType.BINARY, false),
-            new ValueSpecification(ValueType.BINARY, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
+            new ValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.OPTIONAL, Asn1Attribute.IMPLICIT, Asn1Attribute.EXPLICIT));
 

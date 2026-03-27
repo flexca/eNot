@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class ValueSpecification {
 
-    private final ValueType type;
+    private final EnotValueType type;
     private final boolean allowMultipleValues;
 }

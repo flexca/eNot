@@ -2,11 +2,10 @@ package com.github.flexca.enot.core.system;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.github.flexca.enot.core.asn1.Asn1Tag;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.struct.value.ValueSpecification;
-import com.github.flexca.enot.core.struct.value.ValueType;
+import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
 import com.github.flexca.enot.core.system.attribute.SystemAttribute;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +18,14 @@ import java.util.Set;
 public enum SystemKind implements EnotElementSpecification {
 
     LOOP("loop",
-            new ValueSpecification(ValueType.ELEMENT, true),
-            new ValueSpecification(ValueType.BINARY, true),
+            new ValueSpecification(CommonEnotValueType.ELEMENT, true),
+            new ValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME),
             Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME, SystemAttribute.MIN_ITEMS, SystemAttribute.MAX_ITEMS)),
 
     REFERENCE("reference",
-            new ValueSpecification(ValueType.ELEMENT, true),
-            new ValueSpecification(ValueType.BINARY, true),
+            new ValueSpecification(CommonEnotValueType.ELEMENT, true),
+            new ValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND),
             Set.of(SystemAttribute.KIND));
 

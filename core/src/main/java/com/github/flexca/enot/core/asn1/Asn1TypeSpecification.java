@@ -8,6 +8,9 @@ import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
+import com.github.flexca.enot.core.struct.value.EnotValueType;
+
+import java.util.List;
 
 public class Asn1TypeSpecification implements EnotTypeSpecification {
 
@@ -18,6 +21,11 @@ public class Asn1TypeSpecification implements EnotTypeSpecification {
     @Override
     public String getTypeName() {
         return TYPE_NAME;
+    }
+
+    @Override
+    public List<EnotValueType> getValueTypes() {
+        return List.of(Asn1EnotValueType.values());
     }
 
     @Override

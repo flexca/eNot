@@ -3,17 +3,11 @@ package com.github.flexca.enot.core.asn1.validation;
 import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.asn1.Asn1Tag;
 import com.github.flexca.enot.core.asn1.Asn1TypeSpecification;
-import com.github.flexca.enot.core.exception.EnotInvalidAttributeException;
-import com.github.flexca.enot.core.exception.EnotUnsupportedElementTypeException;
+import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.parser.JsonError;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.struct.EnotElement;
-import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
-import com.github.flexca.enot.core.struct.value.ValueSpecification;
-import com.github.flexca.enot.core.util.AttributeUtils;
-import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.Collection;
 import java.util.List;
 
 public class Asn1ElementValidator implements EnotElementValidator {
@@ -22,33 +16,27 @@ public class Asn1ElementValidator implements EnotElementValidator {
     public void validateElement(EnotElement element, String parentPath, List<JsonError> jsonErrors) {
 
         if(!Asn1TypeSpecification.TYPE_NAME.equalsIgnoreCase(element.getType())) {
-            throw new EnotUnsupportedElementTypeException("Unsupported element type. Expecting ASN.1");
+            jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported element type, expecting asn.1"));
+            return;
         }
 
         Object tagObject = element.getAttributes().get(Asn1Attribute.TAG);
         if (!(tagObject instanceof String)) {
-            throw new EnotInvalidAttributeException("For ASN.1 elements tag attribute must be of string type");
+            jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME + "/" + Asn1Attribute.TAG.getName(),
+                    "invalid type of asn.1 elements attribute " + Asn1Attribute.TAG.getName() + ", expecting string"));
+            return;
         }
 
         Asn1Tag tag = Asn1Tag.fromString((String) tagObject);
-
-        validateAsn1Attributes(tag, element);
-
-        Object objectBody = element.getBody();
-        ValueSpecification consumeValueSpecification = tag.getConsumeType();
-        if (objectBody instanceof Collection<?> bodyCollection) {
-            if (!consumeValueSpecification.isAllowMultipleValues()) {
-
-            }
-        } else {
-
+        if (tag == null) {
+            jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME + "/" + Asn1Attribute.TAG.getName(),
+                    "unsupported asn.1 elements attribute " + Asn1Attribute.TAG.getName()));
+            return;
         }
-    }
-
-    private void validateAsn1Attributes(Asn1Tag tag, EnotElement element) {
 
         if (element.getAttributes().containsKey(Asn1Attribute.EXPLICIT) && element.getAttributes().containsKey(Asn1Attribute.IMPLICIT)) {
-            throw new EnotInvalidAttributeException("Only one from implicit or explicit attributes are allowed for ASN.1 element");
+            jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME,
+                    "both implicit and explicit attributes are not allowed for single asn.1 element"));
         }
     }
 }

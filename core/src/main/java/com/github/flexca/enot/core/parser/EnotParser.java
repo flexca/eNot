@@ -1,6 +1,5 @@
 package com.github.flexca.enot.core.parser;
 
-import com.github.flexca.enot.core.exception.EnotInvalidAttributeException;
 import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;

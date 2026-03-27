@@ -3,7 +3,8 @@ package com.github.flexca.enot.core.asn1.attribute;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
-import com.github.flexca.enot.core.struct.value.ValueType;
+import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
+import com.github.flexca.enot.core.struct.value.EnotValueType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -14,10 +15,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public enum Asn1Attribute implements EnotAttribute {
 
-    TAG("tag", ValueType.TEXT),
-    OPTIONAL("optional", ValueType.BOOLEAN),
-    IMPLICIT("implicit", ValueType.INTEGER),
-    EXPLICIT("explicit", ValueType.INTEGER);
+    TAG("tag", CommonEnotValueType.TEXT),
+    OPTIONAL("optional", CommonEnotValueType.BOOLEAN),
+    IMPLICIT("implicit", CommonEnotValueType.INTEGER),
+    EXPLICIT("explicit", CommonEnotValueType.INTEGER);
 
     private static final Map<String, Asn1Attribute> BY_NAME = new HashMap<>();
     static {
@@ -29,7 +30,7 @@ public enum Asn1Attribute implements EnotAttribute {
     private final String name;
 
     @Getter
-    private final ValueType valueType;
+    private final EnotValueType valueType;
 
     @Override
     public Asn1Attribute fromName(String name) {

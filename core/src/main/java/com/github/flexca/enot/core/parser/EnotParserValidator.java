@@ -1,15 +1,13 @@
 package com.github.flexca.enot.core.parser;
 
-import com.github.flexca.enot.core.exception.EnotInvalidAttributeException;
-import com.github.flexca.enot.core.exception.EnotInvalidBodyException;
-import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.struct.value.ValueSpecification;
-import com.github.flexca.enot.core.struct.value.ValueType;
+import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
+import com.github.flexca.enot.core.struct.value.EnotValueType;
 import com.github.flexca.enot.core.util.AttributeUtils;
 import com.github.flexca.enot.core.util.DateTimeUtils;
 import com.github.flexca.enot.core.util.OidUtils;
@@ -39,12 +37,14 @@ public class EnotParserValidator {
     private void validateAttributes(EnotElementSpecification elementSpecification, EnotElement element, String parentPath,
                                     List<JsonError> jsonErrors) {
 
+        String attributesPath = parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME;
+
         if (CollectionUtils.isNotEmpty(elementSpecification.getRequiredAttributes())) {
             List<String> missingRequiredAttributes = elementSpecification.getRequiredAttributes().stream()
                     .filter(attribute -> !element.getAttributes().containsKey(attribute))
                     .map(EnotAttribute::getName).toList();
             if (CollectionUtils.isNotEmpty(missingRequiredAttributes)) {
-                throw new EnotInvalidAttributeException("missing required attributes for ASN.1 element: " + missingRequiredAttributes);
+                jsonErrors.add(JsonError.of(attributesPath, "missing required attributes for ASN.1 element: " + missingRequiredAttributes));
             }
         }
 
@@ -54,13 +54,14 @@ public class EnotParserValidator {
                     .map(EnotAttribute::getName).toList();
 
             if (CollectionUtils.isNotEmpty(unsupportedAttributes)) {
-                throw new EnotInvalidAttributeException("Unsupported attributes for ASN.1 element: " + unsupportedAttributes);
+                jsonErrors.add(JsonError.of(attributesPath, "unsupported attributes for ASN.1 element: " + unsupportedAttributes));
             }
         }
 
         element.getAttributes().forEach((key, value) -> {
             if (!AttributeUtils.isValidAttributeValue(key, value)) {
-                throw new EnotInvalidAttributeException("Invalid value type for attribute " + key.getName() + ", expecting " + key.getValueType().getName());
+                jsonErrors.add(JsonError.of(attributesPath + "/" + key.getName(), "Invalid value type for attribute, expecting "
+                        + key.getValueType().getName()));
             }
         });
     }
@@ -93,48 +94,47 @@ public class EnotParserValidator {
         }
     }
 
-    private boolean isValidConsumeType(ValueType consumeType, Object childElementBody, String parentPath, List<JsonError> jsonErrors) {
+    private boolean isValidConsumeType(EnotValueType parentConsumeType, Object childElementBody, String parentPath, List<JsonError> jsonErrors) {
 
-        if (ValueType.ELEMENT.equals(consumeType)) {
-            return (childElementBody instanceof EnotElement);
-        } else {
+        if (!parentConsumeType.haveSuper(CommonEnotValueType.ELEMENT)) {
             if (PlaceholderUtils.isPlaceholder(childElementBody)) {
                 // Placeholders can be validated only during runtime:
                 return true;
             }
+        }
 
-            if (childElementBody instanceof EnotElement child) {
-                Optional<EnotTypeSpecification> typeSpecification = enotRegistry.getTypeSpecification(child.getType());
-                if (typeSpecification.isEmpty()) {
-                    jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported eNot element type"));
-                    // Returning true here as we don't want extra invalid consume type error to be added, as root cause
-                    // here is missing type specification:
-                    return true;
-                }
+        if (childElementBody instanceof EnotElement child) {
+            Optional<EnotTypeSpecification> typeSpecification = enotRegistry.getTypeSpecification(child.getType());
+            if (typeSpecification.isEmpty()) {
+                jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported eNot element type"));
+                // Returning true here as we don't want extra invalid consume type error to be added, as root cause
+                // here is missing type specification:
+                return true;
+            }
 
-                EnotElementSpecification elementSpecification = typeSpecification.get().getElementSpecification(child);
-                if (elementSpecification == null || elementSpecification.getProduceType() == null) {
-                    return true;
-                }
+            EnotElementSpecification elementSpecification = typeSpecification.get().getElementSpecification(child);
+            if (elementSpecification == null) {
+                return true;
+            }
 
-                ValueSpecification childValueProduceSpecification = elementSpecification.getProduceType();
-                return childValueProduceSpecification.getType().equals(consumeType);
+            ValueSpecification childValueProduceSpecification = elementSpecification.getProduceType();
+            return parentConsumeType.canConsume(childValueProduceSpecification.getType());
 
-            } else {
-                if (ValueType.BOOLEAN.equals(consumeType)) {
-                    return (childElementBody instanceof Boolean);
-                } else if (ValueType.INTEGER.equals(consumeType)) {
-                    return (childElementBody instanceof Integer) || (childElementBody instanceof Long)
-                            || (childElementBody instanceof BigInteger);
-                } else if (ValueType.TEXT.equals(consumeType)) {
-                    return (childElementBody instanceof String);
-                } else if (ValueType.OBJECT_IDENTIFIER.equals(consumeType)) {
-                    return OidUtils.isValidOid(childElementBody);
-                } else if (ValueType.DATE_TIME.equals(consumeType)) {
-                    return DateTimeUtils.isValidDateTime(childElementBody);
-                }
+        } else {
+            if (CommonEnotValueType.BOOLEAN.equals(parentConsumeType)) {
+                return (childElementBody instanceof Boolean);
+            } else if (CommonEnotValueType.INTEGER.equals(parentConsumeType)) {
+                return (childElementBody instanceof Integer) || (childElementBody instanceof Long)
+                        || (childElementBody instanceof BigInteger);
+            } else if (CommonEnotValueType.TEXT.equals(parentConsumeType)) {
+                return (childElementBody instanceof String);
+            } else if (CommonEnotValueType.OBJECT_IDENTIFIER.equals(parentConsumeType)) {
+                return OidUtils.isValidOid(childElementBody);
+            } else if (CommonEnotValueType.DATE_TIME.equals(parentConsumeType)) {
+                return DateTimeUtils.isValidDateTime(childElementBody);
             }
         }
+
         return false;
     }
 }
