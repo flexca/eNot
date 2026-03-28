@@ -36,8 +36,6 @@ public class EnotRegistry {
             }
             typeSpecifications.put(specification.getTypeName().toLowerCase(), specification);
         }
-
-
     }
 
     public Optional<EnotTypeSpecification> getTypeSpecification(String typeName) {

@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.struct.attribute;
 
+import com.github.flexca.enot.core.struct.value.EnotValueSpecification;
 import com.github.flexca.enot.core.struct.value.EnotValueType;
 
 /**
@@ -31,7 +32,7 @@ public interface EnotAttribute {
      *
      * @return The {@link ValueType} that this attribute's value must conform to.
      */
-    EnotValueType getValueType();
+    EnotValueSpecification getValueSpecification();
 
     /**
      * A factory-like method to retrieve an attribute instance from its string name.

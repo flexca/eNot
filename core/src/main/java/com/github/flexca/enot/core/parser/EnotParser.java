@@ -20,7 +20,7 @@ public class EnotParser {
     public static final String ENOT_ELEMENT_ATTRIBUTES_NAME = "attributes";
     public static final String ENOT_ELEMENT_BODY_NAME = "body";
 
-    private static final String COMMON_ERROR_MESSAGE = "Error during parsing of eNot";
+    private static final String COMMON_ERROR_MESSAGE = "Error during parsing of eNot, reason: ";
 
     private final EnotRegistry enotRegistry;
     private final EnotParserValidator parserValidator;
@@ -42,11 +42,11 @@ public class EnotParser {
         try {
             rootNode = objectMapper.readValue(json, JsonNode.class);
         } catch(Exception e) {
-            throw new EnotParsingException(COMMON_ERROR_MESSAGE + ", reason: " + e.getMessage(),
-                    Collections.singletonList(JsonError.of(currentPath, e.getMessage())), e);
+            throw new EnotParsingException(COMMON_ERROR_MESSAGE,
+                    Collections.singletonList(EnotJsonError.of(currentPath, e.getMessage())), e);
         }
 
-        List<JsonError> jsonErrors = new ArrayList<>();
+        List<EnotJsonError> jsonErrors = new ArrayList<>();
         Throwable cause = null;
 
         if (rootNode.isArray()) {
@@ -54,7 +54,7 @@ public class EnotParser {
                 elements.addAll(parseElements(rootNode.asArray(), currentPath, jsonErrors));
             } catch (Exception e) {
                 cause = e;
-                jsonErrors.add(JsonError.of(currentPath, e.getMessage()));
+                jsonErrors.add(EnotJsonError.of(currentPath, e.getMessage()));
             }
         } else if (rootNode.isObject()) {
             try {
@@ -62,28 +62,24 @@ public class EnotParser {
                 element.ifPresent(elements::add);
             } catch (Exception e) {
                 cause = e;
-                jsonErrors.add(JsonError.of(currentPath, e.getMessage()));
+                jsonErrors.add(EnotJsonError.of(currentPath, e.getMessage()));
             }
         } else {
-            jsonErrors.add(JsonError.of(currentPath, "eNot expecting object or array as root JSON node"));
+            jsonErrors.add(EnotJsonError.of(currentPath, "eNot expecting object or array as root JSON node"));
         }
 
         if (CollectionUtils.isNotEmpty(jsonErrors)) {
-
-            String message = jsonErrors.size() == 1 ? COMMON_ERROR_MESSAGE + ", reason: " + jsonErrors.get(0).getDetails()
-                    : COMMON_ERROR_MESSAGE + ", multiple issues found";
-
             if(cause == null) {
-                throw new EnotParsingException(message, jsonErrors);
+                throw new EnotParsingException(COMMON_ERROR_MESSAGE, jsonErrors);
             } else {
-                throw new EnotParsingException(message, jsonErrors, cause);
+                throw new EnotParsingException(COMMON_ERROR_MESSAGE, jsonErrors, cause);
             }
         }
 
         return elements;
     }
 
-    private List<EnotElement> parseElements(ArrayNode elementsArray, String parentPath, List<JsonError> jsonErrors) {
+    private List<EnotElement> parseElements(ArrayNode elementsArray, String parentPath, List<EnotJsonError> jsonErrors) {
 
         List<EnotElement> elements = new ArrayList<>(elementsArray.size());
         for (int i = 0; i < elementsArray.size(); i++) {
@@ -93,36 +89,36 @@ public class EnotParser {
                 Optional<EnotElement> element = parseElement(itemNode.asObject(), currentPath, jsonErrors);
                 element.ifPresent(elements::add);
             } else {
-                jsonErrors.add(JsonError.of(currentPath, "eNot expecting object, but get " + itemNode.getNodeType().name()));
+                jsonErrors.add(EnotJsonError.of(currentPath, "eNot expecting object, but get " + itemNode.getNodeType().name()));
             }
         }
         return elements;
     }
 
-    private Optional<EnotElement> parseElement(ObjectNode jsonElement, String parentPath, List<JsonError> jsonErrors) {
+    private Optional<EnotElement> parseElement(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors) {
 
         JsonNode typeNode = jsonElement.get(ENOT_ELEMENT_TYPE_NAME);
         if (typeNode == null) {
-            jsonErrors.add(JsonError.of(parentPath, "required eNot element field " + ENOT_ELEMENT_TYPE_NAME));
+            jsonErrors.add(EnotJsonError.of(parentPath, "required eNot element field " + ENOT_ELEMENT_TYPE_NAME));
             return Optional.empty();
         }
 
         String typePath = parentPath + "/" + ENOT_ELEMENT_TYPE_NAME;
         if (!typeNode.isString()) {
-            jsonErrors.add(JsonError.of(typePath, "eNot element field value " + ENOT_ELEMENT_TYPE_NAME + " must be string, provided: "
+            jsonErrors.add(EnotJsonError.of(typePath, "eNot element field value " + ENOT_ELEMENT_TYPE_NAME + " must be string, provided: "
                     + typeNode.getNodeType().name()));
             return Optional.empty();
         }
 
         String type = typeNode.asString();
         if (StringUtils.isBlank(type)) {
-            jsonErrors.add(JsonError.of(typePath, "eNot element field value " + ENOT_ELEMENT_TYPE_NAME + " is blank"));
+            jsonErrors.add(EnotJsonError.of(typePath, "eNot element field value " + ENOT_ELEMENT_TYPE_NAME + " is blank"));
             return Optional.empty();
         }
 
         Optional<EnotTypeSpecification> typeSpecificationCandidate = enotRegistry.getTypeSpecification(type);
         if (typeSpecificationCandidate.isEmpty()) {
-            jsonErrors.add(JsonError.of(typePath, "unsupported " + ENOT_ELEMENT_TYPE_NAME + " of eNot element: " + type
+            jsonErrors.add(EnotJsonError.of(typePath, "unsupported " + ENOT_ELEMENT_TYPE_NAME + " of eNot element: " + type
                     + ", make sure this type was added to EnotRegistry"));
             return Optional.empty();
         }
@@ -143,7 +139,7 @@ public class EnotParser {
         return Optional.of(element);
     }
 
-    private Map<EnotAttribute, Object> extractElementAttributes(ObjectNode jsonElement, EnotTypeSpecification typeSpecification, String parentPath, List<JsonError> jsonErrors) {
+    private Map<EnotAttribute, Object> extractElementAttributes(ObjectNode jsonElement, EnotTypeSpecification typeSpecification, String parentPath, List<EnotJsonError> jsonErrors) {
 
         JsonNode attributesNode = jsonElement.get(ENOT_ELEMENT_ATTRIBUTES_NAME);
         if(attributesNode == null || attributesNode.isNull()) {
@@ -152,7 +148,7 @@ public class EnotParser {
 
         String currentPath = parentPath + "/" + ENOT_ELEMENT_ATTRIBUTES_NAME;
         if (!attributesNode.isObject()) {
-            jsonErrors.add(JsonError.of(currentPath, "eNot element field " + ENOT_ELEMENT_ATTRIBUTES_NAME
+            jsonErrors.add(EnotJsonError.of(currentPath, "eNot element field " + ENOT_ELEMENT_ATTRIBUTES_NAME
                     + " must be JSON object, provided: " + attributesNode.getNodeType().name()));
             return Collections.emptyMap();
         }
@@ -162,18 +158,18 @@ public class EnotParser {
             String attributePath = parentPath + "/" + attributeName;
             EnotAttribute attribute = typeSpecification.resolveAttributeByName(attributeName);
             if (attribute == null) {
-                jsonErrors.add(JsonError.of(attributePath, "unsupported attribute " + attributeName + " for element of type "
+                jsonErrors.add(EnotJsonError.of(attributePath, "unsupported attribute " + attributeName + " for element of type "
                         + typeSpecification.getTypeName()));
                 continue;
             }
             JsonNode attributeValueNode = attributesNode.asObject().get(attributeName);
             if (attributeValueNode == null || attributeValueNode.isNull()) {
-                jsonErrors.add(JsonError.of(attributePath, " value for attribute " + attributeName + " must be set"));
+                jsonErrors.add(EnotJsonError.of(attributePath, " value for attribute " + attributeName + " must be set"));
                 continue;
             }
             Optional<Object> attributeValue = extractPrimitiveValue(attributeValueNode);
             if (attributeValue.isEmpty()) {
-                jsonErrors.add(JsonError.of(currentPath, "unexpected eNot attribute + " + attributeName + " +  value JSON type: "
+                jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot attribute + " + attributeName + " +  value JSON type: "
                         + attributeValueNode.getNodeType().name() + ", expecting boolean, number or string"));
             } else {
                 attributes.put(attribute, attributeValue.get());
@@ -182,7 +178,7 @@ public class EnotParser {
         return attributes;
     }
 
-    private Optional<Object> extractElementBody(ObjectNode jsonElement, String parentPath, List<JsonError> jsonErrors) {
+    private Optional<Object> extractElementBody(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors) {
 
         String currentPath = parentPath + "/" + ENOT_ELEMENT_BODY_NAME;
 
@@ -198,7 +194,7 @@ public class EnotParser {
         }  else {
             Optional<Object> objectBody = extractPrimitiveValue(bodyNode);
             if (objectBody.isEmpty()) {
-                jsonErrors.add(JsonError.of(currentPath, "unexpected eNot element body JSON type: " + bodyNode.getNodeType().name()
+                jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot element body JSON type: " + bodyNode.getNodeType().name()
                         + ", expecting boolean, number, string, object or array"));
             }
             return objectBody;

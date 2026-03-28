@@ -10,6 +10,8 @@ public interface EnotValueType {
 
     Set<EnotValueType> getSuperTypes();
 
+    boolean isAllowedForAttributes();
+
     default boolean canConsume(EnotValueType candidate) {
 
         if (this.equals(candidate)) {

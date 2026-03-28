@@ -4,21 +4,19 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
+import com.github.flexca.enot.core.struct.value.EnotValueSpecification;
 import com.github.flexca.enot.core.struct.value.EnotValueType;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@RequiredArgsConstructor
 public enum SystemAttribute implements EnotAttribute {
 
-    KIND("kind", CommonEnotValueType.TEXT),
-    ITEMS_NAME("items_name", CommonEnotValueType.TEXT),
-    MIN_ITEMS("min_items", CommonEnotValueType.TEXT),
-    MAX_ITEMS("max_items", CommonEnotValueType.TEXT);
+    KIND("kind", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
+    ITEMS_NAME("items_name", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
+    MIN_ITEMS("min_items", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
+    MAX_ITEMS("max_items", new EnotValueSpecification(CommonEnotValueType.INTEGER, false));
 
     private static final Map<String, SystemAttribute> BY_NAME = new HashMap<>();
     static {
@@ -28,18 +26,27 @@ public enum SystemAttribute implements EnotAttribute {
     }
 
     private final String name;
+    private final EnotValueSpecification valueSpecification;
 
-    @Getter
-    private final EnotValueType valueType;
+    private SystemAttribute(String name, EnotValueSpecification valueSpecification) {
+        this.name = name;
+        this.valueSpecification = valueSpecification;
+    }
 
     @Override
     public SystemAttribute fromName(String name) {
-        return StringUtils.isBlank(name) ? null : BY_NAME.get(name.toLowerCase());
+        return fromJsonString(name);
     }
 
+    @Override
     @JsonValue
     public String getName() {
         return this.name;
+    }
+
+    @Override
+    public EnotValueSpecification getValueSpecification() {
+        return valueSpecification;
     }
 
     @JsonCreator

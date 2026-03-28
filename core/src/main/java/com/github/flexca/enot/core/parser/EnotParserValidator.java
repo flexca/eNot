@@ -5,14 +5,13 @@ import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
-import com.github.flexca.enot.core.struct.value.ValueSpecification;
+import com.github.flexca.enot.core.struct.value.EnotValueSpecification;
 import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
 import com.github.flexca.enot.core.struct.value.EnotValueType;
 import com.github.flexca.enot.core.util.AttributeUtils;
 import com.github.flexca.enot.core.util.DateTimeUtils;
 import com.github.flexca.enot.core.util.OidUtils;
 import com.github.flexca.enot.core.util.PlaceholderUtils;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.math.BigInteger;
@@ -20,12 +19,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class EnotParserValidator {
 
     private final EnotRegistry enotRegistry;
 
-    public void validateElement(EnotTypeSpecification typeSpecification, EnotElement element, String parentPath, List<JsonError> jsonErrors) {
+    public EnotParserValidator(EnotRegistry enotRegistry) {
+        this.enotRegistry = enotRegistry;
+    }
+
+    public void validateElement(EnotTypeSpecification typeSpecification, EnotElement element, String parentPath, List<EnotJsonError> jsonErrors) {
 
         EnotElementSpecification elementSpecification = typeSpecification.getElementSpecification(element);
         if (elementSpecification != null) {
@@ -35,7 +37,7 @@ public class EnotParserValidator {
     }
 
     private void validateAttributes(EnotElementSpecification elementSpecification, EnotElement element, String parentPath,
-                                    List<JsonError> jsonErrors) {
+                                    List<EnotJsonError> jsonErrors) {
 
         String attributesPath = parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME;
 
@@ -44,7 +46,7 @@ public class EnotParserValidator {
                     .filter(attribute -> !element.getAttributes().containsKey(attribute))
                     .map(EnotAttribute::getName).toList();
             if (CollectionUtils.isNotEmpty(missingRequiredAttributes)) {
-                jsonErrors.add(JsonError.of(attributesPath, "missing required attributes for ASN.1 element: " + missingRequiredAttributes));
+                jsonErrors.add(EnotJsonError.of(attributesPath, "missing required attributes for ASN.1 element: " + missingRequiredAttributes));
             }
         }
 
@@ -54,26 +56,26 @@ public class EnotParserValidator {
                     .map(EnotAttribute::getName).toList();
 
             if (CollectionUtils.isNotEmpty(unsupportedAttributes)) {
-                jsonErrors.add(JsonError.of(attributesPath, "unsupported attributes for ASN.1 element: " + unsupportedAttributes));
+                jsonErrors.add(EnotJsonError.of(attributesPath, "unsupported attributes for ASN.1 element: " + unsupportedAttributes));
             }
         }
 
         element.getAttributes().forEach((key, value) -> {
             if (!AttributeUtils.isValidAttributeValue(key, value)) {
-                jsonErrors.add(JsonError.of(attributesPath + "/" + key.getName(), "Invalid value type for attribute, expecting "
-                        + key.getValueType().getName()));
+                jsonErrors.add(EnotJsonError.of(attributesPath + "/" + key.getName(), "Invalid value type for attribute, expecting "
+                        + key.getValueSpecification().getType().getName()));
             }
         });
     }
 
-    private void validateBody(ValueSpecification consumeValueSpecification, EnotElement element, String parentPath,
-                              List<JsonError> jsonErrors) {
+    private void validateBody(EnotValueSpecification consumeValueSpecification, EnotElement element, String parentPath,
+                              List<EnotJsonError> jsonErrors) {
 
         Object objectBody = element.getBody();
         String currentPath = parentPath + "/" + EnotParser.ENOT_ELEMENT_BODY_NAME;
         if (objectBody instanceof Collection<?> bodyCollection) {
             if (!consumeValueSpecification.isAllowMultipleValues()) {
-                jsonErrors.add(JsonError.of(currentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                jsonErrors.add(EnotJsonError.of(currentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
                         + " don't allow multiple values"));
             }
             int i = 0;
@@ -87,7 +89,7 @@ public class EnotParserValidator {
         }
     }
 
-    private void validateConsumeType(ValueSpecification consumeValueSpecification, Object childElementBody, String parentPath, List<JsonError> jsonErrors) {
+    private void validateConsumeType(EnotValueSpecification consumeValueSpecification, Object childElementBody, String parentPath, List<EnotJsonError> jsonErrors) {
 
         EnotValueType parentConsumeType = consumeValueSpecification.getType();
 
@@ -101,7 +103,7 @@ public class EnotParserValidator {
         if (childElementBody instanceof EnotElement child) {
             Optional<EnotTypeSpecification> typeSpecification = enotRegistry.getTypeSpecification(child.getType());
             if (typeSpecification.isEmpty()) {
-                jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported eNot element type"));
+                jsonErrors.add(EnotJsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported eNot element type"));
                 return;
             }
 
@@ -110,20 +112,20 @@ public class EnotParserValidator {
                 return;
             }
 
-            ValueSpecification childValueProduceSpecification = elementSpecification.getProduceType();
+            EnotValueSpecification childValueProduceSpecification = elementSpecification.getProduceType();
             boolean canConsume = parentConsumeType.canConsume(childValueProduceSpecification.getType());
             if(!canConsume) {
                 if (CommonEnotValueType.ELEMENT.equals(childValueProduceSpecification.getType())) {
                     validateBody(consumeValueSpecification, child, parentPath, jsonErrors);
                 } else {
-                    jsonErrors.add(JsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                    jsonErrors.add(EnotJsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
                             + " type must be of type " + parentConsumeType));
                 }
             }
 
         } else {
             if (!canConsumeSimpleType(parentConsumeType, childElementBody)) {
-                jsonErrors.add(JsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                jsonErrors.add(EnotJsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
                         + " type must be of type " + parentConsumeType));
             }
         }

@@ -1,7 +1,7 @@
 package com.github.flexca.enot.core.registry;
 
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
-import com.github.flexca.enot.core.struct.value.ValueSpecification;
+import com.github.flexca.enot.core.struct.value.EnotValueSpecification;
 
 import java.util.Set;
 
@@ -20,14 +20,14 @@ public interface EnotElementSpecification {
      * @return ValueSpecification with EnotValueType and boolean flag allowMultipleValues, must not return null,
      * use CommonValueType.EMPY when element don't consume at all
      */
-    ValueSpecification getConsumeType();
+    EnotValueSpecification getConsumeType();
 
     /**
      * Provide information about type of data eNot element produce after serialization. Required for validation to check that parent eNot
      * element can consume provided in JSON body during parsing and serialization.
      * @return ValueSpecification with EnotValueType and boolean flag allowMultipleValues, must not return null.
      */
-    ValueSpecification getProduceType();
+    EnotValueSpecification getProduceType();
 
     /**
      * Provide set of required attributes, if during validation all this attributes is not present in eNot element then
