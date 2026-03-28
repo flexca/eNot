@@ -13,8 +13,9 @@ public class ErrorMessageUtils {
 
         StringBuilder builder = new StringBuilder(message);
         for (EnotJsonError jsonError : jsonErrors) {
-            builder.append("\n JSON pointer: ")
+            builder.append("\n JSON pointer: \"")
                     .append(jsonError.getJsonPointer())
+                    .append("\"")
                     .append(", details: ")
                     .append(jsonError.getDetails());
         }

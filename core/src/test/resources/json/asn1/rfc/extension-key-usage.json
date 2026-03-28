@@ -1,0 +1,52 @@
+{
+  "type": "asn.1",
+  "attributes": {
+    "tag": "sequence"
+  },
+  "body": [
+    {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "object_identifier"
+      },
+      "body": "2.5.29.15"
+    },
+    {
+      "type": "asn.1",
+      "attributes": {
+        "optional": true,
+        "tag": "boolean"
+      },
+      "body": "${key_usage_critical}"
+    },
+    {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "octet_string"
+      },
+      "body": {
+        "type": "asn.1",
+        "attributes": {
+          "tag": "bit_string"
+        },
+        "body": {
+          "type": "system",
+          "attributes": {
+            "kind": "bit_map"
+          },
+          "body": [
+            "${key_usage.digital_signature}",
+            "${key_usage.non_repudiation}",
+            "${key_usage.key_encipherment}",
+            "${key_usage.data_encipherment}",
+            "${key_usage.key_agreement}",
+            "${key_usage.key_cert_sign}",
+            "${key_usage.crl_sign}",
+            "${key_usage.encipher_only}",
+            "${key_usage.decipher_only}"
+          ]
+        }
+      }
+    }
+  ]
+}

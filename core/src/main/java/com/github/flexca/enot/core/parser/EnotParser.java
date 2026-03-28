@@ -59,6 +59,9 @@ public class EnotParser {
                 cause = e;
                 jsonErrors.add(EnotJsonError.of(currentPath, e.getMessage()));
             }
+            if (elements.isEmpty() && jsonErrors.isEmpty()) {
+                jsonErrors.add(EnotJsonError.of(currentPath, "no elements found"));
+            }
         } else if (rootNode.isObject()) {
             try {
                 Optional<EnotElement> element = parseElement(rootNode.asObject(), currentPath, jsonErrors);
@@ -186,8 +189,28 @@ public class EnotParser {
         if (bodyNode == null || bodyNode.isNull()) {
             return Optional.empty();
         } else if (bodyNode.isArray()) {
-            List<EnotElement> elements = parseElements(bodyNode.asArray(), currentPath, jsonErrors);
-            return CollectionUtils.isEmpty(elements) ? Optional.empty() : Optional.of(elements);
+            ArrayNode bodyArrayNode = bodyNode.asArray();
+            if(bodyArrayNode.isEmpty()) {
+                return Optional.empty();
+            }
+            if (bodyArrayNode.get(0).isObject()) {
+                List<EnotElement> elements = parseElements(bodyArrayNode, currentPath, jsonErrors);
+                return CollectionUtils.isEmpty(elements) ? Optional.empty() : Optional.of(elements);
+            } else {
+                List<Object> primitiveValues = new ArrayList<>();
+                int i = 0;
+                for(JsonNode primitiveItem : bodyArrayNode) {
+                    Optional<Object> objectBody = extractPrimitiveValue(primitiveItem);
+                    if(objectBody.isEmpty()) {
+                        jsonErrors.add(EnotJsonError.of(currentPath + "/" + i, "unexpected eNot element body JSON type: " + bodyNode.getNodeType().name()
+                                + ", expecting boolean, number, string, object or array"));
+                    } else {
+                        primitiveValues.add(objectBody.get());
+                    }
+                    i++;
+                }
+                return CollectionUtils.isEmpty(primitiveValues) ? Optional.empty() : Optional.of(primitiveValues);
+            }
         } else if (bodyNode.isObject()) {
             Optional<EnotElement> element = parseElement(bodyNode.asObject(), currentPath, jsonErrors);
             return element.isEmpty() ? Optional.empty() : Optional.of(element.get());

@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class EnotParserTest {
+public class EnotParserSuccessCasesTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -43,6 +43,17 @@ public class EnotParserTest {
     void testParseExtendedKeyUsageExtensionJsonSuccess() throws Exception {
 
         String path = "json/asn1/rfc/extension-extended-key-usage.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+
+        List<EnotElement> actual = enotParser.parse(json);
+
+        assertThat(actual.size()).isEqualTo(1);
+    }
+
+    @Test
+    void testParseKeyUsageExtensionJsonSuccess() throws Exception {
+
+        String path = "json/asn1/rfc/extension-key-usage.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
         List<EnotElement> actual = enotParser.parse(json);

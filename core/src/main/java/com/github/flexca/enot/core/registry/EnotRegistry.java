@@ -15,6 +15,10 @@ public class EnotRegistry {
     private final Map<String, EnotValueType> valueTypes = new HashMap<>();
 
     public EnotRegistry(EnotTypeSpecification... specifications) {
+        this(Arrays.asList(specifications));
+    }
+
+    public EnotRegistry(Collection<EnotTypeSpecification> specifications) {
 
         for(EnotValueType commonValueType : CommonEnotValueType.values()) {
             if (commonValueType.haveCyclicDependency()) {
@@ -82,7 +86,7 @@ public class EnotRegistry {
         }
 
         public EnotRegistry build() {
-            return new EnotRegistry();
+            return new EnotRegistry(specifications);
         }
     }
 }
