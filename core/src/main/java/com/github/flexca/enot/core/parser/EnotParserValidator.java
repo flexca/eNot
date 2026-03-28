@@ -80,26 +80,20 @@ public class EnotParserValidator {
             int i = 0;
             for (Object item : bodyCollection) {
                 String itemPath = currentPath + "/" + i;
-                if (!isValidConsumeType(consumeValueSpecification.getType(), item, itemPath, jsonErrors)) {
-                    jsonErrors.add(JsonError.of(itemPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
-                            + " type must be of type " + consumeValueSpecification.getType()));
-                }
+                validateConsumeType(consumeValueSpecification.getType(), item, itemPath, jsonErrors);
                 i++;
             }
         } else {
-            if (!isValidConsumeType(consumeValueSpecification.getType(), objectBody, currentPath, jsonErrors)) {
-                jsonErrors.add(JsonError.of(currentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
-                        + " type must be of type " + consumeValueSpecification.getType()));
-            }
+            validateConsumeType(consumeValueSpecification.getType(), objectBody, currentPath, jsonErrors);
         }
     }
 
-    private boolean isValidConsumeType(EnotValueType parentConsumeType, Object childElementBody, String parentPath, List<JsonError> jsonErrors) {
+    private void validateConsumeType(EnotValueType parentConsumeType, Object childElementBody, String parentPath, List<JsonError> jsonErrors) {
 
         if (!parentConsumeType.haveSuper(CommonEnotValueType.ELEMENT)) {
             if (PlaceholderUtils.isPlaceholder(childElementBody)) {
                 // Placeholders can be validated only during runtime:
-                return true;
+                return;
             }
         }
 
@@ -107,18 +101,22 @@ public class EnotParserValidator {
             Optional<EnotTypeSpecification> typeSpecification = enotRegistry.getTypeSpecification(child.getType());
             if (typeSpecification.isEmpty()) {
                 jsonErrors.add(JsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported eNot element type"));
-                // Returning true here as we don't want extra invalid consume type error to be added, as root cause
-                // here is missing type specification:
-                return true;
+                return;
             }
 
             EnotElementSpecification elementSpecification = typeSpecification.get().getElementSpecification(child);
             if (elementSpecification == null) {
-                return true;
+                return;
             }
 
             ValueSpecification childValueProduceSpecification = elementSpecification.getProduceType();
-            return parentConsumeType.canConsume(childValueProduceSpecification.getType());
+            boolean canConsume = parentConsumeType.canConsume(childValueProduceSpecification.getType());
+            if(!canConsume && CommonEnotValueType.ELEMENT.equals(childValueProduceSpecification.getType())) {
+                validateBody()
+            } else {
+                jsonErrors.add(JsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                        + " type must be of type " + parentConsumeType));
+            }
 
         } else {
             if (CommonEnotValueType.BOOLEAN.equals(parentConsumeType)) {
