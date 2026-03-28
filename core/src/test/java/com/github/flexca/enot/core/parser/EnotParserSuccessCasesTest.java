@@ -40,6 +40,18 @@ public class EnotParserSuccessCasesTest {
     }
 
     @Test
+    void testParseOrganizationalUnitJsonSuccess() throws Exception {
+
+        String path = "json/asn1/rfc/subject-dn-organizational-unit.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+
+        List<EnotElement> actual = enotParser.parse(json);
+
+        assertThat(actual.size()).isEqualTo(1);
+
+    }
+
+    @Test
     void testParseExtendedKeyUsageExtensionJsonSuccess() throws Exception {
 
         String path = "json/asn1/rfc/extension-extended-key-usage.json";

@@ -1,22 +1,28 @@
 {
   "type": "asn.1",
   "attributes": {
-    "tag": "sequence"
+    "tag": "set"
   },
-  "body": [
-    {
-      "type": "asn.1",
-      "attributes": {
-        "tag": "object_identifier"
-      },
-      "body": "2.5.4.3"
+  "body": {
+    "type": "asn.1",
+    "attributes": {
+      "tag": "sequence"
     },
-    {
-      "type": "asn.1",
-      "attributes": {
-        "tag": "utf8_string"
+    "body": [
+      {
+        "type": "asn.1",
+        "attributes": {
+          "tag": "object_identifier"
+        },
+        "body": "2.5.4.3"
       },
-      "body": "${common_name}"
-    }
-  ]
+      {
+        "type": "asn.1",
+        "attributes": {
+          "tag": "utf8_string"
+        },
+        "body": "${common_name}"
+      }
+    ]
+  }
 }
