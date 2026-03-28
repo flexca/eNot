@@ -30,7 +30,7 @@ public class EnotParserValidator {
         EnotElementSpecification elementSpecification = typeSpecification.getElementSpecification(element);
         if (elementSpecification != null) {
             validateAttributes(elementSpecification, element, parentPath, jsonErrors);
-            validateBody(elementSpecification, element, parentPath, jsonErrors);
+            validateBody(elementSpecification.getConsumeType(), element, parentPath, jsonErrors);
         }
     }
 
@@ -66,11 +66,10 @@ public class EnotParserValidator {
         });
     }
 
-    private void validateBody(EnotElementSpecification elementSpecification, EnotElement element, String parentPath,
+    private void validateBody(ValueSpecification consumeValueSpecification, EnotElement element, String parentPath,
                               List<JsonError> jsonErrors) {
 
         Object objectBody = element.getBody();
-        ValueSpecification consumeValueSpecification = elementSpecification.getConsumeType();
         String currentPath = parentPath + "/" + EnotParser.ENOT_ELEMENT_BODY_NAME;
         if (objectBody instanceof Collection<?> bodyCollection) {
             if (!consumeValueSpecification.isAllowMultipleValues()) {
@@ -80,15 +79,17 @@ public class EnotParserValidator {
             int i = 0;
             for (Object item : bodyCollection) {
                 String itemPath = currentPath + "/" + i;
-                validateConsumeType(consumeValueSpecification.getType(), item, itemPath, jsonErrors);
+                validateConsumeType(consumeValueSpecification, item, itemPath, jsonErrors);
                 i++;
             }
         } else {
-            validateConsumeType(consumeValueSpecification.getType(), objectBody, currentPath, jsonErrors);
+            validateConsumeType(consumeValueSpecification, objectBody, currentPath, jsonErrors);
         }
     }
 
-    private void validateConsumeType(EnotValueType parentConsumeType, Object childElementBody, String parentPath, List<JsonError> jsonErrors) {
+    private void validateConsumeType(ValueSpecification consumeValueSpecification, Object childElementBody, String parentPath, List<JsonError> jsonErrors) {
+
+        EnotValueType parentConsumeType = consumeValueSpecification.getType();
 
         if (!parentConsumeType.haveSuper(CommonEnotValueType.ELEMENT)) {
             if (PlaceholderUtils.isPlaceholder(childElementBody)) {
@@ -111,28 +112,38 @@ public class EnotParserValidator {
 
             ValueSpecification childValueProduceSpecification = elementSpecification.getProduceType();
             boolean canConsume = parentConsumeType.canConsume(childValueProduceSpecification.getType());
-            if(!canConsume && CommonEnotValueType.ELEMENT.equals(childValueProduceSpecification.getType())) {
-                validateBody()
-            } else {
-                jsonErrors.add(JsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
-                        + " type must be of type " + parentConsumeType));
+            if(!canConsume) {
+                if (CommonEnotValueType.ELEMENT.equals(childValueProduceSpecification.getType())) {
+                    validateBody(consumeValueSpecification, child, parentPath, jsonErrors);
+                } else {
+                    jsonErrors.add(JsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                            + " type must be of type " + parentConsumeType));
+                }
             }
 
         } else {
-            if (CommonEnotValueType.BOOLEAN.equals(parentConsumeType)) {
-                return (childElementBody instanceof Boolean);
-            } else if (CommonEnotValueType.INTEGER.equals(parentConsumeType)) {
-                return (childElementBody instanceof Integer) || (childElementBody instanceof Long)
-                        || (childElementBody instanceof BigInteger);
-            } else if (CommonEnotValueType.TEXT.equals(parentConsumeType)) {
-                return (childElementBody instanceof String);
-            } else if (CommonEnotValueType.OBJECT_IDENTIFIER.equals(parentConsumeType)) {
-                return OidUtils.isValidOid(childElementBody);
-            } else if (CommonEnotValueType.DATE_TIME.equals(parentConsumeType)) {
-                return DateTimeUtils.isValidDateTime(childElementBody);
+            if (!canConsumeSimpleType(parentConsumeType, childElementBody)) {
+                jsonErrors.add(JsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
+                        + " type must be of type " + parentConsumeType));
             }
         }
+    }
 
-        return false;
+    private boolean canConsumeSimpleType(EnotValueType parentConsumeType, Object childElementBody) {
+
+        if (CommonEnotValueType.BOOLEAN.equals(parentConsumeType)) {
+            return (childElementBody instanceof Boolean);
+        } else if (CommonEnotValueType.INTEGER.equals(parentConsumeType)) {
+            return (childElementBody instanceof Integer) || (childElementBody instanceof Long)
+                    || (childElementBody instanceof BigInteger);
+        } else if (CommonEnotValueType.TEXT.equals(parentConsumeType)) {
+            return (childElementBody instanceof String);
+        } else if (CommonEnotValueType.OBJECT_IDENTIFIER.equals(parentConsumeType)) {
+            return OidUtils.isValidOid(childElementBody);
+        } else if (CommonEnotValueType.DATE_TIME.equals(parentConsumeType)) {
+            return DateTimeUtils.isValidDateTime(childElementBody);
+        } else {
+            return false;
+        }
     }
 }
