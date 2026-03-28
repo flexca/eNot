@@ -10,6 +10,7 @@ import com.github.flexca.enot.core.struct.value.EnotValueType;
 import com.github.flexca.enot.core.system.attribute.SystemAttribute;
 import com.github.flexca.enot.core.system.validation.SystemElementValidator;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,6 +28,11 @@ public class SystemTypeSpecification implements EnotTypeSpecification {
     @Override
     public List<EnotValueType> getValueTypes() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<EnotAttribute> getAttributes() {
+        return Arrays.asList(SystemAttribute.values());
     }
 
     @Override

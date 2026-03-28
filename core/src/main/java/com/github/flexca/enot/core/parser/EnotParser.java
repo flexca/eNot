@@ -34,10 +34,13 @@ public class EnotParser {
 
     public List<EnotElement> parse(String json) throws EnotParsingException {
 
-        List<EnotElement> elements = new ArrayList<>();
-
         String currentPath = "";
+        if (StringUtils.isBlank(json)) {
+            throw new EnotParsingException(COMMON_ERROR_MESSAGE,
+                    Collections.singletonList(EnotJsonError.of(currentPath, "blank JSON input provided")));
+        }
 
+        List<EnotElement> elements = new ArrayList<>();
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readValue(json, JsonNode.class);
@@ -167,11 +170,8 @@ public class EnotParser {
                 jsonErrors.add(EnotJsonError.of(attributePath, " value for attribute " + attributeName + " must be set"));
                 continue;
             }
-            Optional<Object> attributeValue = extractPrimitiveValue(attributeValueNode);
-            if (attributeValue.isEmpty()) {
-                jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot attribute + " + attributeName + " +  value JSON type: "
-                        + attributeValueNode.getNodeType().name() + ", expecting boolean, number or string"));
-            } else {
+            Optional<Object> attributeValue = extractAttributeValue(attribute, attributeValueNode, currentPath, jsonErrors);
+            if (attributeValue.isPresent()) {
                 attributes.put(attribute, attributeValue.get());
             }
         }
@@ -198,6 +198,35 @@ public class EnotParser {
                         + ", expecting boolean, number, string, object or array"));
             }
             return objectBody;
+        }
+    }
+
+    private Optional<Object> extractAttributeValue(EnotAttribute attribute, JsonNode valueNode, String parentPath, List<EnotJsonError> jsonErrors) {
+
+        String currentPath = parentPath + "/" + attribute.getName();
+        if (valueNode.isArray()) {
+            if (!attribute.getValueSpecification().isAllowMultipleValues()) {
+                jsonErrors.add(EnotJsonError.of(currentPath, "multiple values is not allowed for attribute " + attribute.getName()));
+                return Optional.empty();
+            }
+            List<Object> attributeValues = new ArrayList<>();
+            for (int i = 0; i < valueNode.asArray().size(); i++) {
+                Optional<Object> primitiveValue = extractPrimitiveValue(valueNode);
+                if (primitiveValue.isEmpty()) {
+                    jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot attribute + " + attribute.getName() + " +  value JSON type: "
+                            + valueNode.getNodeType().name() + ", expecting boolean, number or string"));
+                } else {
+                    attributeValues.add(primitiveValue.get());
+                }
+            }
+            return attributeValues.isEmpty() ? Optional.empty() : Optional.of(attributeValues);
+        } else {
+            Optional<Object> primitiveValue = extractPrimitiveValue(valueNode);
+            if (primitiveValue.isEmpty()) {
+                jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot attribute + " + attribute.getName() + " +  value JSON type: "
+                        + valueNode.getNodeType().name() + ", expecting boolean, number or string"));
+            }
+            return primitiveValue;
         }
     }
 

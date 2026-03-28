@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
 import com.github.flexca.enot.core.struct.value.EnotValueSpecification;
-import com.github.flexca.enot.core.struct.value.EnotValueType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;

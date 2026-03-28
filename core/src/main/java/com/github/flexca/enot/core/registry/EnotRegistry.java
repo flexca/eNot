@@ -7,9 +7,7 @@ import com.github.flexca.enot.core.struct.value.EnotValueType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class EnotRegistry {
 
@@ -19,6 +17,9 @@ public class EnotRegistry {
     public EnotRegistry(EnotTypeSpecification... specifications) {
 
         for(EnotValueType commonValueType : CommonEnotValueType.values()) {
+            if (commonValueType.haveCyclicDependency()) {
+                throw new EnotInvalidConfigurationException("EnotValueType " + commonValueType.getName() + " have cyclic dependency");
+            }
             valueTypes.put(commonValueType.getName(), commonValueType);
         }
 
@@ -28,8 +29,12 @@ public class EnotRegistry {
             }
             if (CollectionUtils.isNotEmpty(specification.getValueTypes())) {
                 for (EnotValueType customValueType : specification.getValueTypes()) {
+                    if (customValueType.haveCyclicDependency()) {
+                        throw new EnotInvalidConfigurationException("Custom EnotValueType " + customValueType.getName()
+                                + " have cyclic dependency");
+                    }
                     if (valueTypes.containsKey(customValueType.getName())) {
-                        throw new EnotInvalidConfigurationException("Custom ValueType " + customValueType.getName()
+                        throw new EnotInvalidConfigurationException("Custom EnotValueType " + customValueType.getName()
                                 + " provided by eNot elements of type " + specification.getTypeName() + " was already used, change ValueType to unique");
                     }
                 }
@@ -52,5 +57,32 @@ public class EnotRegistry {
         }
         EnotValueType valueType = valueTypes.get(name);
         return valueType == null ? Optional.empty() : Optional.of(valueType);
+    }
+
+    public static class Builder {
+
+        private List<EnotTypeSpecification> specifications = new ArrayList<>();
+
+        public Builder() {
+        }
+
+        public Builder withTypeSpecification(EnotTypeSpecification typeSpecification) {
+            specifications.add(typeSpecification);
+            return this;
+        }
+
+        public Builder withTypeSpecifications(EnotTypeSpecification... typeSpecifications) {
+            Collections.addAll(specifications, typeSpecifications);
+            return this;
+        }
+
+        public Builder withTypeSpecifications(Collection<EnotTypeSpecification> typeSpecifications) {
+            specifications.addAll(typeSpecifications);
+            return this;
+        }
+
+        public EnotRegistry build() {
+            return new EnotRegistry();
+        }
     }
 }

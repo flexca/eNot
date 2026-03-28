@@ -10,6 +10,7 @@ import com.github.flexca.enot.core.struct.EnotElement;
 import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
 import com.github.flexca.enot.core.struct.value.EnotValueType;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class Asn1TypeSpecification implements EnotTypeSpecification {
@@ -26,6 +27,11 @@ public class Asn1TypeSpecification implements EnotTypeSpecification {
     @Override
     public List<EnotValueType> getValueTypes() {
         return List.of(Asn1EnotValueType.values());
+    }
+
+    @Override
+    public List<EnotAttribute> getAttributes() {
+        return Arrays.asList(Asn1Attribute.values());
     }
 
     @Override

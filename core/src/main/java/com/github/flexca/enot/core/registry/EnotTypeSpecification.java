@@ -20,9 +20,15 @@ public interface EnotTypeSpecification {
 
     /**
      * Provide list of additional value types
-     * @return list of ValueType specific for this eNot element. Can return null
+     * @return list of ValueType specific for this eNot elements type. Can return null
      */
     List<EnotValueType> getValueTypes();
+
+    /**
+     *
+     * @return
+     */
+    List<EnotAttribute> getAttributes();
 
     /**
      * Resolve attribute by its name and provide information about attribute name and value type
