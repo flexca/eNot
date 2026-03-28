@@ -211,10 +211,11 @@ public class EnotParser {
             }
             List<Object> attributeValues = new ArrayList<>();
             for (int i = 0; i < valueNode.asArray().size(); i++) {
-                Optional<Object> primitiveValue = extractPrimitiveValue(valueNode);
+                JsonNode itemNode = valueNode.asArray().get(i);
+                Optional<Object> primitiveValue = extractPrimitiveValue(itemNode);
                 if (primitiveValue.isEmpty()) {
                     jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot attribute + " + attribute.getName() + " +  value JSON type: "
-                            + valueNode.getNodeType().name() + ", expecting boolean, number or string"));
+                            + itemNode.getNodeType().name() + ", expecting boolean, number or string"));
                 } else {
                     attributeValues.add(primitiveValue.get());
                 }
