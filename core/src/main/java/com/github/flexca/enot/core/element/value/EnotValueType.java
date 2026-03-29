@@ -1,7 +1,6 @@
-package com.github.flexca.enot.core.struct.value;
+package com.github.flexca.enot.core.element.value;
 
 import com.github.flexca.enot.core.util.TypeUtils;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Set;
 

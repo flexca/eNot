@@ -104,7 +104,7 @@ public class EnotParserFailureCasesTest {
     }
 
     @Test
-    void tesJsonPrimitiveInput() throws Exception {
+    void testJsonPrimitiveInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
             enotParser.parse("\"primitive\"");
@@ -118,7 +118,7 @@ public class EnotParserFailureCasesTest {
     }
 
     @Test
-    void tesJsonEmptyObjectInput() throws Exception {
+    void testJsonEmptyObjectInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
             enotParser.parse("{}");
@@ -132,7 +132,7 @@ public class EnotParserFailureCasesTest {
     }
 
     @Test
-    void tesJsonEmptyArrayInput() throws Exception {
+    void testJsonEmptyArrayInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
             enotParser.parse("[]");

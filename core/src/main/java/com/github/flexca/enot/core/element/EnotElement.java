@@ -1,6 +1,6 @@
-package com.github.flexca.enot.core.struct;
+package com.github.flexca.enot.core.element;
 
-import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
+import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +30,11 @@ public class EnotElement {
      * the element's behavior, validation rules, and expected body type.
      */
     private String type;
+
+    /**
+     * Optional defines should be element serialized when no data provided in placeholders
+     */
+    private boolean optional = false;
 
     /**
      * A map containing metadata about the element. Attributes provide additional, type-specific information
@@ -77,6 +82,14 @@ public class EnotElement {
         this.type = type;
     }
 
+    public boolean isOptional() {
+        return optional;
+    }
+
+    public void setOptional(boolean optional) {
+        this.optional = optional;
+    }
+
     public Map<EnotAttribute, Object> getAttributes() {
         return attributes;
     }
@@ -114,4 +127,5 @@ public class EnotElement {
                 ", body=" + body +
                 '}';
     }
+
 }

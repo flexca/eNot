@@ -1,7 +1,7 @@
 package com.github.flexca.enot.core.asn1;
 
-import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
-import com.github.flexca.enot.core.struct.value.EnotValueType;
+import com.github.flexca.enot.core.element.value.CommonEnotValueType;
+import com.github.flexca.enot.core.element.value.EnotValueType;
 
 import java.util.Collections;
 import java.util.Set;

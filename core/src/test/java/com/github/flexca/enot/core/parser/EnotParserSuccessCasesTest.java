@@ -2,7 +2,7 @@ package com.github.flexca.enot.core.parser;
 
 import com.github.flexca.enot.core.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.registry.EnotRegistry;
-import com.github.flexca.enot.core.struct.EnotElement;
+import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.system.SystemTypeSpecification;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,7 +11,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class EnotParserSuccessCasesTest {
 

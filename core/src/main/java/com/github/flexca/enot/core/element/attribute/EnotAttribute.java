@@ -1,16 +1,16 @@
-package com.github.flexca.enot.core.struct.attribute;
+package com.github.flexca.enot.core.element.attribute;
 
-import com.github.flexca.enot.core.struct.value.EnotValueSpecification;
-import com.github.flexca.enot.core.struct.value.EnotValueType;
+import com.github.flexca.enot.core.element.value.EnotValueSpecification;
+import com.github.flexca.enot.core.element.value.EnotValueType;
 
 /**
- * Defines a contract for an attribute key used in an {@link com.github.flexca.enot.core.struct.EnotElement}.
+ * Defines a contract for an attribute key used in an {@link com.github.flexca.enot.core.element.EnotElement}.
  * <p>
  * An attribute provides metadata about an element. Each attribute is defined by a unique name and a value
  * specification that describes the expected value type and whether multiple values are allowed.
  * This interface is typically implemented by an enum, where each enum constant represents a specific attribute.
  *
- * @see com.github.flexca.enot.core.struct.EnotElement#getAttributes()
+ * @see com.github.flexca.enot.core.element.EnotElement#getAttributes()
  */
 public interface EnotAttribute {
 

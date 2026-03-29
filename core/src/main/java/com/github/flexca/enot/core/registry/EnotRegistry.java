@@ -2,8 +2,8 @@ package com.github.flexca.enot.core.registry;
 
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
 import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
-import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
-import com.github.flexca.enot.core.struct.value.EnotValueType;
+import com.github.flexca.enot.core.element.value.CommonEnotValueType;
+import com.github.flexca.enot.core.element.value.EnotValueType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 

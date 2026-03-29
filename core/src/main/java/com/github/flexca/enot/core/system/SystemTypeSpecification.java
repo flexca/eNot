@@ -1,12 +1,11 @@
 package com.github.flexca.enot.core.system;
 
-import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
-import com.github.flexca.enot.core.struct.EnotElement;
-import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
-import com.github.flexca.enot.core.struct.value.EnotValueType;
+import com.github.flexca.enot.core.element.EnotElement;
+import com.github.flexca.enot.core.element.attribute.EnotAttribute;
+import com.github.flexca.enot.core.element.value.EnotValueType;
 import com.github.flexca.enot.core.system.attribute.SystemAttribute;
 import com.github.flexca.enot.core.system.validation.SystemElementValidator;
 

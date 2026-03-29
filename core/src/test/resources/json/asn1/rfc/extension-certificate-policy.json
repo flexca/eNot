@@ -13,8 +13,8 @@
     },
     {
       "type": "asn.1",
+      "optional": true,
       "attributes": {
-        "optional": true,
         "tag": "boolean"
       },
       "body": "${certificate_policy.critical}"
@@ -31,9 +31,9 @@
         },
         "body": {
           "type": "asn.1",
+          "optional": true,
           "attributes": {
-            "tag": "sequence",
-            "optional": true
+            "tag": "sequence"
           },
           "body": {
             "type": "system",
@@ -57,9 +57,9 @@
                   },
                   {
                     "type": "asn.1",
+                    "optional": true,
                     "attributes": {
-                      "tag": "sequence",
-                      "optional": true
+                      "tag": "sequence"
                     },
                     "body": [
                       {
@@ -71,9 +71,9 @@
                         "body": [
                           {
                             "type": "asn.1",
+                            "optional": true,
                             "attributes": {
-                              "tag": "sequence",
-                              "optional": true
+                              "tag": "sequence"
                             },
                             "body": [
                               {
@@ -103,9 +103,9 @@
                         "body": [
                           {
                             "type": "asn.1",
+                            "optional": true,
                             "attributes": {
-                              "tag": "sequence",
-                              "optional": true
+                              "tag": "sequence"
                             },
                             "body": [
                               {
@@ -136,9 +136,9 @@
                                       },
                                       {
                                         "type": "asn.1",
+                                        "optional": true,
                                         "attributes": {
-                                          "tag": "sequence",
-                                          "optional": true
+                                          "tag": "sequence"
                                         },
                                         "body": {
                                           "type": "system",
@@ -161,9 +161,9 @@
                                   },
                                   {
                                     "type": "asn.1",
+                                    "optional": true,
                                     "attributes": {
-                                      "tag": "visible_string",
-                                      "optional": true
+                                      "tag": "visible_string"
                                     },
                                     "body": "${explicit_text}"
                                   }

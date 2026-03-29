@@ -1,4 +1,4 @@
-package com.github.flexca.enot.core.struct.value;
+package com.github.flexca.enot.core.element.value;
 
 public class EnotValueSpecification {
 

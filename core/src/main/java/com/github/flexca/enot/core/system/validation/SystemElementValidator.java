@@ -1,12 +1,9 @@
 package com.github.flexca.enot.core.system.validation;
 
-import com.github.flexca.enot.core.asn1.Asn1Tag;
-import com.github.flexca.enot.core.asn1.Asn1TypeSpecification;
-import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
-import com.github.flexca.enot.core.struct.EnotElement;
+import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.system.SystemKind;
 import com.github.flexca.enot.core.system.SystemTypeSpecification;
 import com.github.flexca.enot.core.system.attribute.SystemAttribute;

@@ -3,9 +3,9 @@ package com.github.flexca.enot.core.system;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
-import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
-import com.github.flexca.enot.core.struct.value.EnotValueSpecification;
-import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
+import com.github.flexca.enot.core.element.attribute.EnotAttribute;
+import com.github.flexca.enot.core.element.value.EnotValueSpecification;
+import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.system.attribute.SystemAttribute;
 
 import java.util.*;

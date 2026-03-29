@@ -1,8 +1,8 @@
 package com.github.flexca.enot.core.registry;
 
-import com.github.flexca.enot.core.struct.EnotElement;
-import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
-import com.github.flexca.enot.core.struct.value.EnotValueType;
+import com.github.flexca.enot.core.element.EnotElement;
+import com.github.flexca.enot.core.element.attribute.EnotAttribute;
+import com.github.flexca.enot.core.element.value.EnotValueType;
 
 import java.util.List;
 

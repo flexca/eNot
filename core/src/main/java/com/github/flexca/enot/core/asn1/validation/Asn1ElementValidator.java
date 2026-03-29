@@ -6,7 +6,7 @@ import com.github.flexca.enot.core.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
-import com.github.flexca.enot.core.struct.EnotElement;
+import com.github.flexca.enot.core.element.EnotElement;
 
 import java.util.List;
 

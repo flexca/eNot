@@ -1,8 +1,8 @@
 package com.github.flexca.enot.core.util;
 
-import com.github.flexca.enot.core.struct.attribute.EnotAttribute;
-import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
-import com.github.flexca.enot.core.struct.value.EnotValueType;
+import com.github.flexca.enot.core.element.attribute.EnotAttribute;
+import com.github.flexca.enot.core.element.value.CommonEnotValueType;
+import com.github.flexca.enot.core.element.value.EnotValueType;
 
 import java.math.BigInteger;
 

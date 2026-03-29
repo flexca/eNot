@@ -4,7 +4,7 @@ import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.serializer.EnotSerializer;
-import com.github.flexca.enot.core.struct.EnotElement;
+import com.github.flexca.enot.core.element.EnotElement;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;

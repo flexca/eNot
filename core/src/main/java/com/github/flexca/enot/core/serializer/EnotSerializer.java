@@ -1,7 +1,7 @@
 package com.github.flexca.enot.core.serializer;
 
 import com.github.flexca.enot.core.registry.EnotRegistry;
-import com.github.flexca.enot.core.struct.EnotElement;
+import com.github.flexca.enot.core.element.EnotElement;
 
 import java.util.List;
 import java.util.Map;

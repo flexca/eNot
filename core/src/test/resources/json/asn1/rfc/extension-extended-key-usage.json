@@ -13,8 +13,8 @@
     },
     {
       "type": "asn.1",
+      "optional": true,
       "attributes": {
-        "optional": true,
         "tag": "boolean"
       },
       "body": "${extended_key_usage_critical}"
