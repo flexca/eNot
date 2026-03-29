@@ -12,15 +12,23 @@ import java.util.Objects;
 /**
  * Represents a fundamental building block within the eNot data structure.
  * <p>
- * An eNot element is a self-contained node in a tree-like structure. It consists of three main parts:
+ * An eNot element is a self-contained node in a tree-like structure. It consists of four parts:
  * <ul>
- *     <li><b>type:</b> A string that identifies the kind of data the element represents (e.g., "asn1.SEQUENCE", "string", "binary").</li>
- *     <li><b>attributes:</b> A map of key-value pairs that provide metadata about the element.</li>
- *     <li><b>body:</b> The actual content or payload of the element. The nature of the body depends on the element's type.
- *     It can be a simple value (like a String or byte array), a list of nested {@link EnotElement} objects, or null if it has no body.</li>
+ *     <li><b>type:</b> A string identifying the kind of data the element represents (e.g., {@code "asn.1"}, {@code "system"}).</li>
+ *     <li><b>optional:</b> A flag controlling serialization behaviour when the element's body value is absent.</li>
+ *     <li><b>attributes:</b> A map of key-value pairs providing type-specific metadata about the element.</li>
+ *     <li><b>body:</b> The actual content of the element. Depending on the type, this may be a primitive value
+ *     (e.g., {@code String}, {@code BigDecimal}), a single nested {@link EnotElement}, a {@code List} of
+ *     nested {@link EnotElement} objects, or {@code null} if the element has no body.</li>
  * </ul>
- * This class is a simple POJO, with behavior and validation being handled by the {@link com.github.flexca.enot.core.parser.EnotParser}
- * and {@link com.github.flexca.enot.core.registry.EnotTypeSpecification} implementations.
+ * <p>
+ * This class is a plain data object. All parsing, validation, and serialization behaviour is handled by
+ * {@link com.github.flexca.enot.core.parser.EnotParser}, {@link com.github.flexca.enot.core.registry.EnotTypeSpecification},
+ * and {@link com.github.flexca.enot.core.serializer.EnotSerializer}.
+ * <p>
+ * <b>Note on {@code equals} and {@code hashCode}:</b> The {@code optional} field is intentionally excluded
+ * from {@code equals} and {@code hashCode}. Two elements are considered structurally equal if their
+ * {@code type}, {@code attributes}, and {@code body} are equal, regardless of their optionality.
  */
 public class EnotElement {
 
@@ -32,10 +40,24 @@ public class EnotElement {
     private String type;
 
     /**
-     * Optional defines when no data for eNot element body is provided - should we fail with error (when optional = false)
-     * or should we just skip serialize element (when optional = true). Example: lets say you have ASN.1 utf8 string and its value is
-     * defined by placeholder. When optional = false and placeholder was not provided then EnotSerializationException
-     * will be thrown during serialization, otherwise when optional = true utf8 string will not be rendered.
+     * Controls the serialization behaviour when this element's body value is absent — either because
+     * its placeholder was not provided in the parameters map, or because the resolved value is {@code null}.
+     * <p>
+     * <ul>
+     *     <li>When {@code false} (the default): if the body value is absent during serialization,
+     *     an {@link com.github.flexca.enot.core.exception.EnotSerializationException} is thrown.
+     *     Use this for elements that are mandatory in the output structure.</li>
+     *     <li>When {@code true}: if the body value is absent during serialization, the element and
+     *     all of its children are silently skipped and produce no output bytes.
+     *     Use this for elements that are conditionally present in the output structure.</li>
+     * </ul>
+     * <p>
+     * Example: an ASN.1 {@code UTF8String} element with {@code optional = true} and body {@code "${subject_email}"}
+     * will be included in the encoded output only when the {@code subject_email} placeholder value is supplied.
+     * If omitted from the parameters map, the element is skipped without error.
+     * <p>
+     * <b>Note:</b> this field is excluded from {@code equals} and {@code hashCode} by design — two elements
+     * with identical structure but different optionality are considered structurally equal.
      */
     private boolean optional = false;
 
@@ -56,6 +78,7 @@ public class EnotElement {
 
         EnotElement clone = new EnotElement();
         clone.setType(type);
+        clone.setOptional(optional);
         Map<EnotAttribute, Object> cloneAttributes = new HashMap<>(attributes);
         clone.setAttributes(cloneAttributes);
         if (body instanceof EnotElement elementBody) {
