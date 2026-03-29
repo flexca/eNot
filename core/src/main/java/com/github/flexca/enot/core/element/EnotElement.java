@@ -26,9 +26,9 @@ import java.util.Objects;
  * {@link com.github.flexca.enot.core.parser.EnotParser}, {@link com.github.flexca.enot.core.registry.EnotTypeSpecification},
  * and {@link com.github.flexca.enot.core.serializer.EnotSerializer}.
  * <p>
- * <b>Note on {@code equals} and {@code hashCode}:</b> The {@code optional} field is intentionally excluded
- * from {@code equals} and {@code hashCode}. Two elements are considered structurally equal if their
- * {@code type}, {@code attributes}, and {@code body} are equal, regardless of their optionality.
+ * <b>Note on {@code equals} and {@code hashCode}:</b> All four fields — {@code type}, {@code optional},
+ * {@code attributes}, and {@code body} — are included in {@code equals} and {@code hashCode}.
+ * Two elements are considered equal only if their structure and optionality are identical.
  */
 public class EnotElement {
 
@@ -55,9 +55,6 @@ public class EnotElement {
      * Example: an ASN.1 {@code UTF8String} element with {@code optional = true} and body {@code "${subject_email}"}
      * will be included in the encoded output only when the {@code subject_email} placeholder value is supplied.
      * If omitted from the parameters map, the element is skipped without error.
-     * <p>
-     * <b>Note:</b> this field is excluded from {@code equals} and {@code hashCode} by design — two elements
-     * with identical structure but different optionality are considered structurally equal.
      */
     private boolean optional = false;
 
@@ -137,12 +134,12 @@ public class EnotElement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EnotElement that = (EnotElement) o;
-        return Objects.equals(type, that.type) && Objects.equals(attributes, that.attributes) && Objects.equals(body, that.body);
+        return optional == that.optional && Objects.equals(type, that.type) && Objects.equals(attributes, that.attributes) && Objects.equals(body, that.body);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, attributes, body);
+        return Objects.hash(type, optional, attributes, body);
     }
 
     @Override
