@@ -48,7 +48,7 @@ public class Asn1TypeSpecification implements EnotTypeSpecification {
                 return tag;
             }
         }
-        throw new EnotInvalidConfigurationException("Invalid or missing tag attribute for ASN.1 element");
+        return null;
     }
 
     @Override

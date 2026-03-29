@@ -7,6 +7,8 @@ import com.github.flexca.enot.core.system.SystemTypeSpecification;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.core.exc.UnexpectedEndOfInputException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -84,6 +86,7 @@ public class EnotParserFailureCasesTest {
         assertThat(jsonErrors).hasSize(1);
         EnotJsonError error = jsonErrors.get(0);
         assertThat(error.getJsonPointer()).isEqualTo("");
+        assertThat(parsingException.getCause().getClass()).isEqualTo(StreamReadException.class);
     }
 
     @Test
@@ -97,6 +100,7 @@ public class EnotParserFailureCasesTest {
         assertThat(jsonErrors).hasSize(1);
         EnotJsonError error = jsonErrors.get(0);
         assertThat(error.getJsonPointer()).isEqualTo("");
+        assertThat(parsingException.getCause().getClass()).isEqualTo(UnexpectedEndOfInputException.class);
     }
 
     @Test
@@ -152,6 +156,21 @@ public class EnotParserFailureCasesTest {
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
-        assertThat(jsonErrors).hasSize(1);
+        assertThat(jsonErrors).hasSize(4);
+
+        assertThat(isJsonErrorPresent("/body/0/body/0/type", "unsupported type of eNot element: invalid, make sure this type was added to EnotRegistry",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/body/0/body/1/type", "eNot element field value type must be string, provided: NULL",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/body/0/body", "eNot element body type must be of type ASN1_ELEMENT",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/body/1/body/1", "required eNot element field type",
+                jsonErrors)).isTrue();
+    }
+
+    private boolean isJsonErrorPresent(String jsonPointer, String details, List<EnotJsonError> jsonErrors) {
+        return jsonErrors.stream()
+                .anyMatch(error -> error.getJsonPointer().equals(jsonPointer)
+                        && error.getDetails().equals(details));
     }
 }

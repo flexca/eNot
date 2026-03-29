@@ -42,7 +42,8 @@ public interface EnotTypeSpecification {
      * contains information about consume and produce types and also required and allowed attributes.
      * @param element - element to get specification for
      * @return EnotElementSpecification object, when implementation return null then no generic validation is performed
-     * for attributes and body value of the element
+     * for attributes and body value of the element and validation fully depends on type specific EnotElementValidator
+     * implementation
      */
     EnotElementSpecification getElementSpecification(EnotElement element);
 

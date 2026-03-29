@@ -30,7 +30,7 @@ public class Asn1ElementValidator implements EnotElementValidator {
         Asn1Tag tag = Asn1Tag.fromString((String) tagObject);
         if (tag == null) {
             jsonErrors.add(EnotJsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME + "/" + Asn1Attribute.TAG.getName(),
-                    "unsupported asn.1 elements attribute " + Asn1Attribute.TAG.getName()));
+                    "unsupported value of asn.1 elements attribute " + Asn1Attribute.TAG.getName()));
             return;
         }
 

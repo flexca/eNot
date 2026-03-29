@@ -49,7 +49,7 @@ public class SystemTypeSpecification implements EnotTypeSpecification {
                 return kind;
             }
         }
-        throw new EnotInvalidConfigurationException("Invalid or missing kind attribute for system element");
+        return null;
     }
 
     @Override

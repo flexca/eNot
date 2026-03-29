@@ -13,7 +13,7 @@ public class ResourceReaderTestUtils {
 
         try (InputStream is = ResourceReaderTestUtils.class.getClassLoader().getResourceAsStream(path)) {
             if (is == null) {
-                throw new IllegalArgumentException("Файл не найден: " + path);
+                throw new IllegalArgumentException("File not found: " + path);
             }
             return is.readAllBytes();
         }

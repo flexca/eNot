@@ -46,7 +46,7 @@ public class EnotParserValidator {
                     .filter(attribute -> !element.getAttributes().containsKey(attribute))
                     .map(EnotAttribute::getName).toList();
             if (CollectionUtils.isNotEmpty(missingRequiredAttributes)) {
-                jsonErrors.add(EnotJsonError.of(attributesPath, "missing required attributes for ASN.1 element: " + missingRequiredAttributes));
+                jsonErrors.add(EnotJsonError.of(attributesPath, "missing required attributes for eNot element: " + missingRequiredAttributes));
             }
         }
 
@@ -56,7 +56,7 @@ public class EnotParserValidator {
                     .map(EnotAttribute::getName).toList();
 
             if (CollectionUtils.isNotEmpty(unsupportedAttributes)) {
-                jsonErrors.add(EnotJsonError.of(attributesPath, "unsupported attributes for ASN.1 element: " + unsupportedAttributes));
+                jsonErrors.add(EnotJsonError.of(attributesPath, "unsupported attributes for eNot element: " + unsupportedAttributes));
             }
         }
 

@@ -8,10 +8,7 @@ import com.github.flexca.enot.core.struct.value.EnotValueSpecification;
 import com.github.flexca.enot.core.struct.value.CommonEnotValueType;
 import com.github.flexca.enot.core.system.attribute.SystemAttribute;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public enum SystemKind implements EnotElementSpecification {
 
@@ -25,12 +22,18 @@ public enum SystemKind implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND),
-            Set.of(SystemAttribute.KIND));
+            Set.of(SystemAttribute.KIND)),
+
+    BIT_MAP("bit_map",
+            new EnotValueSpecification(CommonEnotValueType.BOOLEAN, true),
+            new EnotValueSpecification(CommonEnotValueType.BINARY, true),
+            Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
+            Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER));
 
     private static final Map<String, SystemKind> BY_NAME = new HashMap<>();
     static {
         for(SystemKind value : values()) {
-            BY_NAME.put(value.getName(), value);
+            BY_NAME.put(value.getName().toLowerCase(Locale.ROOT), value);
         }
     }
 
