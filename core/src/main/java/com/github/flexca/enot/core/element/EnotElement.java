@@ -32,7 +32,10 @@ public class EnotElement {
     private String type;
 
     /**
-     * Optional defines should be element serialized when no data provided in placeholders
+     * Optional defines when no data for eNot element body is provided - should we fail with error (when optional = false)
+     * or should we just skip serialize element (when optional = true). Example: lets say you have ASN.1 utf8 string and its value is
+     * defined by placeholder. When optional = false and placeholder was not provided then EnotSerializationException
+     * will be thrown during serialization, otherwise when optional = true utf8 string will not be rendered.
      */
     private boolean optional = false;
 
