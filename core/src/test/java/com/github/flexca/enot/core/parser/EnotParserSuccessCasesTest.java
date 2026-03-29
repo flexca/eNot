@@ -6,6 +6,7 @@ import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.system.SystemTypeSpecification;
+import com.github.flexca.enot.core.system.attribute.SystemAttribute;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,38 +40,38 @@ public class EnotParserSuccessCasesTest {
 
         List<EnotElement> actual = enotParser.parse(json);
 
-        assertThat(actual.size()).isEqualTo(1);
+        assertThat(actual).hasSize(1);
 
         EnotElement root = actual.get(0);
         assertThat(root.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
         assertThat(root.isOptional()).isFalse();
         assertThat(root.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "set"));
-        assertThat(root.getBody() instanceof EnotElement).isTrue();
+        assertThat(root.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement sequenceElement = (EnotElement) root.getBody();
         assertThat(sequenceElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
         assertThat(sequenceElement.isOptional()).isFalse();
         assertThat(sequenceElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
-        assertThat(sequenceElement.getBody() instanceof List<?>).isTrue();
+        assertThat(sequenceElement.getBody()).isInstanceOf(List.class);
 
         List<?> sequenceBody = (List<?>) sequenceElement.getBody();
         assertThat(sequenceBody).hasSize(2);
-        assertThat(sequenceBody.get(0) instanceof EnotElement);
-        assertThat(sequenceBody.get(1) instanceof EnotElement);
+        assertThat(sequenceBody.get(0)).isInstanceOf(EnotElement.class);
+        assertThat(sequenceBody.get(1)).isInstanceOf(EnotElement.class);;
 
         EnotElement oidElement = (EnotElement) sequenceBody.get(0);
         assertThat(oidElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
         assertThat(oidElement.isOptional()).isFalse();
         assertThat(oidElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "object_identifier"));
-        assertThat(oidElement.getBody() instanceof String);
-        assertThat(oidElement.getBody()).asString().isEqualTo("2.5.4.3");
+        assertThat(oidElement.getBody()).isInstanceOf(String.class);
+        assertThat((String) oidElement.getBody()).isEqualTo("2.5.4.3");
 
         EnotElement utf8StringElement = (EnotElement) sequenceBody.get(1);
         assertThat(utf8StringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
         assertThat(utf8StringElement.isOptional()).isFalse();
         assertThat(utf8StringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "utf8_string"));
         assertThat(utf8StringElement.getBody() instanceof String);
-        assertThat(utf8StringElement.getBody()).asString().isEqualTo("${common_name}");
+        assertThat((String) utf8StringElement.getBody()).isEqualTo("${common_name}");
     }
 
     @Test
@@ -81,7 +82,40 @@ public class EnotParserSuccessCasesTest {
 
         List<EnotElement> actual = enotParser.parse(json);
 
-        assertThat(actual.size()).isEqualTo(1);
+        assertThat(actual).hasSize(1);
+
+        EnotElement root = actual.get(0);
+        assertThat(root.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
+        assertThat(root.isOptional()).isFalse();
+        assertThat(root.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "loop", SystemAttribute.ITEMS_NAME, "organizational_units"));
+        assertThat(root.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement setElement = (EnotElement) root.getBody();
+        assertThat(setElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(setElement.isOptional()).isFalse();
+        assertThat(setElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "set"));
+        assertThat(setElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement sequenceElement = (EnotElement) setElement.getBody();
+        assertThat(sequenceElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(sequenceElement.isOptional()).isFalse();
+        assertThat(sequenceElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
+        assertThat(sequenceElement.getBody()).isInstanceOf(List.class);
+
+        List<?> sequenceBody = (List<?>) sequenceElement.getBody();
+        assertThat(sequenceBody).hasSize(2);
+
+        EnotElement oidElement = (EnotElement) sequenceBody.get(0);
+        assertThat(oidElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(oidElement.isOptional()).isFalse();
+        assertThat(oidElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "object_identifier"));
+        assertThat((String) oidElement.getBody()).isEqualTo("2.5.4.11");
+
+        EnotElement utf8StringElement = (EnotElement) sequenceBody.get(1);
+        assertThat(utf8StringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(utf8StringElement.isOptional()).isFalse();
+        assertThat(utf8StringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "utf8_string"));
+        assertThat((String) utf8StringElement.getBody()).isEqualTo("${unit}");
 
     }
 
@@ -93,7 +127,52 @@ public class EnotParserSuccessCasesTest {
 
         List<EnotElement> actual = enotParser.parse(json);
 
-        assertThat(actual.size()).isEqualTo(1);
+        assertThat(actual).hasSize(1);
+
+        EnotElement root = actual.get(0);
+        assertThat(root.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(root.isOptional()).isFalse();
+        assertThat(root.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
+        assertThat(root.getBody()).isInstanceOf(List.class);
+
+        List<?> rootBody = (List<?>) root.getBody();
+        assertThat(rootBody).hasSize(3);
+
+        EnotElement oidElement = (EnotElement) rootBody.get(0);
+        assertThat(oidElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(oidElement.isOptional()).isFalse();
+        assertThat(oidElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "object_identifier"));
+        assertThat((String) oidElement.getBody()).isEqualTo("2.5.29.37");
+
+        EnotElement criticalElement = (EnotElement) rootBody.get(1);
+        assertThat(criticalElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(criticalElement.isOptional()).isTrue();
+        assertThat(criticalElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "boolean"));
+        assertThat((String) criticalElement.getBody()).isEqualTo("${extended_key_usage_critical}");
+
+        EnotElement octetStringElement = (EnotElement) rootBody.get(2);
+        assertThat(octetStringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(octetStringElement.isOptional()).isFalse();
+        assertThat(octetStringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "octet_string"));
+        assertThat(octetStringElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement innerSequenceElement = (EnotElement) octetStringElement.getBody();
+        assertThat(innerSequenceElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(innerSequenceElement.isOptional()).isFalse();
+        assertThat(innerSequenceElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
+        assertThat(innerSequenceElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement loopElement = (EnotElement) innerSequenceElement.getBody();
+        assertThat(loopElement.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
+        assertThat(loopElement.isOptional()).isFalse();
+        assertThat(loopElement.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "loop", SystemAttribute.ITEMS_NAME, "extended_key_usage"));
+        assertThat(loopElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement usageOidElement = (EnotElement) loopElement.getBody();
+        assertThat(usageOidElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(usageOidElement.isOptional()).isFalse();
+        assertThat(usageOidElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "object_identifier"));
+        assertThat((String) usageOidElement.getBody()).isEqualTo("${usage}");
     }
 
     @Test
@@ -104,8 +183,60 @@ public class EnotParserSuccessCasesTest {
 
         List<EnotElement> actual = enotParser.parse(json);
 
-        assertThat(actual.size()).isEqualTo(1);
+        assertThat(actual).hasSize(1);
 
+        EnotElement root = actual.get(0);
+        assertThat(root.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(root.isOptional()).isFalse();
+        assertThat(root.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
+        assertThat(root.getBody()).isInstanceOf(List.class);
+
+        List<?> rootBody = (List<?>) root.getBody();
+        assertThat(rootBody).hasSize(3);
+
+        EnotElement oidElement = (EnotElement) rootBody.get(0);
+        assertThat(oidElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(oidElement.isOptional()).isFalse();
+        assertThat(oidElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "object_identifier"));
+        assertThat((String) oidElement.getBody()).isEqualTo("2.5.29.15");
+
+        EnotElement criticalElement = (EnotElement) rootBody.get(1);
+        assertThat(criticalElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(criticalElement.isOptional()).isTrue();
+        assertThat(criticalElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "boolean"));
+        assertThat((String) criticalElement.getBody()).isEqualTo("${key_usage_critical}");
+
+        EnotElement octetStringElement = (EnotElement) rootBody.get(2);
+        assertThat(octetStringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(octetStringElement.isOptional()).isFalse();
+        assertThat(octetStringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "octet_string"));
+        assertThat(octetStringElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement bitStringElement = (EnotElement) octetStringElement.getBody();
+        assertThat(bitStringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(bitStringElement.isOptional()).isFalse();
+        assertThat(bitStringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "bit_string"));
+        assertThat(bitStringElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement bitMapElement = (EnotElement) bitStringElement.getBody();
+        assertThat(bitMapElement.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
+        assertThat(bitMapElement.isOptional()).isFalse();
+        assertThat(bitMapElement.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "bit_map", SystemAttribute.BYTE_ORDER, "little_endian", SystemAttribute.BIT_ORDER, "lsb_first"));
+        assertThat(bitMapElement.getBody()).isInstanceOf(List.class);
+
+        List<String> bitMapBody = (List<String>) bitMapElement.getBody();
+        assertThat(bitMapBody).hasSize(9);
+        assertThat(bitMapBody).containsExactly(
+                "${key_usage.digital_signature}",
+                "${key_usage.non_repudiation}",
+                "${key_usage.key_encipherment}",
+                "${key_usage.data_encipherment}",
+                "${key_usage.key_agreement}",
+                "${key_usage.key_cert_sign}",
+                "${key_usage.crl_sign}",
+                "${key_usage.encipher_only}",
+                "${key_usage.decipher_only}"
+        );
     }
 
     @Test
@@ -116,8 +247,56 @@ public class EnotParserSuccessCasesTest {
 
         List<EnotElement> actual = enotParser.parse(json);
 
-        assertThat(actual.size()).isEqualTo(1);
+        assertThat(actual).hasSize(1);
 
+        EnotElement root = actual.get(0);
+        assertThat(root.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(root.isOptional()).isFalse();
+        assertThat(root.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
+        assertThat(root.getBody()).isInstanceOf(List.class);
+
+        List<?> rootBody = (List<?>) root.getBody();
+        assertThat(rootBody).hasSize(3);
+
+        EnotElement oidElement = (EnotElement) rootBody.get(0);
+        assertThat(oidElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(oidElement.isOptional()).isFalse();
+        assertThat(oidElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "object_identifier"));
+        assertThat((String) oidElement.getBody()).isEqualTo("2.5.29.32");
+
+        EnotElement criticalElement = (EnotElement) rootBody.get(1);
+        assertThat(criticalElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(criticalElement.isOptional()).isTrue();
+        assertThat(criticalElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "boolean"));
+        assertThat((String) criticalElement.getBody()).isEqualTo("${certificate_policy.critical}");
+
+        EnotElement octetStringElement = (EnotElement) rootBody.get(2);
+        assertThat(octetStringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(octetStringElement.isOptional()).isFalse();
+        assertThat(octetStringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "octet_string"));
+        assertThat(octetStringElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement outerSequenceElement = (EnotElement) octetStringElement.getBody();
+        assertThat(outerSequenceElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(outerSequenceElement.isOptional()).isFalse();
+        assertThat(outerSequenceElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
+        assertThat(outerSequenceElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement optionalSequenceElement = (EnotElement) outerSequenceElement.getBody();
+        assertThat(optionalSequenceElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(optionalSequenceElement.isOptional()).isTrue();
+        assertThat(optionalSequenceElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
+        assertThat(optionalSequenceElement.getBody()).isInstanceOf(EnotElement.class);
+
+        EnotElement loopElement = (EnotElement) optionalSequenceElement.getBody();
+        assertThat(loopElement.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
+        assertThat(loopElement.isOptional()).isFalse();
+        assertThat(loopElement.getAttributes()).isEqualTo(Map.of(SystemAttribute.ITEMS_NAME, "certificate_policy", SystemAttribute.KIND, "loop"));
+        assertThat(loopElement.getBody()).isInstanceOf(List.class);
+
+        List<?> loopBody = (List<?>) loopElement.getBody();
+        assertThat(loopBody).hasSize(1);
+        assertThat(loopBody.get(0)).isInstanceOf(EnotElement.class);
     }
 
 }

@@ -46,6 +46,7 @@ public class TypeUtils {
                 return true;
             }
         }
+        typesInPath.remove(that);
         return false;
     }
 }

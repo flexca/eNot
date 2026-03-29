@@ -17,6 +17,7 @@ import java.util.*;
 public class EnotParser {
 
     public static final String ENOT_ELEMENT_TYPE_NAME = "type";
+    public static final String ENOT_ELEMENT_OPTIONAL_NAME = "optional";
     public static final String ENOT_ELEMENT_ATTRIBUTES_NAME = "attributes";
     public static final String ENOT_ELEMENT_BODY_NAME = "body";
 
@@ -133,6 +134,9 @@ public class EnotParser {
         EnotElement element = new EnotElement();
         element.setType(typeSpecification.getTypeName());
 
+        boolean optional = extractOptional(jsonElement, parentPath, jsonErrors);
+        element.setOptional(optional);
+
         Map<EnotAttribute, Object> attributes = extractElementAttributes(jsonElement, typeSpecification, parentPath, jsonErrors);
         element.setAttributes(attributes);
 
@@ -143,6 +147,21 @@ public class EnotParser {
         typeSpecification.getElementValidator().validateElement(element, parentPath, jsonErrors);
 
         return Optional.of(element);
+    }
+
+    private boolean extractOptional(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors) {
+
+        JsonNode optionalNode = jsonElement.get(ENOT_ELEMENT_OPTIONAL_NAME);
+        if(optionalNode == null) {
+            return false;
+        }
+        String currentPath = parentPath + "/" + ENOT_ELEMENT_OPTIONAL_NAME;
+        if(!optionalNode.isBoolean()) {
+            jsonErrors.add(EnotJsonError.of(currentPath, "eNot element field " + ENOT_ELEMENT_OPTIONAL_NAME
+                    + " if provided (by default is false) must be boolean, provided: " + optionalNode.getNodeType().name()));
+            return false;
+        }
+        return optionalNode.asBoolean();
     }
 
     private Map<EnotAttribute, Object> extractElementAttributes(ObjectNode jsonElement, EnotTypeSpecification typeSpecification, String parentPath, List<EnotJsonError> jsonErrors) {
