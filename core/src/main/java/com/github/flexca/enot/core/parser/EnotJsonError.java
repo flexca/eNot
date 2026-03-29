@@ -1,5 +1,7 @@
 package com.github.flexca.enot.core.parser;
 
+import java.util.Objects;
+
 public class EnotJsonError {
 
     private final String jsonPointer;
@@ -20,5 +22,26 @@ public class EnotJsonError {
 
     public String getDetails() {
         return details;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EnotJsonError that = (EnotJsonError) o;
+        return Objects.equals(jsonPointer, that.jsonPointer) && Objects.equals(details, that.details);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(jsonPointer, details);
+    }
+
+    @Override
+    public String toString() {
+        return "EnotJsonError{" +
+                "jsonPointer='" + jsonPointer + '\'' +
+                ", details='" + details + '\'' +
+                '}';
     }
 }
