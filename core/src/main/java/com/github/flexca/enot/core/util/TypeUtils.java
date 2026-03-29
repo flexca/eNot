@@ -41,9 +41,11 @@ public class TypeUtils {
         if (!typesInPath.add(that)) {
             return true;
         }
-        for (EnotValueType superType : that.getSuperTypes()) {
-            if (haveCyclicDependency(superType, typesInPath)) {
-                return true;
+        if(CollectionUtils.isNotEmpty(that.getSuperTypes())) {
+            for (EnotValueType superType : that.getSuperTypes()) {
+                if (haveCyclicDependency(superType, typesInPath)) {
+                    return true;
+                }
             }
         }
         typesInPath.remove(that);
