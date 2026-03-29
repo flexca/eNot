@@ -19,7 +19,7 @@ public class Enot {
     public Enot(EnotRegistry enotRegistry, ObjectMapper objectMapper) {
         this.enotRegistry = enotRegistry;
         enotParser = new EnotParser(this.enotRegistry, objectMapper);
-        enotSerializer = new EnotSerializer(this.enotRegistry);
+        enotSerializer = new EnotSerializer(this.enotRegistry, this.enotParser);
     }
 
     public List<EnotElement> parse(String json) throws EnotParsingException {
