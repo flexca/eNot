@@ -5,8 +5,10 @@ import com.github.flexca.enot.core.exception.EnotSerializationException;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.element.EnotElement;
+import com.github.flexca.enot.core.util.PlaceholderUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,8 +37,25 @@ public class EnotSerializer {
         return output;
     }
 
-    public byte[] serialize(EnotElement elements, Map<String, Object> parameters) throws EnotSerializationException {
+    public byte[] serialize(EnotElement element, Map<String, Object> parameters) throws EnotSerializationException {
+
 
         return null;
+    }
+
+    private List<Object> serializeElement(EnotElement element, Map<String, Object> parameters) {
+
+        Object objectBody = element.getBody();
+        if (objectBody instanceof Collection<?> bodyCollection) {
+            for(Object child : bodyCollection) {
+
+            }
+        } else if (objectBody instanceof EnotElement childElement) {
+            serializeElement();
+        } else {
+            if (PlaceholderUtils.isPlaceholder(objectBody)) {
+
+            }
+        }
     }
 }
