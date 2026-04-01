@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.registry;
 
+import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
 import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;

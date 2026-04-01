@@ -3,6 +3,7 @@ package com.github.flexca.enot.core.registry;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.element.value.EnotValueType;
+import com.github.flexca.enot.core.serializer.ElementSerializer;
 
 import java.util.List;
 
@@ -52,4 +53,11 @@ public interface EnotTypeSpecification {
      * @return EnotElementValidator object, when return null then no element specific validation is performed
      */
     EnotElementValidator getElementValidator();
+
+    /**
+     * Return serializer for eNot element
+     * @param element - element to get serializer for
+     * @return serializer
+     */
+    ElementSerializer getSerializer(EnotElement element);
 }

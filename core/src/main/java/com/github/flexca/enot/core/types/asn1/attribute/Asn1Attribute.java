@@ -1,4 +1,4 @@
-package com.github.flexca.enot.core.asn1.attribute;
+package com.github.flexca.enot.core.types.asn1.attribute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

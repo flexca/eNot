@@ -1,4 +1,4 @@
-package com.github.flexca.enot.core.system;
+package com.github.flexca.enot.core.types.system;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -6,7 +6,9 @@ import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.element.value.EnotValueSpecification;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
-import com.github.flexca.enot.core.system.attribute.SystemAttribute;
+import com.github.flexca.enot.core.serializer.ElementSerializer;
+import com.github.flexca.enot.core.types.system.attribute.SystemAttribute;
+import com.github.flexca.enot.core.types.system.serializer.SystemLoopSerializer;
 
 import java.util.*;
 
@@ -16,7 +18,8 @@ public enum SystemKind implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME),
-            Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME, SystemAttribute.MIN_ITEMS, SystemAttribute.MAX_ITEMS)),
+            Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME, SystemAttribute.MIN_ITEMS, SystemAttribute.MAX_ITEMS),
+            new SystemLoopSerializer()),
 
     REFERENCE("reference",
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
@@ -67,14 +70,16 @@ public enum SystemKind implements EnotElementSpecification {
     private final EnotValueSpecification produceType;
     private final Set<EnotAttribute> requiredAttributes;
     private final Set<EnotAttribute> allowedAttributes;
+    private final ElementSerializer elementSerializer;
 
     private SystemKind(String name, EnotValueSpecification consumeType, EnotValueSpecification produceType,
-                       Set<EnotAttribute> requiredAttributes, Set<EnotAttribute> allowedAttributes) {
+                       Set<EnotAttribute> requiredAttributes, Set<EnotAttribute> allowedAttributes, ElementSerializer elementSerializer) {
         this.name = name;
         this.consumeType = consumeType;
         this.produceType = produceType;
         this.requiredAttributes = Collections.unmodifiableSet(requiredAttributes);
         this.allowedAttributes = Collections.unmodifiableSet(allowedAttributes);
+        this.elementSerializer = elementSerializer;
     }
 
     @JsonValue
@@ -105,5 +110,9 @@ public enum SystemKind implements EnotElementSpecification {
     @Override
     public Set<EnotAttribute> getAllowedAttributes() {
         return allowedAttributes;
+    }
+
+    public ElementSerializer getElementSerializer() {
+        return elementSerializer;
     }
 }

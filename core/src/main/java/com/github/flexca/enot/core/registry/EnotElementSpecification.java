@@ -1,7 +1,9 @@
 package com.github.flexca.enot.core.registry;
 
+import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.element.value.EnotValueSpecification;
+import com.github.flexca.enot.core.serializer.ElementSerializer;
 
 import java.util.Set;
 

@@ -1,12 +1,12 @@
-package com.github.flexca.enot.core.system.validation;
+package com.github.flexca.enot.core.types.system.validation;
 
 import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.element.EnotElement;
-import com.github.flexca.enot.core.system.SystemKind;
-import com.github.flexca.enot.core.system.SystemTypeSpecification;
-import com.github.flexca.enot.core.system.attribute.SystemAttribute;
+import com.github.flexca.enot.core.types.system.SystemKind;
+import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
+import com.github.flexca.enot.core.types.system.attribute.SystemAttribute;
 
 import java.util.List;
 

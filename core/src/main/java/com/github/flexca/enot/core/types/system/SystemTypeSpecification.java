@@ -1,4 +1,4 @@
-package com.github.flexca.enot.core.system;
+package com.github.flexca.enot.core.types.system;
 
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
@@ -6,8 +6,9 @@ import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.element.value.EnotValueType;
-import com.github.flexca.enot.core.system.attribute.SystemAttribute;
-import com.github.flexca.enot.core.system.validation.SystemElementValidator;
+import com.github.flexca.enot.core.serializer.ElementSerializer;
+import com.github.flexca.enot.core.types.system.attribute.SystemAttribute;
+import com.github.flexca.enot.core.types.system.validation.SystemElementValidator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +42,20 @@ public class SystemTypeSpecification implements EnotTypeSpecification {
 
     @Override
     public EnotElementSpecification getElementSpecification(EnotElement element) {
+        return getKindByElement(element);
+    }
+
+    @Override
+    public EnotElementValidator getElementValidator() {
+        return systemElementValidator;
+    }
+
+    @Override
+    public ElementSerializer getSerializer(EnotElement element) {
+        return null;
+    }
+
+    private SystemKind getKindByElement(EnotElement element) {
         Object kindObject = element.getAttributes().get(SystemAttribute.KIND);
         if (kindObject instanceof String kindString) {
             SystemKind kind = SystemKind.fromString(kindString);
@@ -49,10 +64,5 @@ public class SystemTypeSpecification implements EnotTypeSpecification {
             }
         }
         return null;
-    }
-
-    @Override
-    public EnotElementValidator getElementValidator() {
-        return systemElementValidator;
     }
 }

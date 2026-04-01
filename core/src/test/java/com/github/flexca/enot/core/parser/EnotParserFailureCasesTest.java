@@ -1,9 +1,9 @@
 package com.github.flexca.enot.core.parser;
 
-import com.github.flexca.enot.core.asn1.Asn1TypeSpecification;
+import com.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.registry.EnotRegistry;
-import com.github.flexca.enot.core.system.SystemTypeSpecification;
+import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package com.github.flexca.enot.core.system.attribute;
+package com.github.flexca.enot.core.types.system.attribute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

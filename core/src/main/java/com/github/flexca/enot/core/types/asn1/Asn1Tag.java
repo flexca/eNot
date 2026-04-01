@@ -1,12 +1,14 @@
-package com.github.flexca.enot.core.asn1;
+package com.github.flexca.enot.core.types.asn1;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.github.flexca.enot.core.asn1.attribute.Asn1Attribute;
+import com.github.flexca.enot.core.serializer.ElementSerializer;
+import com.github.flexca.enot.core.types.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.element.value.EnotValueSpecification;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
+import com.github.flexca.enot.core.types.asn1.serializer.Asn1Utf8StringSerializer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,7 +75,8 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
-            Set.of(Asn1Attribute.TAG)),
+            Set.of(Asn1Attribute.TAG),
+            new Asn1Utf8StringSerializer()),
 
     BMP_STRING("bmp_string",
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
@@ -123,14 +126,16 @@ public enum Asn1Tag implements EnotElementSpecification {
     private final EnotValueSpecification produceType;
     private final Set<EnotAttribute> requiredAttributes;
     private final Set<EnotAttribute> allowedAttributes;
+    private final ElementSerializer elementSerializer;
 
     private Asn1Tag(String name, EnotValueSpecification consumeType, EnotValueSpecification produceType,
-                    Set<EnotAttribute> requiredAttributes, Set<EnotAttribute> allowedAttributes) {
+                    Set<EnotAttribute> requiredAttributes, Set<EnotAttribute> allowedAttributes, ElementSerializer elementSerializer) {
         this.name = name;
         this.consumeType = consumeType;
         this.produceType = produceType;
         this.requiredAttributes = Collections.unmodifiableSet(requiredAttributes);
         this.allowedAttributes = Collections.unmodifiableSet(allowedAttributes);
+        this.elementSerializer = elementSerializer;
     }
 
     @JsonValue
@@ -161,5 +166,9 @@ public enum Asn1Tag implements EnotElementSpecification {
     @Override
     public Set<EnotAttribute> getAllowedAttributes() {
         return allowedAttributes;
+    }
+
+    public ElementSerializer getElementSerializer() {
+        return elementSerializer;
     }
 }

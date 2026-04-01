@@ -31,4 +31,12 @@ public class PlaceholderUtils {
         return true;
     }
 
+    public static Optional<String> extractPlaceholder(Object input) {
+
+        if (!isPlaceholder(input)) {
+            return Optional.empty();
+        }
+        String stringInput = (String) input;
+        return Optional.of(stringInput.substring(2, stringInput.length() - 1));
+    }
 }
