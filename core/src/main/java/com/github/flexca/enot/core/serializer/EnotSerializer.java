@@ -56,7 +56,7 @@ public class EnotSerializer {
         });
 
         ElementSerializer elementSerializer = typeSpecification.getSerializer(element);
-        List<Object> serializationResult = elementSerializer.serialize(element, parameters, jsonPath, );
+        List<ElementSerializationResult> serializationResult = elementSerializer.serialize(element, parameters, jsonPath, );
         return null;
     }
 }

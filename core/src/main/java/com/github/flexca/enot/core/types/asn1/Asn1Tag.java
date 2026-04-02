@@ -8,6 +8,10 @@ import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.element.value.EnotValueSpecification;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
+import com.github.flexca.enot.core.types.asn1.serializer.Asn1BooleanSerializer;
+import com.github.flexca.enot.core.types.asn1.serializer.Asn1ObjectIdentifierSerializer;
+import com.github.flexca.enot.core.types.asn1.serializer.Asn1SequenceSerializer;
+import com.github.flexca.enot.core.types.asn1.serializer.Asn1SetSerialized;
 import com.github.flexca.enot.core.types.asn1.serializer.Asn1Utf8StringSerializer;
 
 import java.util.Collections;
@@ -21,25 +25,29 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, true),
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
-            Set.of(Asn1Attribute.TAG)),
+            Set.of(Asn1Attribute.TAG),
+            new Asn1SequenceSerializer()),
 
     SET("set",
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, true),
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
-            Set.of(Asn1Attribute.TAG)),
+            Set.of(Asn1Attribute.TAG),
+            new Asn1SetSerialized()),
 
     OBJECT_IDENTIFIER("object_identifier",
             new EnotValueSpecification(CommonEnotValueType.OBJECT_IDENTIFIER, false),
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
-            Set.of(Asn1Attribute.TAG)),
+            Set.of(Asn1Attribute.TAG),
+            new Asn1ObjectIdentifierSerializer()),
 
     BOOLEAN("boolean",
             new EnotValueSpecification(CommonEnotValueType.BOOLEAN, false),
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
-            Set.of(Asn1Attribute.TAG)),
+            Set.of(Asn1Attribute.TAG),
+            new Asn1BooleanSerializer()),
 
     INTEGER("integer",
             new EnotValueSpecification(CommonEnotValueType.INTEGER, false),
