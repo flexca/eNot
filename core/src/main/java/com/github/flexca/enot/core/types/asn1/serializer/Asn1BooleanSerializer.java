@@ -11,7 +11,6 @@ import com.github.flexca.enot.core.types.asn1.Asn1EnotValueType;
 import com.github.flexca.enot.core.types.asn1.Asn1Tag;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.asn1.ASN1Boolean;
-import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,12 +39,12 @@ public class Asn1BooleanSerializer extends SimpleElementSerializer {
         if (CommonEnotValueType.BOOLEAN.equals(serializedBody.get(0).getValueType())) {
             if(serializedBody.get(0).getData() instanceof Boolean booleanBody) {
                 return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
-                        new ASN1Boolean(textBody)));
+                        ASN1Boolean.getInstance(booleanBody)));
             }
         }
 
         throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, Collections.singletonList(
-                EnotJsonError.of(jsonPath, "unsupported body type for " + Asn1Tag.UTF8_STRING.getName()
-                        + ", expected: " + CommonEnotValueType.TEXT.getName())));
+                EnotJsonError.of(jsonPath, "unsupported body type for " + Asn1Tag.BOOLEAN.getName()
+                        + ", expected: " + CommonEnotValueType.BOOLEAN.getName())));
     }
 }

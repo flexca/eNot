@@ -1,28 +1,39 @@
 package com.github.flexca.enot.core.element.value;
 
+import com.github.flexca.enot.core.element.value.converter.BinaryToBinaryConverter;
+import com.github.flexca.enot.core.element.value.converter.BooleanToBinaryConverter;
+import com.github.flexca.enot.core.element.value.converter.EmptyToBinaryConverter;
+import com.github.flexca.enot.core.element.value.converter.IntegerToBinaryConverter;
+import com.github.flexca.enot.core.element.value.converter.TextToBinaryConverter;
+import com.github.flexca.enot.core.element.value.converter.UnsupportedToBinaryConverter;
+import com.github.flexca.enot.core.registry.EnotBinaryConverter;
+
 import java.util.Collections;
 import java.util.Set;
 
 public enum CommonEnotValueType implements EnotValueType {
 
-    BOOLEAN("boolean", Collections.emptySet(), true),
-    BINARY("binary", Collections.emptySet(), false),
-    INTEGER("integer", Collections.emptySet(), true),
-    TEXT("text", Collections.emptySet(), true),
-    PLACEHOLDER("placeholder", Collections.emptySet(), false),
-    OBJECT_IDENTIFIER("object_identifier", Collections.emptySet(), false),
-    DATE_TIME("date_time", Collections.emptySet(), false),
-    ELEMENT("element", Collections.emptySet(), false),
-    EMPTY("empty", Collections.emptySet(), false);
+    BOOLEAN("boolean", Collections.emptySet(), true, new BooleanToBinaryConverter()),
+    BINARY("binary", Collections.emptySet(), false, new BinaryToBinaryConverter()),
+    INTEGER("integer", Collections.emptySet(), true, new IntegerToBinaryConverter()),
+    TEXT("text", Collections.emptySet(), true, new TextToBinaryConverter()),
+    PLACEHOLDER("placeholder", Collections.emptySet(), false, new UnsupportedToBinaryConverter()),
+    OBJECT_IDENTIFIER("object_identifier", Collections.emptySet(), false, new UnsupportedToBinaryConverter()),
+    DATE_TIME("date_time", Collections.emptySet(), false, new UnsupportedToBinaryConverter()),
+    ELEMENT("element", Collections.emptySet(), false, new UnsupportedToBinaryConverter()),
+    EMPTY("empty", Collections.emptySet(), false, new EmptyToBinaryConverter());
 
     private final String name;
     private final Set<EnotValueType> superTypes;
     private final boolean allowedForAttributes;
+    private final EnotBinaryConverter binaryConverter;
 
-    private CommonEnotValueType(String name, Set<EnotValueType> superTypes, boolean allowedForAttributes) {
+    private CommonEnotValueType(String name, Set<EnotValueType> superTypes, boolean allowedForAttributes,
+                                EnotBinaryConverter binaryConverter) {
         this.name = name;
         this.superTypes = Collections.unmodifiableSet(superTypes);
         this.allowedForAttributes = allowedForAttributes;
+        this.binaryConverter = binaryConverter;
     }
 
     @Override
@@ -38,5 +49,10 @@ public enum CommonEnotValueType implements EnotValueType {
     @Override
     public boolean isAllowedForAttributes() {
         return allowedForAttributes;
+    }
+
+    @Override
+    public EnotBinaryConverter getBinaryConverter() {
+        return binaryConverter;
     }
 }

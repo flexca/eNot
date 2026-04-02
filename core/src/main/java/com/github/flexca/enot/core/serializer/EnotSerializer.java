@@ -2,15 +2,14 @@ package com.github.flexca.enot.core.serializer;
 
 import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
+import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.parser.EnotParser;
+import com.github.flexca.enot.core.registry.EnotBinaryConverter;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
-import com.github.flexca.enot.core.util.PlaceholderUtils;
-import org.apache.commons.lang3.SerializationException;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -26,14 +25,14 @@ public class EnotSerializer {
         this.enotParser = enotParser;
     }
 
-    public ElementSerializationResult serialize(String json, Map<String, Object> parameters) throws EnotParsingException, EnotSerializationException {
+    public List<byte[]> serialize(String json, Map<String, Object> parameters) throws EnotParsingException, EnotSerializationException {
         List<EnotElement> elements = enotParser.parse(json);
         return serialize(elements, parameters);
     }
 
     public List<byte[]> serialize(List<EnotElement> elements, Map<String, Object> parameters) throws EnotSerializationException {
 
-        List<Object> serializationResult = new ArrayList<>();
+        List<byte[]> serializationResult = new ArrayList<>();
         for (int i = 0; i < elements.size(); i++) {
             EnotElement element = elements.get(i);
             serializationResult.addAll(serializeElement(element, parameters, "/" + i));
@@ -43,20 +42,31 @@ public class EnotSerializer {
         return output;
     }
 
-    public byte[] serialize(EnotElement element, Map<String, Object> parameters) throws EnotSerializationException {
-
-        List<Object> serializationResult = serializeElement(element, parameters, "");
-        return null;
+    public List<byte[]> serialize(EnotElement element, Map<String, Object> parameters) throws EnotSerializationException {
+        return serializeElement(element, parameters, "");
     }
 
-    private List<Object> serializeElement(EnotElement element, Map<String, Object> parameters, String jsonPath) {
+    private List<byte[]> serializeElement(EnotElement element, Map<String, Object> parameters, String jsonPath) throws EnotSerializationException {
 
-        EnotTypeSpecification typeSpecification = enotRegistry.getTypeSpecification(element.getType()).orElseThrow(() -> {
-            new EnotSerializationException();
-        });
+        EnotTypeSpecification typeSpecification = enotRegistry.getTypeSpecification(element.getType()).orElseThrow(() ->
+            new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
+                    "cannot resolve EnotTypeSpecification for element with type " + element.getType())));
 
         ElementSerializer elementSerializer = typeSpecification.getSerializer(element);
-        List<ElementSerializationResult> serializationResult = elementSerializer.serialize(element, parameters, jsonPath, );
-        return null;
+        List<ElementSerializationResult> serializationResults = elementSerializer.serialize(element, parameters, jsonPath, enotRegistry);
+
+        List<byte[]> result = new ArrayList<>();
+        for (ElementSerializationResult serializationResult : serializationResults) {
+            EnotBinaryConverter binaryConverter = serializationResult.getValueType().getBinaryConverter();
+            try {
+                byte[] converted = binaryConverter.toBinary(serializationResult.getData());
+                if (converted != null && converted.length > 0) {
+                    result.add(binaryConverter.toBinary(serializationResult.getData()));
+                }
+            } catch(Exception e) {
+                throw new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath, e.getMessage()));
+            }
+        }
+        return result;
     }
 }

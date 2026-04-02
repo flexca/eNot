@@ -2,6 +2,7 @@ package com.github.flexca.enot.core.util;
 
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.element.value.EnotValueType;
+import com.github.flexca.enot.core.registry.EnotBinaryConverter;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -62,6 +63,11 @@ public class TypeUtilsTest {
             @Override
             public boolean isAllowedForAttributes() {
                 return false;
+            }
+
+            @Override
+            public EnotBinaryConverter getBinaryConverter() {
+                return null;
             }
         };
     }

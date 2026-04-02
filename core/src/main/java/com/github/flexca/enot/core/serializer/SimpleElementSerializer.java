@@ -16,10 +16,10 @@ public abstract class SimpleElementSerializer extends BaseElementSerializer {
 
     @Override
     public List<ElementSerializationResult> serialize(EnotElement element, Map<String, Object> parameters, String jsonPath,
-                                                      List<String> parametersPath, EnotRegistry enotRegistry) throws EnotSerializationException {
+                                                      EnotRegistry enotRegistry) throws EnotSerializationException {
 
         String currentJsonPath = jsonPath + "/" + EnotParser.ENOT_ELEMENT_BODY_NAME;
-        List<ElementSerializationResult> serializedBody = serializeBody(element.getBody(), parameters, currentJsonPath, parametersPath, enotRegistry);
+        List<ElementSerializationResult> serializedBody = serializeBody(element.getBody(), parameters, currentJsonPath, enotRegistry);
         return serialize(element, serializedBody, currentJsonPath);
     }
 }

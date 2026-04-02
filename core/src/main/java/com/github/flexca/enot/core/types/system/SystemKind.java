@@ -25,38 +25,44 @@ public enum SystemKind implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND),
-            Set.of(SystemAttribute.KIND)),
+            Set.of(SystemAttribute.KIND),
+            null),
 
 
     BIT_MAP("bit_map",
             new EnotValueSpecification(CommonEnotValueType.BOOLEAN, true),
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
             Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
-            Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER)),
+            Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
+            null),
 
     CONDITION("condition",
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
-            Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION)),
+            Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
+            null),
 
     SHA1("sha1",
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
             Set.of(SystemAttribute.KIND),
-            Set.of(SystemAttribute.KIND)),
+            Set.of(SystemAttribute.KIND),
+            null),
 
     HEX_TO_BIN("hex_to_bin",
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
             Set.of(SystemAttribute.KIND),
-            Set.of(SystemAttribute.KIND)),
+            Set.of(SystemAttribute.KIND),
+            null),
 
     BIN_TO_HEX("bin_to_hex",
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
             Set.of(SystemAttribute.KIND),
-            Set.of(SystemAttribute.KIND));
+            Set.of(SystemAttribute.KIND),
+            null);
 
     private static final Map<String, SystemKind> BY_NAME = new HashMap<>();
     static {

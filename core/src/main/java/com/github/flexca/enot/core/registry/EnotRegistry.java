@@ -1,6 +1,5 @@
 package com.github.flexca.enot.core.registry;
 
-import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
 import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
@@ -8,7 +7,14 @@ import com.github.flexca.enot.core.element.value.EnotValueType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class EnotRegistry {
 
@@ -66,7 +72,7 @@ public class EnotRegistry {
 
     public static class Builder {
 
-        private List<EnotTypeSpecification> specifications = new ArrayList<>();
+        private final List<EnotTypeSpecification> specifications = new ArrayList<>();
 
         public Builder() {
         }

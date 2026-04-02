@@ -9,7 +9,6 @@ import com.github.flexca.enot.core.serializer.SimpleElementSerializer;
 import com.github.flexca.enot.core.types.asn1.Asn1EnotValueType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 
 import java.util.ArrayList;

@@ -10,5 +10,5 @@ import java.util.Map;
 public interface ElementSerializer {
 
     List<ElementSerializationResult> serialize(EnotElement element, Map<String, Object> parameters, String jsonPath,
-                                               List<String> parametersPath, EnotRegistry enotRegistry) throws EnotSerializationException;
+                                               EnotRegistry enotRegistry) throws EnotSerializationException;
 }

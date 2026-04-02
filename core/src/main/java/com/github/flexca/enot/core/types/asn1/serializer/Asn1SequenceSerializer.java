@@ -1,7 +1,6 @@
 package com.github.flexca.enot.core.types.asn1.serializer;
 
 import com.github.flexca.enot.core.element.EnotElement;
-import com.github.flexca.enot.core.element.value.EnotValueType;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
 import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.serializer.ElementSerializationResult;

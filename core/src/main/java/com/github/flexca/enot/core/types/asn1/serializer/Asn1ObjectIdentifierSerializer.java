@@ -12,7 +12,6 @@ import com.github.flexca.enot.core.types.asn1.Asn1Tag;
 import com.github.flexca.enot.core.util.OidUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.Collections;
 import java.util.List;

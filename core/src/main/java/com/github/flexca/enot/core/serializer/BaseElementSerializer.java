@@ -14,38 +14,38 @@ import java.util.*;
 public abstract class BaseElementSerializer implements ElementSerializer {
 
     protected List<ElementSerializationResult> serializeBody(Object body, Map<String, Object> parameters, String jsonPath,
-                                                           List<String> parametersPathStack, EnotRegistry enotRegistry) throws EnotSerializationException {
+                                                             EnotRegistry enotRegistry) throws EnotSerializationException {
 
         List<ElementSerializationResult> result = new ArrayList<>();
         if (body instanceof Collection<?> children) {
             for (Object child : children) {
                 if (child instanceof EnotElement childElement) {
-                    result.addAll(serializeBodyElement(childElement, parameters, jsonPath, parametersPathStack, enotRegistry));
+                    result.addAll(serializeBodyElement(childElement, parameters, jsonPath, enotRegistry));
                 } else {
-                    result.addAll(serializeBodyPrimitive(child, parameters, jsonPath, parametersPathStack, enotRegistry));
+                    result.addAll(serializeBodyPrimitive(child, parameters, jsonPath, enotRegistry));
                 }
             }
         } else if (body instanceof EnotElement child) {
-            result.addAll(serializeBodyElement(child, parameters, jsonPath, parametersPathStack, enotRegistry));
+            result.addAll(serializeBodyElement(child, parameters, jsonPath, enotRegistry));
         } else {
-            result.addAll(serializeBodyPrimitive(body, parameters, jsonPath, parametersPathStack, enotRegistry));
+            result.addAll(serializeBodyPrimitive(body, parameters, jsonPath, enotRegistry));
         }
         return result;
     }
 
     private List<ElementSerializationResult> serializeBodyElement(EnotElement element, Map<String, Object> parameters, String jsonPath,
-                                                                  List<String> parametersPathStack, EnotRegistry enotRegistry) throws EnotSerializationException {
+                                                                  EnotRegistry enotRegistry) throws EnotSerializationException {
 
         EnotTypeSpecification typeSpecification = enotRegistry.getTypeSpecification(element.getType()).orElseThrow(() ->
                 new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
                         "cannot find EnotTypeSpecification for element of type " + element.getType())));
 
         ElementSerializer elementSerializer = typeSpecification.getSerializer(element);
-        return elementSerializer.serialize(element, parameters, jsonPath, parametersPathStack, enotRegistry);
+        return elementSerializer.serialize(element, parameters, jsonPath, enotRegistry);
     }
 
     private List<ElementSerializationResult> serializeBodyPrimitive(Object body, Map<String, Object> parameters, String jsonPath,
-                                                                    List<String> parametersPathStack, EnotRegistry enotRegistry) throws EnotSerializationException {
+                                                                    EnotRegistry enotRegistry) throws EnotSerializationException {
 
         Object value;
         Optional<String> placeholder = PlaceholderUtils.extractPlaceholder(body);
