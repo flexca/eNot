@@ -8,8 +8,10 @@ import com.github.flexca.enot.core.registry.EnotBinaryConverter;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +29,10 @@ public class EnotSerializer {
 
     public List<byte[]> serialize(String json, Map<String, Object> parameters) throws EnotParsingException, EnotSerializationException {
         List<EnotElement> elements = enotParser.parse(json);
-        return serialize(elements, parameters);
+        if(CollectionUtils.isEmpty(elements)) {
+            return Collections.emptyList();
+        }
+        return elements.size() > 1 ? serialize(elements, parameters) : serialize(elements.get(0), parameters);
     }
 
     public List<byte[]> serialize(List<EnotElement> elements, Map<String, Object> parameters) throws EnotSerializationException {
@@ -38,8 +43,7 @@ public class EnotSerializer {
             serializationResult.addAll(serializeElement(element, parameters, "/" + i));
         }
 
-        List<byte[]> output = new ArrayList<>();
-        return output;
+        return serializationResult;
     }
 
     public List<byte[]> serialize(EnotElement element, Map<String, Object> parameters) throws EnotSerializationException {
@@ -61,7 +65,7 @@ public class EnotSerializer {
             try {
                 byte[] converted = binaryConverter.toBinary(serializationResult.getData());
                 if (converted != null && converted.length > 0) {
-                    result.add(binaryConverter.toBinary(serializationResult.getData()));
+                    result.add(converted);
                 }
             } catch(Exception e) {
                 throw new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath, e.getMessage()));

@@ -1,6 +1,5 @@
 package com.github.flexca.enot.core.serializer;
 
-import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
