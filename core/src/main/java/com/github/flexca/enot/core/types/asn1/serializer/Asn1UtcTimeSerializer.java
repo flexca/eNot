@@ -9,14 +9,16 @@ import com.github.flexca.enot.core.serializer.EnotSerializer;
 import com.github.flexca.enot.core.serializer.SimpleElementSerializer;
 import com.github.flexca.enot.core.types.asn1.Asn1EnotValueType;
 import com.github.flexca.enot.core.types.asn1.Asn1Tag;
+import com.github.flexca.enot.core.util.DateTimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERGeneralizedTime;
+import org.bouncycastle.asn1.DERUTCTime;
 
-import java.math.BigInteger;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
-public class Asn1IntegerSerializer extends SimpleElementSerializer {
+public class Asn1UtcTimeSerializer extends SimpleElementSerializer {
 
     @Override
     protected List<ElementSerializationResult> serialize(EnotElement element, List<ElementSerializationResult> serializedBody,
@@ -33,25 +35,35 @@ public class Asn1IntegerSerializer extends SimpleElementSerializer {
 
         if (serializedBody.size() != 1) {
             throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, Collections.singletonList(
-                    EnotJsonError.of(jsonPath, "unexpected size of arguments for " + Asn1Tag.INTEGER.getName()
+                    EnotJsonError.of(jsonPath, "unexpected size of arguments for " + Asn1Tag.UTC_TIME.getName()
                             + ", expected: 1, actual: " + serializedBody.size())));
         }
 
-        if (CommonEnotValueType.INTEGER.equals(serializedBody.get(0).getValueType())) {
-            if(serializedBody.get(0).getData() instanceof Integer integerBody) {
-                return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
-                        ASN1Integer.getInstance(integerBody)));
-            } else if(serializedBody.get(0).getData() instanceof Long longBody) {
-                return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
-                        ASN1Integer.getInstance(longBody)));
-            } else if(serializedBody.get(0).getData() instanceof BigInteger bigIntegerBody) {
-                return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
-                        ASN1Integer.getInstance(bigIntegerBody)));
+        if (CommonEnotValueType.TEXT.equals(serializedBody.get(0).getValueType()) || CommonEnotValueType.DATE_TIME.equals(serializedBody.get(0).getValueType())) {
+
+            try {
+                ZonedDateTime input = null;
+                if (serializedBody.get(0).getData() instanceof String stringBody) {
+                    input = DateTimeUtils.toZonedDateTime(stringBody);
+                } if (serializedBody.get(0).getData() instanceof ZonedDateTime dateTimeBody) {
+                    input = dateTimeBody;
+                }
+
+                if (input != null) {
+                    String asn1Input = DateTimeUtils.formatForAsn1(input);
+                    return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
+                            new DERUTCTime(asn1Input)));
+                }
+
+            } catch (Exception e) {
+                throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE,
+                        EnotJsonError.of(jsonPath, "failure during serialization of ASN.1 element " + Asn1Tag.UTC_TIME.getName()
+                                + ", reason: " + e.getMessage()), e);
             }
         }
 
         throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, Collections.singletonList(
-                EnotJsonError.of(jsonPath, "unsupported body type for " + Asn1Tag.INTEGER.getName()
-                        + ", expected: " + CommonEnotValueType.INTEGER.getName())));
+                EnotJsonError.of(jsonPath, "unsupported body type for " + Asn1Tag.UTC_TIME.getName()
+                        + ", expected: " + CommonEnotValueType.TEXT.getName() + " or " + CommonEnotValueType.DATE_TIME.getName())));
     }
 }
