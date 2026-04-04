@@ -52,7 +52,11 @@ public class SystemTypeSpecification implements EnotTypeSpecification {
 
     @Override
     public ElementSerializer getSerializer(EnotElement element) {
-        return null;
+        SystemKind kind = getKindByElement(element);
+        if (kind == null) {
+            return null;
+        }
+        return kind.getElementSerializer();
     }
 
     private SystemKind getKindByElement(EnotElement element) {

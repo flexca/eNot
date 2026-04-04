@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.serializer;
 
+import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
@@ -41,5 +42,34 @@ public class EnotSerializerSuccessCasesTest {
         List<byte[]> actual = enotSerializer.serialize(json, params);
 
         assertThat(actual).isNotNull();
+    }
+
+    @Test
+    void testSerializeOrganizationalUnitSuccessSingleUnit() throws Exception {
+
+        String path = "json/asn1/rfc/subject-dn-organizational-unit.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+
+        Map<String, Object> orgUnits = Map.of("unit", List.of("unit1"));
+        Map<String, Object> params = Map.of("organizational_units", orgUnits);
+
+        List<byte[]> actual = enotSerializer.serialize(json, params);
+
+        assertThat(actual).hasSize(1);
+    }
+
+    @Test
+    void testSerializeOrganizationalUnitSuccessMultipleUnits() throws Exception {
+
+        String path = "json/asn1/rfc/subject-dn-organizational-unit.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+
+        List<Map<String, Object>> orgUnits = List.of(Map.of("unit", "unit1"), Map.of("unit", "unit2"),
+                Map.of("unit", "unit3"));
+        Map<String, Object> params = Map.of("organizational_units", orgUnits);
+
+        List<byte[]> actual = enotSerializer.serialize(json, params);
+
+        assertThat(actual).hasSize(3);
     }
 }

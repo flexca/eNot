@@ -57,6 +57,10 @@ public class EnotSerializer {
                     "cannot resolve EnotTypeSpecification for element with type " + element.getType())));
 
         ElementSerializer elementSerializer = typeSpecification.getSerializer(element);
+        if(elementSerializer == null) {
+            throw new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
+                    "serializer not found for element"));
+        }
         List<ElementSerializationResult> serializationResults = elementSerializer.serialize(element, parameters, jsonPath, enotRegistry);
 
         List<byte[]> result = new ArrayList<>();

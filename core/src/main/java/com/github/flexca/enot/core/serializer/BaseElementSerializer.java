@@ -63,7 +63,7 @@ public abstract class BaseElementSerializer implements ElementSerializer {
         if (value instanceof Collection<?> collectionValue) {
             int i = 0;
             for(Object child : collectionValue) {
-                serializationResults.add(serializeSinglePrimitiveValue(value, jsonPath + "/" + i));
+                serializationResults.add(serializeSinglePrimitiveValue(child, jsonPath + "/" + i));
                 i++;
             }
         } else {
