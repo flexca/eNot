@@ -21,6 +21,20 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME, SystemAttribute.MIN_ITEMS, SystemAttribute.MAX_ITEMS),
             new SystemLoopSerializer()),
 
+    CONDITION("condition",
+            new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
+            new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
+            Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
+            Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
+            null),
+
+    GROUP("group",
+            new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
+            new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
+            Set.of(SystemAttribute.KIND, SystemAttribute.NAME),
+            Set.of(SystemAttribute.KIND, SystemAttribute.NAME),
+            null),
+
     REFERENCE("reference",
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
@@ -28,19 +42,11 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND),
             null),
 
-
     BIT_MAP("bit_map",
             new EnotValueSpecification(CommonEnotValueType.BOOLEAN, true),
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
             Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
             Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
-            null),
-
-    CONDITION("condition",
-            new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
-            new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
-            Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
-            Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
             null),
 
     SHA1("sha1",

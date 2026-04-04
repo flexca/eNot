@@ -13,6 +13,7 @@ import java.util.Map;
 public enum SystemAttribute implements EnotAttribute {
 
     KIND("kind", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
+    NAME("name", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     ITEMS_NAME("items_name", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     MIN_ITEMS("min_items", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
     MAX_ITEMS("max_items", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
