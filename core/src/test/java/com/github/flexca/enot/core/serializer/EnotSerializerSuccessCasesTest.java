@@ -27,7 +27,9 @@ public class EnotSerializerSuccessCasesTest {
 
     @BeforeEach
     void init() {
-        enotRegistry = new EnotRegistry(new SystemTypeSpecification(), new Asn1TypeSpecification());
+        enotRegistry = new EnotRegistry.Builder()
+                .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
+                .build();
         enotParser = new EnotParser(enotRegistry, objectMapper);
         enotSerializer = new EnotSerializer(enotRegistry, enotParser);
     }

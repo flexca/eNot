@@ -8,11 +8,6 @@ public class EnotRegistryTest {
     private EnotRegistry enotRegistry;
 
     @Test
-    void testConstructor() throws Exception {
-        EnotRegistry enotRegistry = new EnotRegistry();
-    }
-
-    @Test
     void testBuilder() throws Exception {
         EnotRegistry enotRegistry = new EnotRegistry.Builder().build();
     }

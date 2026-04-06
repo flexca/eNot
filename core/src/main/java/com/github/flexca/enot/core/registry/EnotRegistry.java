@@ -20,12 +20,12 @@ public class EnotRegistry {
 
     private final Map<String, EnotTypeSpecification> typeSpecifications = new HashMap<>();
     private final Map<String, EnotValueType> valueTypes = new HashMap<>();
+    private final Map<String, EnotSystemVariableProvider> systemVariableProviders = new HashMap<>();
+    private final Map<String, EnotElementReferenceResolver> elementReferenceResolvers = new HashMap<>();
 
-    public EnotRegistry(EnotTypeSpecification... specifications) {
-        this(Arrays.asList(specifications));
-    }
-
-    public EnotRegistry(Collection<EnotTypeSpecification> specifications) {
+    private EnotRegistry(Collection<EnotTypeSpecification> specifications,
+                         Collection<EnotSystemVariableProvider> systemVariableProviders,
+                         Collection<EnotElementReferenceResolver> elementReferenceResolvers) {
 
         for(EnotValueType commonValueType : CommonEnotValueType.values()) {
             if (commonValueType.haveCyclicDependency()) {
@@ -46,7 +46,13 @@ public class EnotRegistry {
                     }
                     if (valueTypes.containsKey(customValueType.getName())) {
                         throw new EnotInvalidConfigurationException("Custom EnotValueType " + customValueType.getName()
-                                + " provided by eNot elements of type " + specification.getTypeName() + " was already used, change ValueType to unique");
+                                + " provided by eNot elements of type " + specification.getTypeName()
+                                + " was already used, change ValueType name to unique");
+                    }
+                    if (customValueType.getBinaryConverter() == null) {
+                        throw new EnotInvalidConfigurationException("Custom EnotValueType " + customValueType.getName()
+                                + " provided by eNot elements of type " + specification.getTypeName()
+                                + " getBinaryConverter return null");
                     }
                 }
             }
@@ -73,6 +79,8 @@ public class EnotRegistry {
     public static class Builder {
 
         private final List<EnotTypeSpecification> specifications = new ArrayList<>();
+        private final List<EnotSystemVariableProvider> systemVariableProviders = new ArrayList<>();
+        private final List<EnotElementReferenceResolver> elementReferenceResolvers = new ArrayList<>();
 
         public Builder() {
         }
@@ -92,8 +100,13 @@ public class EnotRegistry {
             return this;
         }
 
+        public Builder withSystemVariableProvider(EnotSystemVariableProvider systemVariableProvider) {
+            systemVariableProviders.add(systemVariableProvider);
+            return this;
+        }
+
         public EnotRegistry build() {
-            return new EnotRegistry(specifications);
+            return new EnotRegistry(specifications, systemVariableProviders, elementReferenceResolvers);
         }
     }
 }
