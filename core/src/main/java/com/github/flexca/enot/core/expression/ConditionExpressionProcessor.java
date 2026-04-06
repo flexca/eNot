@@ -1,10 +1,15 @@
 package com.github.flexca.enot.core.expression;
 
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
+import com.github.flexca.enot.core.expression.model.ExpressionBlock;
+import com.github.flexca.enot.core.expression.model.ExpressionFunction;
+import com.github.flexca.enot.core.expression.model.ExpressionNode;
+import com.github.flexca.enot.core.expression.model.Operator;
 import com.github.flexca.enot.core.util.PlaceholderUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,26 +20,27 @@ public class ConditionExpressionProcessor {
     private static final String BLOCK_NAME_TEMPLATE = "#block%d";
     private static final char OPENING_BRACKET = '(';
     private static final char CLOSING_BRACKET = ')';
+    private static final char LITERAL = '\'';
 
-    public void parse(String expression) {
+    public ExpressionBlock parse(String expression) {
 
         if (StringUtils.isBlank(expression)) {
             throw new EnotInvalidArgumentException("expression must not be blank");
         }
 
-        validateBrackets(expression);
+        validateBracketsAndLiterals(expression);
         String expressionWithoutSpaces = removeSpaces(expression);
 
-        parseExpression(expressionWithoutSpaces);
-
+        return parseExpression(expressionWithoutSpaces);
     }
 
-    private void parseExpression(String expression) {
+    private ExpressionBlock parseExpression(String expression) {
 
-        String collapsedExpression = collapseBlocks(expression, new HashMap<>());
+        Map<String, ExpressionBlock> blocks = new HashMap<>();
+        return collapseBlocks(expression, blocks);
     }
 
-    private String collapseBlocks(String expression, Map<String, String> blocks) {
+    private ExpressionBlock collapseBlocks(String expression, Map<String, ExpressionBlock> blocks) {
 
         StringBuilder expressionLeftover;
         String currentExpression = expression;
@@ -56,7 +62,7 @@ public class ConditionExpressionProcessor {
 
             String expressionBlock = currentExpression.substring(innerBlockOpeningIndex + 1, innerBlockClosingIndex).trim();
             String blockName = String.format(BLOCK_NAME_TEMPLATE, (blocks.size() + 1));
-            blocks.put(blockName, expressionBlock);
+            // blocks.put(blockName, expressionBlock);
 
             expressionLeftover = new StringBuilder();
             if (innerBlockOpeningIndex > 0) {
@@ -69,7 +75,7 @@ public class ConditionExpressionProcessor {
             currentExpression = expressionLeftover.toString();
         }
 
-        return currentExpression;
+        return parseBinaryExpression(currentExpression, blocks);
 
     }
 
@@ -93,26 +99,68 @@ public class ConditionExpressionProcessor {
         return null;
     }
 
-    private String removeSpaces(String input) {
-        StringBuilder result = new StringBuilder();
-        boolean insideLiteral = false;
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-            if (c == '\'') {
+    private ExpressionBlock parseBinaryExpression(String expression, Map<String, ExpressionBlock> blocks) {
+
+        char previousChar = expression.charAt(0);
+        int lastOperatorIndex = -1;
+        List<String> parts = new ArrayList<>();
+        List<Operator> operators = new ArrayList<>();
+
+        boolean insideLiteral = previousChar == LITERAL;
+        for (int i = 1; i < expression.length(); i++) {
+
+            char currentChar = expression.charAt(i);
+
+            if (currentChar == LITERAL) {
                 insideLiteral = !insideLiteral;
             }
-            if (!insideLiteral && c != ' ' && c != '\n' && c != '\t' && c != '\r') {
-                result.append(c);
+
+            Operator currentOperator = null;
+            if(!insideLiteral) {
+                if (previousChar == '|' && currentChar == '|') {
+                    currentOperator = Operator.OR_OPERATOR;
+                }
+                if (previousChar == '&' && currentChar == '&') {
+                    currentOperator = Operator.AND_OPERATOR;
+                }
             }
+
+            if (currentOperator != null) {
+                String part = expression.substring(lastOperatorIndex + 1, i - 1);
+                lastOperatorIndex = i;
+                parts.add(part);
+                operators.add(currentOperator);
+            }
+
+            if (i == expression.length() - 1) {
+                String part = expression.substring(lastOperatorIndex + 1);
+                parts.add(part);
+            }
+
+            previousChar = currentChar;
         }
-        return result.toString();
+
+        if (operators.contains(Operator.OR_OPERATOR) && operators.contains(Operator.AND_OPERATOR)) {
+            throw new EnotInvalidArgumentException("both OR (||) and AND (&&) operators have same priority. Thus usage of expressions like " +
+                    "'A || B && C' is not allowed as priority is not clear, add additional brackets to emphasize the priority, " +
+                    "examples: 'A || (B && C)' or '(A || B) && C'");
+        }
+
+        if (parts.size() - 1 > operators.size()) {
+            throw new EnotInvalidArgumentException("missing operators in expressions");
+        }
+        if (parts.size() - 1 < operators.size()) {
+            throw new EnotInvalidArgumentException("extra operators in expressions");
+        }
+
+        for (String part : parts) {
+
+        }
+
+        return null;
     }
 
-    public List<ComparisonExpression> parseBinaryExpression(String expression) {
-        return List.of();
-    }
-
-    public ComparisonExpression parseComparisonExpression(String expression) {
+    private ExpressionBlock parseComparisonExpression(String expression) {
 
         Operator operator = null;
         String[] expressionParts = null;
@@ -146,11 +194,10 @@ public class ConditionExpressionProcessor {
         String left = expressionParts[0];
         String right = expressionParts[1];
 
-        validateExpressionPart(left, "left", expression);
-        validateExpressionPart(right, "right", expression);
+        ExpressionBlock leftBlock = extractBlock(left, "left", expression);
+        ExpressionBlock rightBlock = extractBlock(right, "right", expression);
 
-        return ComparisonExpression.of(left.trim(), right.trim(), operator);
-
+        return new ExpressionNode(false, null, List.of(leftBlock, rightBlock), operator);
     }
 
     private Operator resolveCompatible(Operator first, Operator second) {
@@ -164,7 +211,7 @@ public class ConditionExpressionProcessor {
         return null;
     }
 
-    private void validateExpressionPart(String expressionPart, String partName, String parentExpression) {
+    private ExpressionBlock extractBlock(String expressionPart, String partName, String parentExpression) {
 
         if (StringUtils.isBlank(expressionPart)) {
             throw new EnotInvalidArgumentException("Blank " + partName + " part of expression: " + parentExpression);
@@ -173,26 +220,52 @@ public class ConditionExpressionProcessor {
         String expressionPartTrimmed = expressionPart.trim();
 
         PlaceholderUtils.isPlaceholder(expressionPartTrimmed);
+
+        return null;
     }
 
 
-    private void validateBrackets(String expression) {
+    private void validateBracketsAndLiterals(String expression) {
 
+        boolean insideLiteral = false;
         int openingBracketCounter = 0;
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
-            if (c == OPENING_BRACKET) {
-                openingBracketCounter++;
+            if (c == LITERAL) {
+                insideLiteral = !insideLiteral;
             }
-            if (c == CLOSING_BRACKET) {
-                openingBracketCounter--;
+            if(!insideLiteral) {
+                if (c == OPENING_BRACKET) {
+                    openingBracketCounter++;
+                }
+                if (c == CLOSING_BRACKET) {
+                    openingBracketCounter--;
+                }
             }
             if (openingBracketCounter < 0) {
-                throw new EnotInvalidArgumentException("extra closing bracket");
+                throw new EnotInvalidArgumentException("extra closing bracket in expression");
             }
         }
         if (openingBracketCounter > 0) {
-            throw new EnotInvalidArgumentException("missing closing bracket");
+            throw new EnotInvalidArgumentException("missing closing bracket in expression");
         }
+        if (insideLiteral) {
+            throw new EnotInvalidArgumentException("not closed literal in expression");
+        }
+    }
+
+    private String removeSpaces(String input) {
+        StringBuilder result = new StringBuilder();
+        boolean insideLiteral = false;
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c == LITERAL) {
+                insideLiteral = !insideLiteral;
+            }
+            if (!insideLiteral && c != ' ' && c != '\n' && c != '\t' && c != '\r') {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 }

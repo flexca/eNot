@@ -1,6 +1,5 @@
-package com.github.flexca.enot.core.expression;
+package com.github.flexca.enot.core.expression.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

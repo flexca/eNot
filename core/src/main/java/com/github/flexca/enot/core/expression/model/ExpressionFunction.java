@@ -1,8 +1,9 @@
-package com.github.flexca.enot.core.expression;
+package com.github.flexca.enot.core.expression.model;
 
 public enum ExpressionFunction {
 
-    DATE_TIME("date_time");
+    DATE_TIME("date_time"),
+    LENGTH("length");
 
     private final String name;
 

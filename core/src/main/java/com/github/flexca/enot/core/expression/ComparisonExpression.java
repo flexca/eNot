@@ -1,5 +1,7 @@
 package com.github.flexca.enot.core.expression;
 
+import com.github.flexca.enot.core.expression.model.Operator;
+
 public class ComparisonExpression {
 
     private final String left;
@@ -7,7 +9,6 @@ public class ComparisonExpression {
     private final Operator operator;
 
     public static ComparisonExpression of(String left, String right, Operator operator) {
-        // "date_time(${valid_from}) >= date_time('2050-01-01T00-00-00Z')"
         return new ComparisonExpression(left, right, operator);
     }
 

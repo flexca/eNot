@@ -1,4 +1,4 @@
-package com.github.flexca.enot.core.expression;
+package com.github.flexca.enot.core.expression.model;
 
 public enum OperatorType {
 
