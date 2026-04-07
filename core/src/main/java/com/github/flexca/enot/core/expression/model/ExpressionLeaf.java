@@ -7,9 +7,8 @@ public class ExpressionLeaf extends ExpressionBlock {
     private final EnotValueType valueType;
     private final Object value;
 
-    public ExpressionLeaf(boolean inverted, ExpressionFunction expressionFunction,
-                             EnotValueType valueType, Object value) {
-        super(inverted, true, expressionFunction);
+    public ExpressionLeaf(boolean inverted, EnotValueType valueType, Object value) {
+        super(inverted, true);
         this.valueType = valueType;
         this.value = value;
     }

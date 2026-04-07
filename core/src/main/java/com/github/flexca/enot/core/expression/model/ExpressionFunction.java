@@ -1,17 +1,23 @@
 package com.github.flexca.enot.core.expression.model;
 
-public enum ExpressionFunction {
+import java.util.List;
 
-    DATE_TIME("date_time"),
-    LENGTH("length");
+public class ExpressionFunction extends ExpressionBlock {
 
-    private final String name;
+    private final ConditionFunction conditionFunction;
+    private final List<ExpressionBlock> arguments;
 
-    private ExpressionFunction(String name) {
-        this.name = name;
+    public ExpressionFunction(boolean inverted, ConditionFunction conditionFunction, List<ExpressionBlock> arguments) {
+        super(inverted, false);
+        this.conditionFunction = conditionFunction;
+        this.arguments = arguments;
     }
 
-    public String getName() {
-        return name;
+    public ConditionFunction getConditionFunction() {
+        return conditionFunction;
+    }
+
+    public List<ExpressionBlock> getArguments() {
+        return arguments;
     }
 }

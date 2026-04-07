@@ -7,9 +7,8 @@ public class ExpressionNode extends ExpressionBlock {
     private final List<ExpressionBlock> parts;
     private final Operator operator;
 
-    public ExpressionNode(boolean inverted, ExpressionFunction expressionFunction,
-                             List<ExpressionBlock> parts, Operator operator) {
-        super(inverted, false, expressionFunction);
+    public ExpressionNode(boolean inverted, List<ExpressionBlock> parts, Operator operator) {
+        super(inverted, false);
         this.parts = parts;
         this.operator = operator;
     }

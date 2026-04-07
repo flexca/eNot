@@ -4,12 +4,10 @@ public abstract class ExpressionBlock {
 
     private final boolean inverted;
     private final boolean leaf;
-    private final ExpressionFunction expressionFunction;
 
-    protected ExpressionBlock(boolean inverted, boolean leaf, ExpressionFunction expressionFunction) {
+    protected ExpressionBlock(boolean inverted, boolean leaf) {
         this.inverted = inverted;
         this.leaf = leaf;
-        this.expressionFunction = expressionFunction;
     }
 
     public boolean isInverted() {
@@ -18,9 +16,5 @@ public abstract class ExpressionBlock {
 
     public boolean isLeaf() {
         return leaf;
-    }
-
-    public ExpressionFunction getExpressionFunction() {
-        return expressionFunction;
     }
 }
