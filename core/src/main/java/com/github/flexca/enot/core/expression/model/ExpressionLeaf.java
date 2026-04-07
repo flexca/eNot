@@ -20,4 +20,9 @@ public class ExpressionLeaf extends ExpressionBlock {
     public Object getValue() {
         return value;
     }
+
+    @Override
+    public ExpressionBlock invert() {
+        return new ExpressionLeaf(!isInverted(), valueType, value);
+    }
 }

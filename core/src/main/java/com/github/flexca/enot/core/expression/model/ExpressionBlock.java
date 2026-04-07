@@ -10,6 +10,8 @@ public abstract class ExpressionBlock {
         this.leaf = leaf;
     }
 
+    public abstract ExpressionBlock invert();
+
     public boolean isInverted() {
         return inverted;
     }
@@ -17,4 +19,5 @@ public abstract class ExpressionBlock {
     public boolean isLeaf() {
         return leaf;
     }
+
 }

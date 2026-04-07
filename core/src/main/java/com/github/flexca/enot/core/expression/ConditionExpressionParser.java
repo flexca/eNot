@@ -1,13 +1,17 @@
 package com.github.flexca.enot.core.expression;
 
+import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
 import com.github.flexca.enot.core.expression.model.ConditionFunction;
 import com.github.flexca.enot.core.expression.model.ExpressionBlock;
+import com.github.flexca.enot.core.expression.model.ExpressionFunction;
+import com.github.flexca.enot.core.expression.model.ExpressionLeaf;
 import com.github.flexca.enot.core.expression.model.ExpressionNode;
 import com.github.flexca.enot.core.expression.model.Operator;
 import com.github.flexca.enot.core.util.PlaceholderUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,10 +20,13 @@ import java.util.Set;
 
 public class ConditionExpressionParser {
 
+    private static final String BLOCK_NAME_PREFIX = "#block";
     private static final String BLOCK_NAME_TEMPLATE = "#block%d";
     private static final char OPENING_BRACKET = '(';
     private static final char CLOSING_BRACKET = ')';
     private static final char LITERAL = '\'';
+    private static final char ARGUMENTS_SEPARATOR = ',';
+
 
     public ExpressionBlock parse(String expression) {
 
@@ -32,7 +39,6 @@ public class ConditionExpressionParser {
 
         return parseExpression(expressionWithoutSpaces);
     }
-
 
 
     private ExpressionBlock parseExpression(String expression) {
@@ -57,10 +63,11 @@ public class ConditionExpressionParser {
             FunctionExtractionResult functionExtractionResult = getFunctionWithIndex(currentExpression, innerBlockOpeningIndex);
             String subExpression = currentExpression.substring(innerBlockOpeningIndex + 1, innerBlockClosingIndex).trim();
             ExpressionBlock block;
-            if (functionExtractionResult != null) {
+            if (functionExtractionResult.getConditionFunction() != null) {
                 block = parseFunctionExpression(subExpression, blocks, functionExtractionResult);
             } else {
-                block = parseBinaryExpression(subExpression, blocks);
+                block = parseBinaryExpression(subExpression, functionExtractionResult.isInverted(), blocks);
+                innerBlockOpeningIndex = functionExtractionResult.getStartIndex();
             }
 
             String blockName = String.format(BLOCK_NAME_TEMPLATE, (blocks.size() + 1));
@@ -77,14 +84,48 @@ public class ConditionExpressionParser {
             currentExpression = expressionLeftover.toString();
         }
 
-        return parseBinaryExpression(currentExpression, blocks);
+        return parseBinaryExpression(currentExpression, false, blocks);
 
     }
 
-    private ExpressionBlock parseFunctionExpression(String subExpression, Map<String, ExpressionBlock> blocks,
+    private ExpressionBlock parseFunctionExpression(String expression, Map<String, ExpressionBlock> blocks,
                                                     FunctionExtractionResult functionExtractionResult) {
 
-        return null;
+        boolean insideOfLiteral = false;
+        int lastSeparatorPosition = -1;
+        List<String> arguments = new ArrayList<>();
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+            if (c == LITERAL) {
+                insideOfLiteral = !insideOfLiteral;
+            }
+            if (!insideOfLiteral) {
+                if (c == ARGUMENTS_SEPARATOR) {
+                    String argument = expression.substring(lastSeparatorPosition + 1, i);
+                    arguments.add(argument);
+                    lastSeparatorPosition = i;
+                }
+            }
+
+            if (i == expression.length() - 1) {
+                String argument = expression.substring(lastSeparatorPosition + 1, i);
+                arguments.add(argument);
+            }
+        }
+
+        if (functionExtractionResult.getConditionFunction().getArgumentsNumber() != arguments.size()) {
+            throw new EnotInvalidArgumentException("function " + functionExtractionResult.getConditionFunction().getName() + " " +
+                    "required " + functionExtractionResult.getConditionFunction().getArgumentsNumber() + " arguments, " +
+                    "provided number of arguments: " + arguments.size());
+        }
+
+        List<ExpressionBlock> argumentExpressions = new ArrayList<>();
+        for (String argument : arguments) {
+            ExpressionBlock argumentExpression = parseBinaryExpression(argument, false, blocks);
+            argumentExpressions.add(argumentExpression);
+        }
+
+        return new ExpressionFunction(functionExtractionResult.isInverted(), functionExtractionResult.getConditionFunction(), argumentExpressions);
     }
 
     private FunctionExtractionResult getFunctionWithIndex(String currentExpression, int blockOpeningIndex) {
@@ -92,21 +133,21 @@ public class ConditionExpressionParser {
         int breakIndex = 0;
         for (int i = blockOpeningIndex - 1; i >= 0; i--) {
             char c = currentExpression.charAt(i);
-            if (c == OPENING_BRACKET || c == '|' || c == '&' || c == '=' /*|| c == '!'*/ || c == '>' || c == '<' || c == ',') {
+            if (c == OPENING_BRACKET || c == '|' || c == '&' || c == '=' /*|| c == '!'*/ || c == '>' || c == '<' || c == ARGUMENTS_SEPARATOR) {
                 breakIndex = i;
                 break;
             }
         }
 
         if (blockOpeningIndex - breakIndex <= 0) {
-            return null;
+            return new FunctionExtractionResult(null, breakIndex + 1, false);
         }
 
         String functionCandidateName = currentExpression.substring(breakIndex, blockOpeningIndex).trim();
         boolean inverted = false;
         if (functionCandidateName.startsWith(Operator.NOT_OPERATOR.getOperator())) {
             if (blockOpeningIndex - breakIndex == 1) {
-                return null;
+                return new FunctionExtractionResult(null, breakIndex + 1, true);
             }
             inverted = true;
             functionCandidateName = functionCandidateName.substring(1);
@@ -119,7 +160,7 @@ public class ConditionExpressionParser {
         return new FunctionExtractionResult(conditionFunction, breakIndex + 1, inverted);
     }
 
-    private ExpressionBlock parseBinaryExpression(String expression, Map<String, ExpressionBlock> blocks) {
+    private ExpressionBlock parseBinaryExpression(String expression, boolean inverted, Map<String, ExpressionBlock> blocks) {
 
         char previousChar = expression.charAt(0);
         int lastOperatorIndex = -1;
@@ -167,83 +208,145 @@ public class ConditionExpressionParser {
         }
 
         if (parts.size() - 1 > operators.size()) {
-            throw new EnotInvalidArgumentException("missing operators in expressions");
+            throw new EnotInvalidArgumentException("missing operators in expression");
         }
         if (parts.size() - 1 < operators.size()) {
-            throw new EnotInvalidArgumentException("extra operators in expressions");
+            throw new EnotInvalidArgumentException("extra operators in expression");
         }
 
+        if (parts.size() == 1) {
+            return parseComparisonExpression(parts.get(0), inverted, blocks);
+        }
+
+        List<ExpressionBlock> subExpressions = new ArrayList<>();
         for (String part : parts) {
-
+            ExpressionBlock subExpression = parseComparisonExpression(part, false, blocks);
+            subExpressions.add(subExpression);
         }
 
-        return null;
+        return new ExpressionNode(inverted, subExpressions, operators.get(0));
     }
 
-    private ExpressionBlock parseComparisonExpression(String expression) {
+    private ExpressionBlock parseComparisonExpression(String expression, boolean inverted, Map<String, ExpressionBlock> blocks) {
 
-        Operator operator = null;
-        String[] expressionParts = null;
-        for (Operator candidate : Operator.getComparisonOperators()) {
-            String[] parts = expression.split(candidate.getOperator());
-            if (parts.length == 2) {
-                if (operator != null) {
-                    Operator compatible = resolveCompatible(operator, candidate);
-                    if (compatible == null) {
-                        throw new EnotInvalidArgumentException("unexpected multiple comparison operators: " + operator.getOperator()
-                                + " and " + candidate.getOperator() + " for expression [" + expression + "], expecting only one operator");
-                    } else if (compatible.equals(operator)) {
-                        continue;
-                    }
-                }
-                operator = candidate;
-                expressionParts = parts;
-            } else if (parts.length != 1) {
-                throw new EnotInvalidArgumentException("unexpected multiple comparison operators: " + candidate.getOperator()
-                        + " in expression " + expression + ", expecting only one operator");
+        List<Operator> operators = new ArrayList<>();
+        List<String> parts = new ArrayList<>();
+        char previousChar = expression.charAt(0);
+        boolean insideOfLiteral = previousChar == LITERAL;
+        int lastPartPosition = -1;
+        for (int i = 1; i < expression.length(); i++) {
+            char currentChar = expression.charAt(i);
+            Operator currentOperator = null;
+            if (currentChar == LITERAL) {
+                insideOfLiteral = !insideOfLiteral;
             }
+
+            if (!insideOfLiteral) {
+
+                if (previousChar == '=' && currentChar == '=') {
+                    currentOperator = Operator.EQUALS_OPERATOR;
+                }
+                if (previousChar == '!' && currentChar == '=') {
+                    currentOperator = Operator.NOT_EQUALS_OPERATOR;
+                }
+                if (previousChar == '>' && currentChar == '=') {
+                    currentOperator = Operator.GREATER_THAN_OR_EQUALS_OPERATOR;
+                }
+                if (previousChar == '>' && currentChar != '=') {
+                    currentOperator = Operator.GREATER_THAN_OPERATOR;
+                }
+                if (previousChar == '<' && currentChar == '=') {
+
+                }
+                if (previousChar == '<' && currentChar != '=') {
+
+                }
+
+                if (currentOperator != null) {
+                    operators.add(currentOperator);
+                    String part = expression.substring(lastPartPosition + 1, i - 1);
+                    parts.add(part);
+                    lastPartPosition = i;
+                }
+            }
+
+            if (i == expression.length() - 1) {
+                String part = expression.substring(lastPartPosition + 1);
+                parts.add(part);
+            }
+
+            previousChar = currentChar;
         }
 
-        if (operator == null) {
-            operator = Operator.EQUALS_OPERATOR;
-            expressionParts = new String[2];
-            expressionParts[0] = expression;
-            expressionParts[1] = "true";
+        if (operators.size() > 1) {
+            throw new EnotInvalidArgumentException("extra comparison operation " + operators.get(1).getOperator()
+                    + " in expression: " + expression);
         }
 
-        String left = expressionParts[0];
-        String right = expressionParts[1];
+        if (parts.size() > 2 || parts.isEmpty() || (parts.size() - 1 != operators.size())) {
+            throw new EnotInvalidArgumentException("syntax error in expression: " + expression);
+        }
 
-        ExpressionBlock leftBlock = extractBlock(left, "left", expression);
-        ExpressionBlock rightBlock = extractBlock(right, "right", expression);
+        if (parts.size() == 1) {
+            ExpressionBlock primitiveBlock = extractPrimitiveBlock(parts.get(0), expression, blocks);
+            return inverted ? primitiveBlock.invert() : primitiveBlock;
+        }
 
-        return new ExpressionNode(false, List.of(leftBlock, rightBlock), operator);
+        List<ExpressionBlock> expressionParts = new ArrayList<>();
+        for (String part : parts) {
+            ExpressionBlock expressionPart = extractPrimitiveBlock(part, expression, blocks);
+            expressionParts.add(expressionPart);
+        }
+
+        return new ExpressionNode(inverted, expressionParts, operators.get(0));
     }
 
-    private Operator resolveCompatible(Operator first, Operator second) {
-        Set<Operator> operators = Set.of(first, second);
-        if (operators.contains(Operator.GREATER_THAN_OPERATOR) && operators.contains(Operator.GREATER_THAN_OR_EQUALS_OPERATOR)) {
-            return Operator.GREATER_THAN_OR_EQUALS_OPERATOR;
-        }
-        if (operators.contains(Operator.LESS_THAN_OPERATOR) && operators.contains(Operator.LESS_THAN_OR_EQUALS_OPERATOR)) {
-            return Operator.LESS_THAN_OR_EQUALS_OPERATOR;
-        }
-        return null;
-    }
-
-    private ExpressionBlock extractBlock(String expressionPart, String partName, String parentExpression) {
+    private ExpressionBlock extractPrimitiveBlock(String expressionPart, String parentExpression, Map<String, ExpressionBlock> blocks) {
 
         if (StringUtils.isBlank(expressionPart)) {
-            throw new EnotInvalidArgumentException("Blank " + partName + " part of expression: " + parentExpression);
+            throw new EnotInvalidArgumentException("blank expression in " + parentExpression);
+        }
+        String expressionPartTrimmed = expressionPart.trim();
+        boolean inverted = false;
+        if (expressionPartTrimmed.startsWith("!")) {
+            expressionPartTrimmed = expressionPartTrimmed.substring(1);
+            inverted = true;
         }
 
-        String expressionPartTrimmed = expressionPart.trim();
+        if (PlaceholderUtils.isPlaceholder(expressionPartTrimmed)) {
+            return new ExpressionLeaf(inverted, CommonEnotValueType.PLACEHOLDER, PlaceholderUtils.extractPlaceholder(expressionPartTrimmed));
+        }
 
-        PlaceholderUtils.isPlaceholder(expressionPartTrimmed);
+        if (expressionPartTrimmed.startsWith(BLOCK_NAME_PREFIX)) {
+            String blockIndexText = expressionPartTrimmed.substring(BLOCK_NAME_PREFIX.length());
+            int blockIndex;
+            try {
+                blockIndex = Integer.parseInt(blockIndexText);
+            } catch(Exception e) {
+                throw new EnotInvalidArgumentException("undefined symbol " + blockIndexText);
+            }
+            ExpressionBlock existingBlock = blocks.get(String.format(BLOCK_NAME_TEMPLATE, blockIndex));
+            if (existingBlock == null) {
+                throw new EnotInvalidArgumentException("undefined symbol " + blockIndexText);
+            }
+            return inverted ? existingBlock.invert() : existingBlock;
+        }
 
-        return null;
+        if (expressionPartTrimmed.charAt(0) == LITERAL && expressionPartTrimmed.charAt(expressionPartTrimmed.length() - 1) == LITERAL) {
+            return new ExpressionLeaf(inverted, CommonEnotValueType.TEXT, expressionPartTrimmed.substring(1, expressionPartTrimmed.length() - 1));
+        }
+
+        if ("true".equalsIgnoreCase(expressionPartTrimmed) || "false".equalsIgnoreCase(expressionPartTrimmed)) {
+            return new ExpressionLeaf(inverted, CommonEnotValueType.BOOLEAN, Boolean.valueOf(expressionPartTrimmed));
+        }
+
+        try {
+            BigInteger integerCandidate = new BigInteger(expressionPartTrimmed, 10);
+            return new ExpressionLeaf(inverted, CommonEnotValueType.INTEGER, integerCandidate);
+        } catch (Exception e) {
+            throw new EnotInvalidArgumentException("undefined symbol " + expressionPartTrimmed);
+        }
     }
-
 
     private void validateBracketsAndLiterals(String expression) {
 
@@ -289,7 +392,7 @@ public class ConditionExpressionParser {
         return result.toString();
     }
 
-    private class FunctionExtractionResult {
+    private static class FunctionExtractionResult {
 
         private final ConditionFunction conditionFunction;
         private final int startIndex;
@@ -315,6 +418,33 @@ public class ConditionExpressionParser {
     }
 
     private String collapseInversions(String expression) {
-        return null;
+
+        char previousChar = expression.charAt(0);
+        boolean insideOfLiteral = previousChar == LITERAL;
+        StringBuilder result = new StringBuilder();
+        int ignoreTill = -1;
+        for (int i = 1; i < expression.length(); i++) {
+            boolean addPrevious = true;
+            char currentChar = expression.charAt(i);
+            if(currentChar == LITERAL) {
+                insideOfLiteral = !insideOfLiteral;
+            }
+            if(!insideOfLiteral) {
+                if (previousChar == '!' && currentChar == '!' && i > ignoreTill + 1) {
+                    ignoreTill = i;
+                }
+            }
+
+            if (i > ignoreTill - 1) {
+                result.append(previousChar);
+            }
+            if ((i == expression.length() - 1) && i > ignoreTill) {
+                result.append(currentChar);
+            }
+
+            previousChar = currentChar;
+        }
+
+        return result.toString();
     }
 }

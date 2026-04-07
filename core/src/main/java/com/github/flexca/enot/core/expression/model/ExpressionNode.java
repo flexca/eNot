@@ -20,4 +20,9 @@ public class ExpressionNode extends ExpressionBlock {
     public Operator getOperator() {
         return operator;
     }
+
+    @Override
+    public ExpressionBlock invert() {
+        return new ExpressionNode(!isInverted(), parts, operator);
+    }
 }

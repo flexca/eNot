@@ -20,4 +20,9 @@ public class ExpressionFunction extends ExpressionBlock {
     public List<ExpressionBlock> getArguments() {
         return arguments;
     }
+
+    @Override
+    public ExpressionBlock invert() {
+        return new ExpressionFunction(!isInverted(), conditionFunction, arguments);
+    }
 }
