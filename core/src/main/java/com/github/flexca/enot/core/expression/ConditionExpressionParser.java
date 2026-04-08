@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class ConditionExpressionParser {
@@ -65,9 +66,9 @@ public class ConditionExpressionParser {
             ExpressionBlock block;
             if (functionExtractionResult.getConditionFunction() != null) {
                 block = parseFunctionExpression(subExpression, blocks, functionExtractionResult);
+                innerBlockOpeningIndex = functionExtractionResult.getStartIndex();
             } else {
                 block = parseBinaryExpression(subExpression, functionExtractionResult.isInverted(), blocks);
-                innerBlockOpeningIndex = functionExtractionResult.getStartIndex();
             }
 
             String blockName = String.format(BLOCK_NAME_TEMPLATE, (blocks.size() + 1));
@@ -108,7 +109,7 @@ public class ConditionExpressionParser {
             }
 
             if (i == expression.length() - 1) {
-                String argument = expression.substring(lastSeparatorPosition + 1, i);
+                String argument = expression.substring(lastSeparatorPosition + 1);
                 arguments.add(argument);
             }
         }
@@ -134,13 +135,13 @@ public class ConditionExpressionParser {
         for (int i = blockOpeningIndex - 1; i >= 0; i--) {
             char c = currentExpression.charAt(i);
             if (c == OPENING_BRACKET || c == '|' || c == '&' || c == '=' /*|| c == '!'*/ || c == '>' || c == '<' || c == ARGUMENTS_SEPARATOR) {
-                breakIndex = i;
+                breakIndex = i + 1;
                 break;
             }
         }
 
         if (blockOpeningIndex - breakIndex <= 0) {
-            return new FunctionExtractionResult(null, breakIndex + 1, false);
+            return new FunctionExtractionResult(null, breakIndex, false);
         }
 
         String functionCandidateName = currentExpression.substring(breakIndex, blockOpeningIndex).trim();
@@ -157,7 +158,7 @@ public class ConditionExpressionParser {
             throw new EnotInvalidArgumentException("unsupported function: " + functionCandidateName);
         }
 
-        return new FunctionExtractionResult(conditionFunction, breakIndex + 1, inverted);
+        return new FunctionExtractionResult(conditionFunction, breakIndex, inverted);
     }
 
     private ExpressionBlock parseBinaryExpression(String expression, boolean inverted, Map<String, ExpressionBlock> blocks) {
@@ -256,10 +257,10 @@ public class ConditionExpressionParser {
                     currentOperator = Operator.GREATER_THAN_OPERATOR;
                 }
                 if (previousChar == '<' && currentChar == '=') {
-
+                    currentOperator = Operator.LESS_THAN_OR_EQUALS_OPERATOR;
                 }
                 if (previousChar == '<' && currentChar != '=') {
-
+                    currentOperator = Operator.LESS_THAN_OPERATOR;
                 }
 
                 if (currentOperator != null) {
@@ -314,7 +315,10 @@ public class ConditionExpressionParser {
         }
 
         if (PlaceholderUtils.isPlaceholder(expressionPartTrimmed)) {
-            return new ExpressionLeaf(inverted, CommonEnotValueType.PLACEHOLDER, PlaceholderUtils.extractPlaceholder(expressionPartTrimmed));
+            Optional<String> placeholderValue = PlaceholderUtils.extractPlaceholder(expressionPartTrimmed);
+            if (placeholderValue.isPresent()) {
+                return new ExpressionLeaf(inverted, CommonEnotValueType.PLACEHOLDER, placeholderValue.get());
+            }
         }
 
         if (expressionPartTrimmed.startsWith(BLOCK_NAME_PREFIX)) {
@@ -385,7 +389,7 @@ public class ConditionExpressionParser {
             if (c == LITERAL) {
                 insideLiteral = !insideLiteral;
             }
-            if (!insideLiteral && c != ' ' && c != '\n' && c != '\t' && c != '\r') {
+            if (insideLiteral || (c != ' ' && c != '\n' && c != '\t' && c != '\r')) {
                 result.append(c);
             }
         }
