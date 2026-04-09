@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 public class ConditionExpressionParser {
 
@@ -68,7 +67,8 @@ public class ConditionExpressionParser {
                 block = parseFunctionExpression(subExpression, blocks, functionExtractionResult);
                 innerBlockOpeningIndex = functionExtractionResult.getStartIndex();
             } else {
-                block = parseBinaryExpression(subExpression, functionExtractionResult.isInverted(), blocks);
+                block = parseBinaryExpression(subExpression, false, blocks);
+                innerBlockOpeningIndex = functionExtractionResult.getStartIndex();
             }
 
             String blockName = String.format(BLOCK_NAME_TEMPLATE, (blocks.size() + 1));
@@ -267,7 +267,7 @@ public class ConditionExpressionParser {
                     operators.add(currentOperator);
                     String part = expression.substring(lastPartPosition + 1, i - 1);
                     parts.add(part);
-                    lastPartPosition = i;
+                    lastPartPosition = currentOperator.getOperator().length() == 1 ? i - 1 : i;
                 }
             }
 
@@ -439,7 +439,7 @@ public class ConditionExpressionParser {
                 }
             }
 
-            if (i > ignoreTill - 1) {
+            if (i - 1 > ignoreTill) {
                 result.append(previousChar);
             }
             if ((i == expression.length() - 1) && i > ignoreTill) {

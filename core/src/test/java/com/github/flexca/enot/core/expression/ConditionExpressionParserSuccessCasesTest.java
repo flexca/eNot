@@ -114,6 +114,170 @@ public class ConditionExpressionParserSuccessCasesTest {
     }
 
     @Test
+    void parseSimpleBooleanLiteral() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("${flag} == true");
+
+        assertThat(actual).isInstanceOf(ExpressionNode.class);
+        ExpressionNode node = (ExpressionNode) actual;
+        assertThat(node.isInverted()).isFalse();
+        assertThat(node.getOperator()).isEqualTo(Operator.EQUALS_OPERATOR);
+        assertThat(node.getParts()).hasSize(2);
+        ExpressionLeaf left = (ExpressionLeaf) node.getParts().get(0);
+        assertThat(left.getValueType()).isEqualTo(CommonEnotValueType.PLACEHOLDER);
+        assertThat(left.getValue()).isEqualTo("flag");
+        ExpressionLeaf right = (ExpressionLeaf) node.getParts().get(1);
+        assertThat(right.getValueType()).isEqualTo(CommonEnotValueType.BOOLEAN);
+        assertThat(right.getValue()).isEqualTo(Boolean.TRUE);
+    }
+
+    @Test
+    void parseSimpleIntegerLiteral() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("length(${cn}) > 5");
+
+        assertThat(actual).isInstanceOf(ExpressionNode.class);
+        ExpressionNode node = (ExpressionNode) actual;
+        assertThat(node.isInverted()).isFalse();
+        assertThat(node.getOperator()).isEqualTo(Operator.GREATER_THAN_OPERATOR);
+        assertThat(node.getParts()).hasSize(2);
+        ExpressionBlock left = node.getParts().get(0);
+        assertThat(left).isInstanceOf(ExpressionFunction.class);
+        ExpressionFunction leftFn = (ExpressionFunction) left;
+        assertThat(leftFn.getConditionFunction()).isEqualTo(ConditionFunction.LENGTH);
+        ExpressionLeaf leftArg = (ExpressionLeaf) leftFn.getArguments().get(0);
+        assertThat(leftArg.getValueType()).isEqualTo(CommonEnotValueType.PLACEHOLDER);
+        assertThat(leftArg.getValue()).isEqualTo("cn");
+        ExpressionLeaf right = (ExpressionLeaf) node.getParts().get(1);
+        assertThat(right.getValueType()).isEqualTo(CommonEnotValueType.INTEGER);
+        assertThat(right.getValue()).isEqualTo(new java.math.BigInteger("5"));
+    }
+
+    @Test
+    void parseStrictLessThanComparison() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("length(${cn}) < 64");
+
+        assertThat(actual).isInstanceOf(ExpressionNode.class);
+        ExpressionNode node = (ExpressionNode) actual;
+        assertThat(node.getOperator()).isEqualTo(Operator.LESS_THAN_OPERATOR);
+        ExpressionLeaf right = (ExpressionLeaf) node.getParts().get(1);
+        assertThat(right.getValueType()).isEqualTo(CommonEnotValueType.INTEGER);
+        assertThat(right.getValue()).isEqualTo(new java.math.BigInteger("64"));
+    }
+
+    @Test
+    void parseInvertedFunction() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("!date_time(${valid_from}) >= date_time('2050-01-01T00-00-00Z')");
+
+        assertThat(actual).isInstanceOf(ExpressionNode.class);
+        ExpressionNode node = (ExpressionNode) actual;
+        assertThat(node.getOperator()).isEqualTo(Operator.GREATER_THAN_OR_EQUALS_OPERATOR);
+        ExpressionBlock left = node.getParts().get(0);
+        assertThat(left).isInstanceOf(ExpressionFunction.class);
+        ExpressionFunction leftFn = (ExpressionFunction) left;
+        assertThat(leftFn.isInverted()).isTrue();
+        assertThat(leftFn.getConditionFunction()).isEqualTo(ConditionFunction.DATE_TIME);
+    }
+
+    @Test
+    void parseInvertedGroup() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("!(${valid_from} >= '2050-01-01T00-00-00Z')");
+
+        assertThat(actual).isInstanceOf(ExpressionNode.class);
+        ExpressionNode node = (ExpressionNode) actual;
+        assertThat(node.isInverted()).isTrue();
+        assertThat(node.getOperator()).isEqualTo(Operator.GREATER_THAN_OR_EQUALS_OPERATOR);
+        assertThat(node.getParts()).hasSize(2);
+        ExpressionLeaf left = (ExpressionLeaf) node.getParts().get(0);
+        assertThat(left.getValueType()).isEqualTo(CommonEnotValueType.PLACEHOLDER);
+        assertThat(left.getValue()).isEqualTo("valid_from");
+        ExpressionLeaf right = (ExpressionLeaf) node.getParts().get(1);
+        assertThat(right.getValueType()).isEqualTo(CommonEnotValueType.TEXT);
+        assertThat(right.getValue()).isEqualTo("2050-01-01T00-00-00Z");
+    }
+
+    @Test
+    void parseInvertedGroupWithFunction() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("!(length(${text}) >= 8)");
+
+        assertThat(actual).isInstanceOf(ExpressionNode.class);
+        ExpressionNode node = (ExpressionNode) actual;
+        assertThat(node.isInverted()).isTrue();
+        assertThat(node.getOperator()).isEqualTo(Operator.GREATER_THAN_OR_EQUALS_OPERATOR);
+        assertThat(node.getParts()).hasSize(2);
+
+        ExpressionBlock left = node.getParts().get(0);
+        assertThat(left).isInstanceOf(ExpressionFunction.class);
+        ExpressionFunction leftFn = (ExpressionFunction) left;
+        assertThat(leftFn.isInverted()).isFalse();
+        assertThat(leftFn.getConditionFunction()).isEqualTo(ConditionFunction.LENGTH);
+        assertThat(leftFn.getArguments()).hasSize(1);
+        ExpressionLeaf leftArg = (ExpressionLeaf) leftFn.getArguments().get(0);
+        assertThat(leftArg.getValueType()).isEqualTo(CommonEnotValueType.PLACEHOLDER);
+        assertThat(leftArg.getValue()).isEqualTo("text");
+
+        ExpressionLeaf right = (ExpressionLeaf) node.getParts().get(1);
+        assertThat(right.isInverted()).isFalse();
+        assertThat(right.getValueType()).isEqualTo(CommonEnotValueType.INTEGER);
+        assertThat(right.getValue()).isEqualTo(new java.math.BigInteger("8"));
+    }
+
+    @Test
+    void parseDoubleNegationCollapsesToNonInverted() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("!!${flag}");
+
+        assertThat(actual).isInstanceOf(ExpressionLeaf.class);
+        ExpressionLeaf leaf = (ExpressionLeaf) actual;
+        assertThat(leaf.isInverted()).isFalse();
+        assertThat(leaf.getValueType()).isEqualTo(CommonEnotValueType.PLACEHOLDER);
+        assertThat(leaf.getValue()).isEqualTo("flag");
+    }
+
+    @Test
+    void parse5xNegationCollapsesToInverted() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("!!!!!${flag}");
+
+        assertThat(actual).isInstanceOf(ExpressionLeaf.class);
+        ExpressionLeaf leaf = (ExpressionLeaf) actual;
+        assertThat(leaf.isInverted()).isTrue();
+        assertThat(leaf.getValueType()).isEqualTo(CommonEnotValueType.PLACEHOLDER);
+        assertThat(leaf.getValue()).isEqualTo("flag");
+    }
+
+    @Test
+    void parse6xNegationCollapsesToNonInverted() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("!!!!!!${flag}");
+
+        assertThat(actual).isInstanceOf(ExpressionLeaf.class);
+        ExpressionLeaf leaf = (ExpressionLeaf) actual;
+        assertThat(leaf.isInverted()).isFalse();
+        assertThat(leaf.getValueType()).isEqualTo(CommonEnotValueType.PLACEHOLDER);
+        assertThat(leaf.getValue()).isEqualTo("flag");
+    }
+
+    @Test
+    void parseThreeWayAndChain() {
+
+        ExpressionBlock actual = conditionExpressionParser.parse("(${a} == true) && (${b} == true) && (${c} == true)");
+
+        assertThat(actual).isInstanceOf(ExpressionNode.class);
+        ExpressionNode root = (ExpressionNode) actual;
+        assertThat(root.getOperator()).isEqualTo(Operator.AND_OPERATOR);
+        assertThat(root.getParts()).hasSize(3);
+        for (ExpressionBlock part : root.getParts()) {
+            assertThat(part).isInstanceOf(ExpressionNode.class);
+            assertThat(((ExpressionNode) part).getOperator()).isEqualTo(Operator.EQUALS_OPERATOR);
+        }
+    }
+
+    @Test
     void parseCompoundOrGroupAndComparisonWithNotEquals() {
 
         ExpressionBlock actual = conditionExpressionParser.parse("((${valid_from} >= '2050-01-01T00-00-00Z') || (${valid_from} <= '1970-01-01T00-00-00Z')) && (${valid_to} != '2020-12-12T00-00-00Z')");
