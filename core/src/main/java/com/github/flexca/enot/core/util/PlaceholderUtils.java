@@ -3,8 +3,14 @@ package com.github.flexca.enot.core.util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class PlaceholderUtils {
+
+    public static final String SYSTEM_VARIABLE_PREFIX = "system.";
+    public static final String GLOBAL_PARAM_PREFIX = "global.";
+
+    private static final Pattern VARIABLE_NAME_REGEXP = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*$");
 
     private PlaceholderUtils() {
     }
@@ -38,5 +44,23 @@ public class PlaceholderUtils {
         }
         String stringInput = (String) input;
         return Optional.of(stringInput.substring(2, stringInput.length() - 1));
+    }
+
+    public static boolean isValidVariableName(String input) {
+
+        if(StringUtils.isBlank(input)) {
+            return false;
+        }
+
+        String inputWithoutPrefix;
+        if (input.startsWith(SYSTEM_VARIABLE_PREFIX)) {
+            inputWithoutPrefix = input.substring(SYSTEM_VARIABLE_PREFIX.length());
+        } else if (input.startsWith(GLOBAL_PARAM_PREFIX)) {
+            inputWithoutPrefix = input.substring(GLOBAL_PARAM_PREFIX.length());
+        } else {
+            inputWithoutPrefix = input;
+        }
+
+        return VARIABLE_NAME_REGEXP.matcher(inputWithoutPrefix).matches();
     }
 }

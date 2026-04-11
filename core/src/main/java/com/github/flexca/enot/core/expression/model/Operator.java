@@ -29,6 +29,10 @@ public enum Operator {
         this.operator = operator;
     }
 
+    public OperatorType getType() {
+        return type;
+    }
+
     public String getOperator() {
         return operator;
     }
