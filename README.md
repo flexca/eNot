@@ -1,6 +1,6 @@
 # eNot — Encoding Notations
 
-[![Build](https://github.com/flexca/eNot/actions/workflows/ci.yml/badge.svg)](https://github.com/flexca/eNot/actions/workflows/ci.yml)
+[![Build](https://github.com/flexca/eNot/actions/workflows/maven-test.yml/badge.svg)](https://github.com/flexca/eNot/actions/workflows/maven-test.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.org/projects/jdk/17/)
 
