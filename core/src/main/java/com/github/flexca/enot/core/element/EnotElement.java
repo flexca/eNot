@@ -117,6 +117,10 @@ public class EnotElement {
         return attributes;
     }
 
+    public Object getAttribute(EnotAttribute attribute) {
+        return attributes == null ? null : attributes.get(attribute);
+    }
+
     public void setAttributes(Map<EnotAttribute, Object> attributes) {
         this.attributes = attributes;
     }

@@ -3,6 +3,7 @@ package com.github.flexca.enot.core.serializer;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
+import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
 import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
@@ -15,19 +16,20 @@ import java.util.*;
 public abstract class BaseElementSerializer implements ElementSerializer {
 
     protected List<ElementSerializationResult> serializeBody(Object body, SerializationContext context, String jsonPath,
-                                                             EnotRegistry enotRegistry) throws EnotSerializationException {
+                                                             EnotRegistry enotRegistry, ConditionExpressionEvaluator conditionExpressionEvaluator)
+            throws EnotSerializationException {
 
         List<ElementSerializationResult> result = new ArrayList<>();
         if (body instanceof Collection<?> children) {
             for (Object child : children) {
                 if (child instanceof EnotElement childElement) {
-                    result.addAll(serializeBodyElement(childElement, context, jsonPath, enotRegistry));
+                    result.addAll(serializeBodyElement(childElement, context, jsonPath, enotRegistry, conditionExpressionEvaluator));
                 } else {
                     result.addAll(serializeBodyPrimitive(child, context, jsonPath, enotRegistry));
                 }
             }
         } else if (body instanceof EnotElement child) {
-            result.addAll(serializeBodyElement(child, context, jsonPath, enotRegistry));
+            result.addAll(serializeBodyElement(child, context, jsonPath, enotRegistry, conditionExpressionEvaluator));
         } else {
             result.addAll(serializeBodyPrimitive(body, context, jsonPath, enotRegistry));
         }
@@ -35,14 +37,15 @@ public abstract class BaseElementSerializer implements ElementSerializer {
     }
 
     private List<ElementSerializationResult> serializeBodyElement(EnotElement element, SerializationContext context, String jsonPath,
-                                                                  EnotRegistry enotRegistry) throws EnotSerializationException {
+                                                                  EnotRegistry enotRegistry, ConditionExpressionEvaluator conditionExpressionEvaluator)
+            throws EnotSerializationException {
 
         EnotTypeSpecification typeSpecification = enotRegistry.getTypeSpecification(element.getType()).orElseThrow(() ->
                 new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
                         "cannot find EnotTypeSpecification for element of type " + element.getType())));
 
         ElementSerializer elementSerializer = typeSpecification.getSerializer(element);
-        return elementSerializer.serialize(element, context, jsonPath, enotRegistry);
+        return elementSerializer.serialize(element, context, jsonPath, enotRegistry, conditionExpressionEvaluator);
     }
 
     private List<ElementSerializationResult> serializeBodyPrimitive(Object body, SerializationContext context, String jsonPath,

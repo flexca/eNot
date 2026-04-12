@@ -2,6 +2,7 @@ package com.github.flexca.enot.core.serializer;
 
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
+import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.serializer.context.SerializationContext;
 
@@ -11,5 +12,6 @@ import java.util.Map;
 public interface ElementSerializer {
 
     List<ElementSerializationResult> serialize(EnotElement element, SerializationContext context, String jsonPath,
-                                               EnotRegistry enotRegistry) throws EnotSerializationException;
+                                               EnotRegistry enotRegistry, ConditionExpressionEvaluator conditionExpressionEvaluator)
+            throws EnotSerializationException;
 }

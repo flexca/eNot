@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.parser;
 
+import com.github.flexca.enot.core.expression.ConditionExpressionParser;
 import com.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.types.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.element.EnotElement;
@@ -29,7 +30,7 @@ public class EnotParserSuccessCasesTest {
         enotRegistry = new EnotRegistry.Builder()
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .build();
-        enotParser = new EnotParser(enotRegistry, objectMapper);
+        enotParser = new EnotParser(enotRegistry, new ConditionExpressionParser(), objectMapper);
     }
 
     @Test

@@ -8,6 +8,7 @@ import com.github.flexca.enot.core.element.value.EnotValueSpecification;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.serializer.ElementSerializer;
 import com.github.flexca.enot.core.types.system.attribute.SystemAttribute;
+import com.github.flexca.enot.core.types.system.serializer.SystemConditionSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemLoopSerializer;
 
 import java.util.*;
@@ -26,7 +27,7 @@ public enum SystemKind implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
             Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
-            null),
+            new SystemConditionSerializer()),
 
     GROUP("group",
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),

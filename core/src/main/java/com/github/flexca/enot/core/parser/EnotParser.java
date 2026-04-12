@@ -1,6 +1,7 @@
 package com.github.flexca.enot.core.parser;
 
 import com.github.flexca.enot.core.exception.EnotParsingException;
+import com.github.flexca.enot.core.expression.ConditionExpressionParser;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.element.EnotElement;
@@ -24,11 +25,13 @@ public class EnotParser {
     private static final String COMMON_ERROR_MESSAGE = "Error during parsing of eNot, reason: ";
 
     private final EnotRegistry enotRegistry;
+    private final ConditionExpressionParser conditionExpressionParser;
     private final EnotParserValidator parserValidator;
     private final ObjectMapper objectMapper;
 
-    public EnotParser(EnotRegistry enotRegistry, ObjectMapper objectMapper) {
+    public EnotParser(EnotRegistry enotRegistry, ConditionExpressionParser conditionExpressionParser, ObjectMapper objectMapper) {
         this.enotRegistry = enotRegistry;
+        this.conditionExpressionParser = conditionExpressionParser;
         this.parserValidator = new EnotParserValidator(enotRegistry);
         this.objectMapper = objectMapper;
     }

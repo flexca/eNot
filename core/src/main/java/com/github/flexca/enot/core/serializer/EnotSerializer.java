@@ -2,6 +2,7 @@ package com.github.flexca.enot.core.serializer;
 
 import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
+import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
 import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotBinaryConverter;
@@ -22,10 +23,12 @@ public class EnotSerializer {
 
     private final EnotRegistry enotRegistry;
     private final EnotParser enotParser;
+    private final ConditionExpressionEvaluator conditionExpressionEvaluator;
 
-    public EnotSerializer(EnotRegistry enotRegistry, EnotParser enotParser) {
+    public EnotSerializer(EnotRegistry enotRegistry, EnotParser enotParser, ConditionExpressionEvaluator conditionExpressionEvaluator) {
         this.enotRegistry = enotRegistry;
         this.enotParser = enotParser;
+        this.conditionExpressionEvaluator = conditionExpressionEvaluator;
     }
 
     public List<byte[]> serialize(String json, SerializationContext context) throws EnotParsingException, EnotSerializationException {
@@ -62,7 +65,8 @@ public class EnotSerializer {
             throw new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
                     "serializer not found for element"));
         }
-        List<ElementSerializationResult> serializationResults = elementSerializer.serialize(element, context, jsonPath, enotRegistry);
+        List<ElementSerializationResult> serializationResults = elementSerializer.serialize(element, context, jsonPath,
+                enotRegistry, conditionExpressionEvaluator);
 
         List<byte[]> result = new ArrayList<>();
         for (ElementSerializationResult serializationResult : serializationResults) {
