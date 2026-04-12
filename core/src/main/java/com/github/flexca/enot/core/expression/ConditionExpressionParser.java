@@ -238,9 +238,6 @@ public class ConditionExpressionParser {
         for (int i = 1; i < expression.length(); i++) {
             char currentChar = expression.charAt(i);
             Operator currentOperator = null;
-            if (currentChar == LITERAL) {
-                insideOfLiteral = !insideOfLiteral;
-            }
 
             if (!insideOfLiteral) {
 
@@ -269,6 +266,10 @@ public class ConditionExpressionParser {
                     parts.add(part);
                     lastPartPosition = currentOperator.getOperator().length() == 1 ? i - 1 : i;
                 }
+            }
+
+            if (currentChar == LITERAL) {
+                insideOfLiteral = !insideOfLiteral;
             }
 
             if (i == expression.length() - 1) {
@@ -338,6 +339,10 @@ public class ConditionExpressionParser {
 
         if (expressionPartTrimmed.charAt(0) == LITERAL && expressionPartTrimmed.charAt(expressionPartTrimmed.length() - 1) == LITERAL) {
             return new ExpressionLeaf(inverted, CommonEnotValueType.TEXT, expressionPartTrimmed.substring(1, expressionPartTrimmed.length() - 1));
+        }
+
+        if ("null".equalsIgnoreCase(expressionPartTrimmed)) {
+            return new ExpressionLeaf(inverted, CommonEnotValueType.NULL_VALUE, null);
         }
 
         if ("true".equalsIgnoreCase(expressionPartTrimmed) || "false".equalsIgnoreCase(expressionPartTrimmed)) {

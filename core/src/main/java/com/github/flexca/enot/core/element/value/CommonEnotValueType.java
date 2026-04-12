@@ -18,6 +18,7 @@ public enum CommonEnotValueType implements EnotValueType {
     INTEGER("integer", Collections.emptySet(), true, new IntegerToBinaryConverter()),
     TEXT("text", Collections.emptySet(), true, new TextToBinaryConverter()),
     PLACEHOLDER("placeholder", Collections.emptySet(), false, new UnsupportedToBinaryConverter()),
+    NULL_VALUE("null", Collections.emptySet(), false, new UnsupportedToBinaryConverter()),
     OBJECT_IDENTIFIER("object_identifier", Set.of(TEXT), false, new UnsupportedToBinaryConverter()),
     DATE_TIME("date_time", Set.of(TEXT), false, new UnsupportedToBinaryConverter()),
     ELEMENT("element", Collections.emptySet(), false, new UnsupportedToBinaryConverter()),

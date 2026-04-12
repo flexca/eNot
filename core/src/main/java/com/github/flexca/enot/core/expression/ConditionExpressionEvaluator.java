@@ -11,6 +11,9 @@ import com.github.flexca.enot.core.expression.model.OperatorType;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.serializer.context.SerializationContext;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -84,32 +87,61 @@ public class ConditionExpressionEvaluator {
         Object rightValue = evaluateBlock(rightBlock, serializationContext);
 
         if (Operator.EQUALS_OPERATOR.equals(block.getOperator())) {
-            boolean result = Objects.equals(leftValue, rightValue);
+            boolean result = normalizedEquals(leftValue, rightValue);
             return block.isInverted() != result;
         } else if (Operator.NOT_EQUALS_OPERATOR.equals(block.getOperator())) {
-            boolean result = !Objects.equals(leftValue, rightValue);
+            boolean result = !normalizedEquals(leftValue, rightValue);
             return block.isInverted() != result;
         } else if (Operator.GREATER_THAN_OPERATOR.equals(block.getOperator())) {
-            return false;
+            return compareTwoValues(block.getOperator(), leftValue, rightValue, block.isInverted());
         } else if (Operator.GREATER_THAN_OR_EQUALS_OPERATOR.equals(block.getOperator())) {
-            return false;
+            return compareTwoValues(block.getOperator(), leftValue, rightValue, block.isInverted());
         } else if (Operator.LESS_THAN_OPERATOR.equals(block.getOperator())) {
-            return false;
+            return compareTwoValues(block.getOperator(), leftValue, rightValue, block.isInverted());
         } else if (Operator.LESS_THAN_OR_EQUALS_OPERATOR.equals(block.getOperator())) {
-            return false;
+            return compareTwoValues(block.getOperator(), leftValue, rightValue, block.isInverted());
         } else {
             throw new EnotExpressionEvaluationException("unsupported comparison operator: " + block.getOperator());
         }
     }
 
     private Object evaluateBinaryBlock(ExpressionNode block, SerializationContext serializationContext) throws EnotExpressionEvaluationException {
-        return null;
+
+        if (block.getParts() == null || block.getParts().size() < 2) {
+            throw new EnotExpressionEvaluationException("comparison expression block must have at least two parts");
+        }
+
+        if (block.getOperator() == null) {
+            throw new EnotExpressionEvaluationException("comparison expression block must have operator");
+        }
+
+        List<Boolean> arguments = new ArrayList<>();
+        for (ExpressionBlock argumentBlock : block.getParts()) {
+            Object argument = evaluateBlock(argumentBlock, serializationContext);
+            if (argument instanceof Boolean booleanArgument) {
+                arguments.add(booleanArgument);
+            } else {
+                throw new EnotExpressionEvaluationException("for binary block parts must be of type boolean");
+            }
+        }
+
+        boolean result = arguments.get(0);
+        for (int i = 1; i < arguments.size(); i++) {
+            if (Operator.AND_OPERATOR.equals(block.getOperator())) {
+                result = result && arguments.get(i);
+            } else if (Operator.OR_OPERATOR.equals(block.getOperator())) {
+                result = result || arguments.get(i);
+            } else {
+                throw new EnotExpressionEvaluationException("unsupported operator for binary block: " + block.getOperator());
+            }
+        }
+        return result;
     }
 
     private Object evaluateFunction(ExpressionFunction block, SerializationContext serializationContext) throws EnotExpressionEvaluationException {
 
         List<Object> arguments = new ArrayList<>();
-        for(ExpressionBlock argumentBlock : block.getArguments()) {
+        for (ExpressionBlock argumentBlock : block.getArguments()) {
             Object argument = evaluateBlock(argumentBlock, serializationContext);
             arguments.add(argument);
         }
@@ -140,5 +172,63 @@ public class ConditionExpressionEvaluator {
         return primitiveValue;
     }
 
+    private boolean normalizedEquals(Object left, Object right) {
+        if (left instanceof Number numberLeft && right instanceof Number numberRight) {
+            return numberToBigDecimal(numberLeft).compareTo(numberToBigDecimal(numberRight)) == 0;
+        }
+        return Objects.equals(left, right);
+    }
 
+    private boolean compareTwoValues(Operator operator, Object left, Object right, boolean inverted) throws EnotExpressionEvaluationException {
+
+        int compareResult;
+        if ((left instanceof String stringLeft) && (right instanceof String stringRight)) {
+            compareResult = stringLeft.compareTo(stringRight);
+        } else if ((left instanceof ZonedDateTime datetimeLeft) && (right instanceof ZonedDateTime datetimeRight)) {
+            compareResult = datetimeLeft.compareTo(datetimeRight);
+        } else if ((left instanceof Number numberLeft) && (right instanceof Number numberRight)) {
+            BigDecimal decimalLeft = numberToBigDecimal(numberLeft);
+            BigDecimal decimalRight = numberToBigDecimal(numberRight);
+            compareResult = decimalLeft.compareTo(decimalRight);
+        } else if ((left instanceof Boolean booleanLeft) && (right instanceof Boolean booleanRight)) {
+            compareResult = booleanLeft.compareTo(booleanRight);
+        } else {
+            throw new EnotExpressionEvaluationException("not comparable left  [" + left + "] and right [" + right + "] parts");
+        }
+
+        boolean result;
+        switch (operator) {
+            case GREATER_THAN_OPERATOR:
+                result = compareResult > 0;
+                break;
+            case GREATER_THAN_OR_EQUALS_OPERATOR:
+                result = compareResult >= 0;
+                break;
+            case LESS_THAN_OPERATOR:
+                result = compareResult < 0;
+                break;
+            case LESS_THAN_OR_EQUALS_OPERATOR:
+                result = compareResult <= 0;
+                break;
+            default:
+                throw new EnotExpressionEvaluationException("unsupported operator: " + operator);
+        }
+
+        return inverted != result;
+    }
+
+    private BigDecimal numberToBigDecimal(Number input) {
+
+        if (input instanceof Byte || input instanceof Short || input instanceof Integer || input instanceof Long) {
+            return BigDecimal.valueOf(input.longValue());
+        } else if (input instanceof BigInteger bigintInput) {
+            return new BigDecimal(bigintInput);
+        } else if (input instanceof BigDecimal decimalInput) {
+            return decimalInput;
+        } else if (input instanceof Float || input instanceof Double) {
+            return BigDecimal.valueOf(input.doubleValue());
+        } else {
+            return BigDecimal.valueOf(input.longValue());
+        }
+    }
 }
