@@ -18,6 +18,50 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Parses a condition expression string into an {@link ExpressionBlock} AST.
+ *
+ * <h2>Expression syntax</h2>
+ * <pre>
+ *   expression  ::= binary | comparison | primitive | function
+ *   binary      ::= expression ('&&' | '||') expression
+ *                   (mixing '&&' and '||' at the same level is not allowed
+ *                    without explicit brackets)
+ *   comparison  ::= primitive ('==' | '!=' | '>' | '>=' | '<' | '<=') primitive
+ *   function    ::= name '(' argument (',' argument)* ')'
+ *   primitive   ::= placeholder | literal | boolean | integer | 'null'
+ *   placeholder ::= '${' name '}'
+ *   literal     ::= '\'' text '\''
+ *   boolean     ::= 'true' | 'false'
+ *   integer     ::= [0-9]+
+ * </pre>
+ *
+ * <p>Any sub-expression can be wrapped in parentheses to override precedence,
+ * and any sub-expression or placeholder can be prefixed with {@code !} to
+ * invert its boolean result. Double negation ({@code !!}) is collapsed
+ * automatically.</p>
+ *
+ * <h2>Examples</h2>
+ * <pre>{@code
+ * // simple equality
+ * "${cn} == 'Alice'"
+ *
+ * // negated function result
+ * "!is_null(${san})"
+ *
+ * // compound with explicit precedence
+ * "(${type} == 'CA' || ${type} == 'ROOT') && ${pathLen} >= 0"
+ *
+ * // date comparison
+ * "date_time(${notAfter}) > date_time('2030-01-01T00:00:00Z')"
+ * }</pre>
+ *
+ * <p>This class is stateless and thread-safe; a single instance can be shared
+ * across threads and serializer instances.</p>
+ *
+ * @see ConditionExpressionEvaluator
+ * @see ExpressionBlock
+ */
 public class ConditionExpressionParser {
 
     private static final String BLOCK_NAME_PREFIX = "#block";
@@ -28,6 +72,16 @@ public class ConditionExpressionParser {
     private static final char ARGUMENTS_SEPARATOR = ',';
 
 
+    /**
+     * Parses the given condition expression string into an {@link ExpressionBlock} AST.
+     *
+     * @param expression the expression to parse; must not be blank
+     * @return the root node of the parsed AST
+     * @throws EnotInvalidArgumentException if the expression is blank, contains
+     *         unmatched brackets or literals, references an unsupported function,
+     *         mixes {@code &&} and {@code ||} at the same level without brackets,
+     *         or contains any other syntax error
+     */
     public ExpressionBlock parse(String expression) {
 
         if (StringUtils.isBlank(expression)) {

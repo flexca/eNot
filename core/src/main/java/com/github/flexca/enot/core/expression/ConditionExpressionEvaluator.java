@@ -18,6 +18,46 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Evaluates a condition expression AST against a {@link SerializationContext},
+ * producing a {@code boolean} result.
+ *
+ * <p>The evaluator walks the {@link ExpressionBlock} tree produced by
+ * {@link ConditionExpressionParser} and resolves each leaf value through the
+ * provided context. Supported value types and their resolution rules:</p>
+ * <ul>
+ *   <li><b>PLACEHOLDER</b> – resolved via
+ *       {@link SerializationContext#resolvePlaceholderValue(String)}; missing
+ *       placeholders resolve to {@code null}.</li>
+ *   <li><b>TEXT</b> – returned as a {@link String}.</li>
+ *   <li><b>INTEGER</b> – returned as a {@link java.math.BigInteger}.</li>
+ *   <li><b>BOOLEAN</b> – returned as a {@link Boolean}.</li>
+ *   <li><b>NULL_VALUE</b> – returned as {@code null}.</li>
+ * </ul>
+ *
+ * <h2>Comparison rules</h2>
+ * <ul>
+ *   <li>{@code ==} and {@code !=} use {@link java.util.Objects#equals} with
+ *       numeric normalisation: both sides are converted to
+ *       {@link java.math.BigDecimal} before comparison so that, for example,
+ *       {@code Integer(5)} and {@code BigInteger(5)} are considered equal.</li>
+ *   <li>{@code >}, {@code >=}, {@code <}, {@code <=} require both sides to be
+ *       the same type ({@link String}, {@link java.time.ZonedDateTime},
+ *       {@link Number}, or {@link Boolean}). Mixed types throw
+ *       {@link EnotExpressionEvaluationException}.</li>
+ * </ul>
+ *
+ * <h2>Functions</h2>
+ * <p>Function calls are dispatched to
+ * {@link com.github.flexca.enot.core.expression.model.ConditionFunction#evaluate}.
+ * See that enum for the list of built-in functions ({@code date_time},
+ * {@code length}, {@code is_null}).</p>
+ *
+ * <p>This class is stateless and thread-safe.</p>
+ *
+ * @see ConditionExpressionParser
+ * @see SerializationContext
+ */
 public class ConditionExpressionEvaluator {
 
     private final EnotRegistry enotRegistry;
@@ -29,12 +69,38 @@ public class ConditionExpressionEvaluator {
         this.conditionExpressionParser = conditionExpressionParser;
     }
 
+    /**
+     * Parses {@code expression} and evaluates the result against
+     * {@code serializationContext}.
+     *
+     * @param expression         the condition expression string; must not be blank
+     * @param serializationContext current serialization context used to resolve
+     *                           placeholders
+     * @return the boolean result of the expression
+     * @throws EnotExpressionEvaluationException if evaluation fails (type
+     *         mismatch, non-boolean result, etc.)
+     * @throws com.github.flexca.enot.core.exception.EnotInvalidArgumentException
+     *         if the expression string is syntactically invalid
+     */
     public boolean evaluate(String expression, SerializationContext serializationContext) throws EnotExpressionEvaluationException {
 
         ExpressionBlock block = conditionExpressionParser.parse(expression);
         return evaluate(block, serializationContext);
     }
 
+    /**
+     * Evaluates a pre-parsed {@link ExpressionBlock} AST against
+     * {@code serializationContext}.
+     *
+     * <p>Use this overload when the same expression is evaluated repeatedly
+     * (e.g. once per LOOP iteration) to avoid re-parsing on every call.</p>
+     *
+     * @param block              root of the pre-parsed AST
+     * @param serializationContext current serialization context
+     * @return the boolean result
+     * @throws EnotExpressionEvaluationException if the final evaluated value
+     *         is not a {@link Boolean}
+     */
     public boolean evaluate(ExpressionBlock block, SerializationContext serializationContext) throws EnotExpressionEvaluationException {
 
         Object result = evaluateBlock(block, serializationContext);
