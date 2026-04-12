@@ -3,6 +3,7 @@ package com.github.flexca.enot.core.serializer;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotRegistry;
+import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
 import com.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
@@ -34,14 +35,17 @@ public class EnotSerializerSuccessCasesTest {
         enotSerializer = new EnotSerializer(enotRegistry, enotParser);
     }
 
+    private SerializationContext ctx(Map<String, Object> params) {
+        return new SerializationContext.Builder(objectMapper).withParams(params).build();
+    }
+
     @Test
     void testSerializeCommonNameSuccess() throws Exception {
 
         String path = "json/asn1/rfc/subject-dn-common-name.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        Map<String, Object> params = Map.of("common_name", "example");
-        List<byte[]> actual = enotSerializer.serialize(json, params);
+        List<byte[]> actual = enotSerializer.serialize(json, ctx(Map.of("common_name", "example")));
 
         assertThat(actual).isNotNull();
     }
@@ -52,10 +56,8 @@ public class EnotSerializerSuccessCasesTest {
         String path = "json/asn1/rfc/subject-dn-organizational-unit.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        Map<String, Object> orgUnits = Map.of("unit", List.of("unit1"));
-        Map<String, Object> params = Map.of("organizational_units", orgUnits);
-
-        List<byte[]> actual = enotSerializer.serialize(json, params);
+        List<Map<String, Object>> orgUnits = List.of(Map.of("unit", "unit1"));
+        List<byte[]> actual = enotSerializer.serialize(json, ctx(Map.of("organizational_units", orgUnits)));
 
         assertThat(actual).hasSize(1);
     }
@@ -66,11 +68,11 @@ public class EnotSerializerSuccessCasesTest {
         String path = "json/asn1/rfc/subject-dn-organizational-unit.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        List<Map<String, Object>> orgUnits = List.of(Map.of("unit", "unit1"), Map.of("unit", "unit2"),
+        List<Map<String, Object>> orgUnits = List.of(
+                Map.of("unit", "unit1"),
+                Map.of("unit", "unit2"),
                 Map.of("unit", "unit3"));
-        Map<String, Object> params = Map.of("organizational_units", orgUnits);
-
-        List<byte[]> actual = enotSerializer.serialize(json, params);
+        List<byte[]> actual = enotSerializer.serialize(json, ctx(Map.of("organizational_units", orgUnits)));
 
         assertThat(actual).hasSize(3);
     }
