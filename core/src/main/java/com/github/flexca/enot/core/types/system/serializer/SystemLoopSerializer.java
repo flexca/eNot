@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.types.system.serializer;
 
+import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
 import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
@@ -17,8 +18,7 @@ import java.util.*;
 public class SystemLoopSerializer extends BaseElementSerializer {
 
     public List<ElementSerializationResult> serialize(EnotElement loopElement, SerializationContext context, String jsonPath,
-                                                      EnotRegistry enotRegistry, ConditionExpressionEvaluator conditionExpressionEvaluator)
-            throws EnotSerializationException {
+                                                      EnotContext enotContext) throws EnotSerializationException {
 
         Object itemsNameValue = loopElement.getAttribute(SystemAttribute.ITEMS_NAME);
         if (itemsNameValue == null) {
@@ -34,7 +34,7 @@ public class SystemLoopSerializer extends BaseElementSerializer {
 
         List<ElementSerializationResult> result = new ArrayList<>();
         while(context.hasNext()) {
-            result.addAll(serializeBody(loopElement.getBody(), context, jsonPath, enotRegistry, conditionExpressionEvaluator));
+            result.addAll(serializeBody(loopElement.getBody(), context, jsonPath, enotContext));
             context.nextIndex();
         }
         context.pathStepBack();

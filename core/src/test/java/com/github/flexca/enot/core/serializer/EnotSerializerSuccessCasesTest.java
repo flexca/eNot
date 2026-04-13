@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.serializer;
 
+import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
 import com.github.flexca.enot.core.expression.ConditionExpressionParser;
@@ -34,8 +35,10 @@ public class EnotSerializerSuccessCasesTest {
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .build();
         ConditionExpressionParser expressionParser = new ConditionExpressionParser();
-        enotParser = new EnotParser(enotRegistry, expressionParser, objectMapper);
-        enotSerializer = new EnotSerializer(enotRegistry, enotParser, new ConditionExpressionEvaluator(enotRegistry, expressionParser));
+        ConditionExpressionEvaluator conditionExpressionEvaluator = new ConditionExpressionEvaluator(enotRegistry, expressionParser);
+        EnotContext enotContext = new EnotContext(enotRegistry, expressionParser, conditionExpressionEvaluator);
+        enotParser = new EnotParser(enotContext, objectMapper);
+        enotSerializer = new EnotSerializer(enotContext, enotParser);
     }
 
     private SerializationContext ctx(Map<String, Object> params) {

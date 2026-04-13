@@ -13,13 +13,15 @@ import java.util.Map;
 public enum SystemAttribute implements EnotAttribute {
 
     KIND("kind", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
-    NAME("name", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
+    GROUP_NAME("group_name", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     ITEMS_NAME("items_name", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     MIN_ITEMS("min_items", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
     MAX_ITEMS("max_items", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
     BYTE_ORDER("byte_order", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     BIT_ORDER("bit_order", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
-    EXPRESSION("expression", new EnotValueSpecification(CommonEnotValueType.TEXT, false));
+    EXPRESSION("expression", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
+    REFERENCE_TYPE("reference_name", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
+    REFERENCE_IDENTIFIER("reference_identifier", new EnotValueSpecification(CommonEnotValueType.TEXT, false));
 
     private static final Map<String, SystemAttribute> BY_NAME = new HashMap<>();
     static {

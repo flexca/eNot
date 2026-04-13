@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.serializer;
 
+import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
 import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
@@ -21,14 +22,12 @@ public class EnotSerializer {
 
     public static final String COMMON_ERROR_MESSAGE = "Failure during serialization: ";
 
-    private final EnotRegistry enotRegistry;
+    private final EnotContext enotContext;
     private final EnotParser enotParser;
-    private final ConditionExpressionEvaluator conditionExpressionEvaluator;
 
-    public EnotSerializer(EnotRegistry enotRegistry, EnotParser enotParser, ConditionExpressionEvaluator conditionExpressionEvaluator) {
-        this.enotRegistry = enotRegistry;
+    public EnotSerializer(EnotContext enotContext, EnotParser enotParser) {
+        this.enotContext = enotContext;
         this.enotParser = enotParser;
-        this.conditionExpressionEvaluator = conditionExpressionEvaluator;
     }
 
     public List<byte[]> serialize(String json, SerializationContext context) throws EnotParsingException, EnotSerializationException {
@@ -56,7 +55,7 @@ public class EnotSerializer {
 
     private List<byte[]> serializeElement(EnotElement element, SerializationContext context, String jsonPath) throws EnotSerializationException {
 
-        EnotTypeSpecification typeSpecification = enotRegistry.getTypeSpecification(element.getType()).orElseThrow(() ->
+        EnotTypeSpecification typeSpecification = enotContext.getEnotRegistry().getTypeSpecification(element.getType()).orElseThrow(() ->
             new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
                     "cannot resolve EnotTypeSpecification for element with type " + element.getType())));
 
@@ -65,8 +64,7 @@ public class EnotSerializer {
             throw new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
                     "serializer not found for element"));
         }
-        List<ElementSerializationResult> serializationResults = elementSerializer.serialize(element, context, jsonPath,
-                enotRegistry, conditionExpressionEvaluator);
+        List<ElementSerializationResult> serializationResults = elementSerializer.serialize(element, context, jsonPath, enotContext);
 
         List<byte[]> result = new ArrayList<>();
         for (ElementSerializationResult serializationResult : serializationResults) {

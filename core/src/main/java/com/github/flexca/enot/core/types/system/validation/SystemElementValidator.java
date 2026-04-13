@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.types.system.validation;
 
+import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.parser.EnotParser;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
@@ -13,7 +14,7 @@ import java.util.List;
 public class SystemElementValidator implements EnotElementValidator {
 
     @Override
-    public void validateElement(EnotElement element, String parentPath, List<EnotJsonError> jsonErrors) {
+    public void validateElement(EnotElement element, String parentPath, List<EnotJsonError> jsonErrors, EnotContext enotContext) {
 
         if(!SystemTypeSpecification.TYPE_NAME.equalsIgnoreCase(element.getType())) {
             jsonErrors.add(EnotJsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported element type, expecting system"));
@@ -32,6 +33,11 @@ public class SystemElementValidator implements EnotElementValidator {
             jsonErrors.add(EnotJsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME + "/" + SystemAttribute.KIND.getName(),
                     "unsupported value of system elements attribute " + SystemAttribute.KIND.getName()));
             return;
+        }
+
+        EnotElementValidator specificElementValidator = kind.getSpecificElementValidator();
+        if (specificElementValidator != null) {
+            specificElementValidator.validateElement(element, parentPath, jsonErrors, enotContext);
         }
     }
 }

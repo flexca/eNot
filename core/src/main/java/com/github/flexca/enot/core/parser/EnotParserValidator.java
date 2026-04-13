@@ -1,13 +1,13 @@
 package com.github.flexca.enot.core.parser;
 
-import com.github.flexca.enot.core.registry.EnotElementSpecification;
-import com.github.flexca.enot.core.registry.EnotRegistry;
-import com.github.flexca.enot.core.registry.EnotTypeSpecification;
+import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
-import com.github.flexca.enot.core.element.value.EnotValueSpecification;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
+import com.github.flexca.enot.core.element.value.EnotValueSpecification;
 import com.github.flexca.enot.core.element.value.EnotValueType;
+import com.github.flexca.enot.core.registry.EnotElementSpecification;
+import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.util.AttributeUtils;
 import com.github.flexca.enot.core.util.DateTimeUtils;
 import com.github.flexca.enot.core.util.OidUtils;
@@ -21,10 +21,10 @@ import java.util.Optional;
 
 public class EnotParserValidator {
 
-    private final EnotRegistry enotRegistry;
+    private final EnotContext enotContext;
 
-    public EnotParserValidator(EnotRegistry enotRegistry) {
-        this.enotRegistry = enotRegistry;
+    public EnotParserValidator(EnotContext enotContext) {
+        this.enotContext = enotContext;
     }
 
     public void validateElement(EnotTypeSpecification typeSpecification, EnotElement element, String parentPath, List<EnotJsonError> jsonErrors) {
@@ -101,7 +101,7 @@ public class EnotParserValidator {
         }
 
         if (childElementBody instanceof EnotElement child) {
-            Optional<EnotTypeSpecification> typeSpecification = enotRegistry.getTypeSpecification(child.getType());
+            Optional<EnotTypeSpecification> typeSpecification = enotContext.getEnotRegistry().getTypeSpecification(child.getType());
             if (typeSpecification.isEmpty()) {
                 jsonErrors.add(EnotJsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_TYPE_NAME, "unsupported eNot element type"));
                 return;

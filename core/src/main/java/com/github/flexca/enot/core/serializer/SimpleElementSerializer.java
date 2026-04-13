@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.serializer;
 
+import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
 import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
@@ -18,12 +19,10 @@ public abstract class SimpleElementSerializer extends BaseElementSerializer {
 
     @Override
     public List<ElementSerializationResult> serialize(EnotElement element, SerializationContext context, String jsonPath,
-                                                      EnotRegistry enotRegistry, ConditionExpressionEvaluator conditionExpressionEvaluator)
-            throws EnotSerializationException {
+                                                      EnotContext enotContext) throws EnotSerializationException {
 
         String currentJsonPath = jsonPath + "/" + EnotParser.ENOT_ELEMENT_BODY_NAME;
-        List<ElementSerializationResult> serializedBody = serializeBody(element.getBody(), context, currentJsonPath, enotRegistry,
-                conditionExpressionEvaluator);
+        List<ElementSerializationResult> serializedBody = serializeBody(element.getBody(), context, currentJsonPath, enotContext);
         return serialize(element, serializedBody, currentJsonPath);
     }
 }
