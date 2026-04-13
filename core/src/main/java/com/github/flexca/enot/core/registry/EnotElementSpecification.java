@@ -44,4 +44,6 @@ public interface EnotElementSpecification {
      * @return Set of allowed attribute, can return null or empty Set, in both cases no generic validation will be performed
      */
     Set<EnotAttribute> getAllowedAttributes();
+
+    EnotElementBodyResolver getBodyResolver();
 }

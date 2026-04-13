@@ -4,15 +4,17 @@ import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
-import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
 import com.github.flexca.enot.core.parser.EnotJsonError;
-import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import com.github.flexca.enot.core.util.PlaceholderUtils;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 public abstract class BaseElementSerializer implements ElementSerializer {
 

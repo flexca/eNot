@@ -1,10 +1,14 @@
 package com.github.flexca.enot.core.registry;
 
+import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
+import com.github.flexca.enot.core.parser.EnotParser;
+
+import java.util.List;
 
 public interface EnotElementReferenceResolver {
 
-    String getResolverName();
+    String getReferenceType();
 
-    EnotElement resolve(String reference);
+    List<EnotElement> resolve(String referenceIdentifier, EnotContext enotContext);
 }

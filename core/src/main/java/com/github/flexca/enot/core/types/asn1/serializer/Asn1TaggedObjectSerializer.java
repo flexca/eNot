@@ -38,8 +38,8 @@ public class Asn1TaggedObjectSerializer extends SimpleElementSerializer {
                             + ", expected: 1, actual: " + serializedBody.size()));
         }
 
-        Optional<Integer> implicit = extractIntegerAttribute(element, Asn1Attribute.IMPLICIT.getName());
-        Optional<Integer> explicit = extractIntegerAttribute(element, Asn1Attribute.EXPLICIT.getName());
+        Optional<Integer> implicit = extractIntegerAttribute(element, Asn1Attribute.IMPLICIT);
+        Optional<Integer> explicit = extractIntegerAttribute(element, Asn1Attribute.EXPLICIT);
         if(implicit.isPresent() && explicit.isPresent()) {
             throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE,
                     EnotJsonError.of(jsonPath, "for ASN.1 element " + Asn1Tag.TAGGED_OBJECT.getName()
@@ -74,7 +74,7 @@ public class Asn1TaggedObjectSerializer extends SimpleElementSerializer {
                         + ", expected: " + CommonEnotValueType.OBJECT_IDENTIFIER.getName() + " or "+ Asn1EnotValueType.ASN1_ELEMENT.getName()));
     }
 
-    private Optional<Integer> extractIntegerAttribute(EnotElement element, String attributeName) {
+    private Optional<Integer> extractIntegerAttribute(EnotElement element, Asn1Attribute attributeName) {
         if (element.getAttributes() == null) {
             return Optional.empty();
         }

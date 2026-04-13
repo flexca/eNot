@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.org/projects/jdk/17/)
 
-**eNot** (**Encoding Notations**) is a JSON-based templating engine that serializes structured data into binary formats such as **ASN.1** and **BER-TLV**.
+**eNot** (**Encoding Notations**) is a general purpose templating engine that serializes structured data into binary formats such as **ASN.1** and **BER-TLV**.
 
 A template describes the binary structure declaratively in JSON. At serialization time, placeholders are resolved from a parameter map, control structures (loops, conditions) are evaluated, and the result is encoded into the target binary format.
 

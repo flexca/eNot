@@ -23,25 +23,26 @@ public class Enot {
     public Enot(EnotRegistry enotRegistry, ObjectMapper objectMapper) {
         ConditionExpressionParser conditionExpressionParser = new ConditionExpressionParser();
         ConditionExpressionEvaluator conditionExpressionEvaluator = new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser);
-        enotContext = new EnotContext(enotRegistry, conditionExpressionParser, conditionExpressionEvaluator);
-        enotParser = new EnotParser(enotContext, objectMapper);
-        enotSerializer = new EnotSerializer(enotContext, enotParser);
+
+        enotParser = new EnotParser(objectMapper);
+        enotSerializer = new EnotSerializer(enotParser);
+        enotContext = new EnotContext(enotRegistry, enotParser, enotSerializer, conditionExpressionParser, conditionExpressionEvaluator);
     }
 
     public List<EnotElement> parse(String json) throws EnotParsingException {
-        return enotParser.parse(json);
+        return enotParser.parse(json, enotContext);
     }
 
     public List<byte[]> serialize(String json, SerializationContext context) throws EnotParsingException, EnotSerializationException {
-        return enotSerializer.serialize(json, context);
+        return enotSerializer.serialize(json, context, enotContext);
     }
 
     public List<byte[]> serialize(EnotElement element, SerializationContext context) throws EnotSerializationException {
-        return enotSerializer.serialize(element, context);
+        return enotSerializer.serialize(element, context, enotContext);
     }
 
     public List<byte[]> serialize(List<EnotElement> elements, SerializationContext context) throws EnotSerializationException {
-        return enotSerializer.serialize(elements, context);
+        return enotSerializer.serialize(elements, context, enotContext);
     }
 
     public Map<String, Object> getParamsExample(String json) {

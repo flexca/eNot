@@ -1,0 +1,52 @@
+{
+  "type": "asn.1",
+  "attributes": {
+    "tag": "sequence"
+  },
+  "body": [
+    {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "object_identifier"
+      },
+      "body": "2.5.29.17"
+    },
+    {
+      "type": "asn.1",
+      "optional": true,
+      "attributes": {
+        "tag": "boolean"
+      },
+      "body": "${san_critical}"
+    },
+    {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "octet_string"
+      },
+      "body": {
+        "type": "asn.1",
+        "attributes": {
+          "tag": "sequence"
+        },
+        "body": {
+          "type": "system",
+          "attributes": {
+            "kind": "group",
+            "group_name": "san"
+          },
+          "body": [
+            {
+              "type": "system",
+              "attributes": {
+                "kind": "reference",
+                "reference_type": "test_resources",
+                "reference_identifier": "json/asn1/rfc/san/san-dns.json"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

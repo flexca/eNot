@@ -21,18 +21,13 @@ import java.util.Optional;
 
 public class EnotParserValidator {
 
-    private final EnotContext enotContext;
-
-    public EnotParserValidator(EnotContext enotContext) {
-        this.enotContext = enotContext;
-    }
-
-    public void validateElement(EnotTypeSpecification typeSpecification, EnotElement element, String parentPath, List<EnotJsonError> jsonErrors) {
+    public void validateElement(EnotTypeSpecification typeSpecification, EnotElement element, String parentPath,
+                                List<EnotJsonError> jsonErrors, EnotContext enotContext) {
 
         EnotElementSpecification elementSpecification = typeSpecification.getElementSpecification(element);
         if (elementSpecification != null) {
             validateAttributes(elementSpecification, element, parentPath, jsonErrors);
-            validateBody(elementSpecification.getConsumeType(), element, parentPath, jsonErrors);
+            validateBody(elementSpecification.getConsumeType(), element, parentPath, jsonErrors, enotContext);
         }
     }
 
@@ -69,7 +64,7 @@ public class EnotParserValidator {
     }
 
     private void validateBody(EnotValueSpecification consumeValueSpecification, EnotElement element, String parentPath,
-                              List<EnotJsonError> jsonErrors) {
+                              List<EnotJsonError> jsonErrors, EnotContext enotContext) {
 
         Object objectBody = element.getBody();
         String currentPath = parentPath + "/" + EnotParser.ENOT_ELEMENT_BODY_NAME;
@@ -81,21 +76,22 @@ public class EnotParserValidator {
             int i = 0;
             for (Object item : bodyCollection) {
                 String itemPath = currentPath + "/" + i;
-                validateConsumeType(consumeValueSpecification, item, itemPath, jsonErrors);
+                validateConsumeType(consumeValueSpecification, item, itemPath, jsonErrors, enotContext);
                 i++;
             }
         } else {
-            validateConsumeType(consumeValueSpecification, objectBody, currentPath, jsonErrors);
+            validateConsumeType(consumeValueSpecification, objectBody, currentPath, jsonErrors, enotContext);
         }
     }
 
-    private void validateConsumeType(EnotValueSpecification consumeValueSpecification, Object childElementBody, String parentPath, List<EnotJsonError> jsonErrors) {
+    private void validateConsumeType(EnotValueSpecification consumeValueSpecification, Object childElementBody, String parentPath,
+                                     List<EnotJsonError> jsonErrors, EnotContext enotContext) {
 
         EnotValueType parentConsumeType = consumeValueSpecification.getType();
 
         if (!parentConsumeType.haveSuper(CommonEnotValueType.ELEMENT)) {
             if (PlaceholderUtils.isPlaceholder(childElementBody)) {
-                // Placeholders can be validated only during runtime:
+                // Placeholders can be validated only during serialization:
                 return;
             }
         }
@@ -116,7 +112,7 @@ public class EnotParserValidator {
             boolean canConsume = parentConsumeType.canConsume(childValueProduceSpecification.getType());
             if(!canConsume) {
                 if (CommonEnotValueType.ELEMENT.equals(childValueProduceSpecification.getType())) {
-                    validateBody(consumeValueSpecification, child, parentPath, jsonErrors);
+                    validateBody(consumeValueSpecification, child, parentPath, jsonErrors, enotContext);
                 } else {
                     jsonErrors.add(EnotJsonError.of(parentPath, "eNot element " + EnotParser.ENOT_ELEMENT_BODY_NAME
                             + " type must be of type " + parentConsumeType));

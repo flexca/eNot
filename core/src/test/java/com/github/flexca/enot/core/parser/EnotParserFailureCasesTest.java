@@ -3,6 +3,7 @@ package com.github.flexca.enot.core.parser;
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
 import com.github.flexca.enot.core.expression.ConditionExpressionParser;
+import com.github.flexca.enot.core.serializer.EnotSerializer;
 import com.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.registry.EnotRegistry;
@@ -23,27 +24,27 @@ public class EnotParserFailureCasesTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private EnotRegistry enotRegistry;
+    private EnotContext enotContext;
 
     private EnotParser enotParser;
 
     @BeforeEach
     void init() {
-        enotRegistry = new EnotRegistry.Builder()
+        EnotRegistry enotRegistry = new EnotRegistry.Builder()
                 .withTypeSpecification(new SystemTypeSpecification())
                 .withTypeSpecification(new Asn1TypeSpecification())
                 .build();
         ConditionExpressionParser conditionExpressionParser = new ConditionExpressionParser();
-        EnotContext enotContext = new EnotContext(enotRegistry, conditionExpressionParser,
-                new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser));
-        enotParser = new EnotParser(enotContext, objectMapper);
+        enotParser = new EnotParser(objectMapper);
+        enotContext = new EnotContext(enotRegistry, enotParser, new EnotSerializer(enotParser),
+                conditionExpressionParser, new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser));
     }
 
     @Test
     void testNullInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse(null);
+            enotParser.parse(null, enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
@@ -57,7 +58,7 @@ public class EnotParserFailureCasesTest {
     void testEmptyInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse("");
+            enotParser.parse("", enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
@@ -71,7 +72,7 @@ public class EnotParserFailureCasesTest {
     void testBlankInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse("    ");
+            enotParser.parse("    ", enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
@@ -85,7 +86,7 @@ public class EnotParserFailureCasesTest {
     void testNotJsonInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse("not json");
+            enotParser.parse("not json", enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
@@ -99,7 +100,7 @@ public class EnotParserFailureCasesTest {
     void testMalformedJsonInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse("{\"type\": \"system\"");
+            enotParser.parse("{\"type\": \"system\"", enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
@@ -113,7 +114,7 @@ public class EnotParserFailureCasesTest {
     void testJsonPrimitiveInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse("\"primitive\"");
+            enotParser.parse("\"primitive\"", enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
@@ -127,7 +128,7 @@ public class EnotParserFailureCasesTest {
     void testJsonEmptyObjectInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse("{}");
+            enotParser.parse("{}", enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
@@ -141,7 +142,7 @@ public class EnotParserFailureCasesTest {
     void testJsonEmptyArrayInput() throws Exception {
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse("[]");
+            enotParser.parse("[]", enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
@@ -158,7 +159,7 @@ public class EnotParserFailureCasesTest {
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
-            enotParser.parse(json);
+            enotParser.parse(json, enotContext);
         });
 
         List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();

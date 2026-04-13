@@ -2,6 +2,7 @@ package com.github.flexca.enot.core.types.asn1;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.flexca.enot.core.registry.EnotElementBodyResolver;
 import com.github.flexca.enot.core.serializer.ElementSerializer;
 import com.github.flexca.enot.core.types.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
@@ -37,6 +38,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1SequenceSerializer()),
 
     SET("set",
@@ -44,6 +46,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1SetSerialized()),
 
     OBJECT_IDENTIFIER("object_identifier",
@@ -51,6 +54,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1ObjectIdentifierSerializer()),
 
     BOOLEAN("boolean",
@@ -58,6 +62,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1BooleanSerializer()),
 
     INTEGER("integer",
@@ -65,6 +70,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1IntegerSerializer()),
 
     OCTET_STRING("octet_string",
@@ -72,6 +78,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1OctetStringSerializer()),
 
     PRINTABLE_STRING("printable_string",
@@ -79,6 +86,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1PrintableStringSerializer()),
 
     IA5_STRING("ia5_string",
@@ -86,6 +94,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1Ia5StringSerializer()),
 
     VISIBLE_STRING("visible_string",
@@ -93,6 +102,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1VisibleStringSerializer()),
 
     UTF8_STRING("utf8_string",
@@ -100,6 +110,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1Utf8StringSerializer()),
 
     BMP_STRING("bmp_string",
@@ -107,6 +118,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1BmpStringSerializer()),
 
     BIT_STRING("bit_string",
@@ -114,6 +126,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1BitStringSerializer()),
 
     GENERALIZED_TIME("generalized_time",
@@ -121,6 +134,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1GeneralizedTimeSerializer()),
 
     UTC_TIME("utc_time",
@@ -128,6 +142,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1UtcTimeSerializer()),
 
     NULL("null",
@@ -135,6 +150,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG),
+            null,
             new Asn1NullSerializer()),
 
     TAGGED_OBJECT("tagged_object",
@@ -142,6 +158,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
             Set.of(Asn1Attribute.TAG, Asn1Attribute.IMPLICIT, Asn1Attribute.EXPLICIT),
+            null,
             new Asn1TaggedObjectSerializer());
 
     private static final Map<String, Asn1Tag> BY_NAME = new HashMap<>();
@@ -156,15 +173,18 @@ public enum Asn1Tag implements EnotElementSpecification {
     private final EnotValueSpecification produceType;
     private final Set<EnotAttribute> requiredAttributes;
     private final Set<EnotAttribute> allowedAttributes;
+    private final EnotElementBodyResolver bodyResolver;
     private final ElementSerializer elementSerializer;
 
     private Asn1Tag(String name, EnotValueSpecification consumeType, EnotValueSpecification produceType,
-                    Set<EnotAttribute> requiredAttributes, Set<EnotAttribute> allowedAttributes, ElementSerializer elementSerializer) {
+                    Set<EnotAttribute> requiredAttributes, Set<EnotAttribute> allowedAttributes,
+                    EnotElementBodyResolver bodyResolver, ElementSerializer elementSerializer) {
         this.name = name;
         this.consumeType = consumeType;
         this.produceType = produceType;
         this.requiredAttributes = Collections.unmodifiableSet(requiredAttributes);
         this.allowedAttributes = Collections.unmodifiableSet(allowedAttributes);
+        this.bodyResolver = bodyResolver;
         this.elementSerializer = elementSerializer;
     }
 
@@ -196,6 +216,11 @@ public enum Asn1Tag implements EnotElementSpecification {
     @Override
     public Set<EnotAttribute> getAllowedAttributes() {
         return allowedAttributes;
+    }
+
+    @Override
+    public EnotElementBodyResolver getBodyResolver() {
+        return bodyResolver;
     }
 
     public ElementSerializer getElementSerializer() {

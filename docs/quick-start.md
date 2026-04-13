@@ -55,16 +55,14 @@ Create a JSON template. This example encodes an X.509 Subject DN Common Name as 
 ## 3. Parse and serialize
 
 ```java
-import com.github.flexca.enot.core.parser.EnotParser;
+import com.github.flexca.enot.core.Enot;
 import com.github.flexca.enot.core.registry.EnotRegistry;
-import com.github.flexca.enot.core.serializer.EnotSerializer;
+import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import com.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
-import com.github.flexca.enot.core.element.EnotElement;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
-import java.util.Map;
 
 // 1. Build the registry — register the type specifications you need
 EnotRegistry registry = new EnotRegistry.Builder()
@@ -76,13 +74,16 @@ EnotRegistry registry = new EnotRegistry.Builder()
 
 ObjectMapper objectMapper = new ObjectMapper();
 
-// 2. Parse the template JSON into an element tree
-EnotParser parser = new EnotParser(registry, objectMapper);
-List<EnotElement> elements = parser.parse(templateJson);   // templateJson is a String
+// 2. Create the Enot facade — wires parser, serializer and expression engine
+Enot enot = new Enot(registry, objectMapper);
 
-// 3. Serialize — provide placeholder values as a plain Map
-EnotSerializer serializer = new EnotSerializer(registry, parser);
-List<byte[]> encoded = serializer.serialize(elements, Map.of("common_name", "Alice"));
+// 3. Build a serialization context with placeholder values
+SerializationContext context = new SerializationContext.Builder(objectMapper)
+        .withParam("common_name", "Alice")
+        .build();
+
+// 4. Serialize — parse the template and encode in one call
+List<byte[]> encoded = enot.serialize(templateJson, context);   // templateJson is a String
 
 // encoded.get(0) now contains the DER-encoded SET
 byte[] der = encoded.get(0);
@@ -92,15 +93,17 @@ byte[] der = encoded.get(0);
 
 ## 4. Supplying nested parameters (LOOP)
 
-When a template contains a `loop` element, pass the corresponding value as a `List`:
+When a template contains a `loop` element, pass the array of items under its `items_name` key:
 
 ```java
-List<byte[]> encoded = serializer.serialize(elements, Map.of(
-        "organizational_units", List.of(
+SerializationContext context = new SerializationContext.Builder(objectMapper)
+        .withParam("organizational_units", List.of(
                 Map.of("unit", "Engineering"),
                 Map.of("unit", "Security")
-        )
-));
+        ))
+        .build();
+
+List<byte[]> encoded = enot.serialize(templateJson, context);
 ```
 
 ---
@@ -125,7 +128,7 @@ Templates can select encoding based on a condition expression:
 ```
 
 The `body` is only serialized when the expression evaluates to `true`.  
-See the [Format Reference](format.md#condition) for the full expression syntax.
+See the [Expression syntax](format/expressions.md) for the full expression syntax.
 
 ---
 

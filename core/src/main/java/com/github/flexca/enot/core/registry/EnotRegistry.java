@@ -27,14 +27,14 @@ public class EnotRegistry {
                          Collection<EnotSystemVariableProvider> systemVariableProviders,
                          Collection<EnotElementReferenceResolver> elementReferenceResolvers) {
 
-        for(EnotValueType commonValueType : CommonEnotValueType.values()) {
+        for (EnotValueType commonValueType : CommonEnotValueType.values()) {
             if (commonValueType.haveCyclicDependency()) {
                 throw new EnotInvalidConfigurationException("EnotValueType " + commonValueType.getName() + " have cyclic dependency");
             }
             valueTypes.put(commonValueType.getName(), commonValueType);
         }
 
-        for(EnotTypeSpecification specification : specifications) {
+        for (EnotTypeSpecification specification : specifications) {
             if (StringUtils.isBlank(specification.getTypeName())) {
                 throw new EnotInvalidConfigurationException("Type name is blank for " + specification.getClass().getName());
             }
@@ -58,6 +58,12 @@ public class EnotRegistry {
             }
             typeSpecifications.put(specification.getTypeName().toLowerCase(), specification);
         }
+
+        if (CollectionUtils.isNotEmpty(elementReferenceResolvers)) {
+            for (EnotElementReferenceResolver resolver : elementReferenceResolvers) {
+                this.elementReferenceResolvers.put(resolver.getReferenceType(), resolver);
+            }
+        }
     }
 
     public Optional<EnotTypeSpecification> getTypeSpecification(String typeName) {
@@ -74,6 +80,11 @@ public class EnotRegistry {
         }
         EnotValueType valueType = valueTypes.get(name);
         return valueType == null ? Optional.empty() : Optional.of(valueType);
+    }
+
+    public EnotElementReferenceResolver getElementReferenceResolver(String resolverType) {
+
+        return elementReferenceResolvers.get(resolverType);
     }
 
     public static class Builder {
@@ -102,6 +113,11 @@ public class EnotRegistry {
 
         public Builder withSystemVariableProvider(EnotSystemVariableProvider systemVariableProvider) {
             systemVariableProviders.add(systemVariableProvider);
+            return this;
+        }
+
+        public Builder withElementReferenceResolver(EnotElementReferenceResolver elementReferenceResolver) {
+            elementReferenceResolvers.add(elementReferenceResolver);
             return this;
         }
 

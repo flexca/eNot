@@ -39,7 +39,7 @@ public class Asn1BooleanSerializer extends SimpleElementSerializer {
         if (CommonEnotValueType.BOOLEAN.equals(serializedBody.get(0).getValueType())) {
             if(serializedBody.get(0).getData() instanceof Boolean booleanBody) {
                 return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
-                        ASN1Boolean.getInstance(booleanBody)));
+                        booleanBody ? ASN1Boolean.TRUE : ASN1Boolean.FALSE));
             }
         }
 

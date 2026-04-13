@@ -2,6 +2,7 @@ package com.github.flexca.enot.core.types.system;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.flexca.enot.core.registry.EnotElementBodyResolver;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.element.value.EnotValueSpecification;
@@ -12,6 +13,8 @@ import com.github.flexca.enot.core.types.system.attribute.SystemAttribute;
 import com.github.flexca.enot.core.types.system.serializer.SystemConditionSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemGroupSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemLoopSerializer;
+import com.github.flexca.enot.core.types.system.serializer.SystemReferenceSerializer;
+import com.github.flexca.enot.core.types.system.SystemReferenceBodyResolver;
 
 import java.util.*;
 
@@ -23,6 +26,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME),
             Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME, SystemAttribute.MIN_ITEMS, SystemAttribute.MAX_ITEMS),
             null,
+            null,
             new SystemLoopSerializer()),
 
     CONDITION("condition",
@@ -30,6 +34,7 @@ public enum SystemKind implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
             Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
+            null,
             null,
             new SystemConditionSerializer()),
 
@@ -39,6 +44,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.GROUP_NAME),
             Set.of(SystemAttribute.KIND, SystemAttribute.GROUP_NAME),
             null,
+            null,
             new SystemGroupSerializer()),
 
     REFERENCE("reference",
@@ -46,14 +52,16 @@ public enum SystemKind implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.ELEMENT, true),
             Set.of(SystemAttribute.KIND, SystemAttribute.REFERENCE_TYPE, SystemAttribute.REFERENCE_IDENTIFIER),
             Set.of(SystemAttribute.KIND, SystemAttribute.REFERENCE_TYPE, SystemAttribute.REFERENCE_IDENTIFIER),
+            new SystemReferenceBodyResolver(),
             null,
-            null),
+            new SystemReferenceSerializer()),
 
     BIT_MAP("bit_map",
             new EnotValueSpecification(CommonEnotValueType.BOOLEAN, true),
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
             Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
             Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
+            null,
             null,
             null),
 
@@ -63,6 +71,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND),
             Set.of(SystemAttribute.KIND),
             null,
+            null,
             null),
 
     HEX_TO_BIN("hex_to_bin",
@@ -71,6 +80,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND),
             Set.of(SystemAttribute.KIND),
             null,
+            null,
             null),
 
     BIN_TO_HEX("bin_to_hex",
@@ -78,6 +88,7 @@ public enum SystemKind implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
             Set.of(SystemAttribute.KIND),
             Set.of(SystemAttribute.KIND),
+            null,
             null,
             null);
 
@@ -93,17 +104,19 @@ public enum SystemKind implements EnotElementSpecification {
     private final EnotValueSpecification produceType;
     private final Set<EnotAttribute> requiredAttributes;
     private final Set<EnotAttribute> allowedAttributes;
+    private final EnotElementBodyResolver bodyResolver;
     private final EnotElementValidator specificElementValidator;
     private final ElementSerializer elementSerializer;
 
     private SystemKind(String name, EnotValueSpecification consumeType, EnotValueSpecification produceType,
-                       Set<EnotAttribute> requiredAttributes, Set<EnotAttribute> allowedAttributes,
+                       Set<EnotAttribute> requiredAttributes, Set<EnotAttribute> allowedAttributes, EnotElementBodyResolver bodyResolver,
                        EnotElementValidator specificElementValidator, ElementSerializer elementSerializer) {
         this.name = name;
         this.consumeType = consumeType;
         this.produceType = produceType;
         this.requiredAttributes = Collections.unmodifiableSet(requiredAttributes);
         this.allowedAttributes = Collections.unmodifiableSet(allowedAttributes);
+        this.bodyResolver = bodyResolver;
         this.specificElementValidator = specificElementValidator;
         this.elementSerializer = elementSerializer;
     }
@@ -136,6 +149,11 @@ public enum SystemKind implements EnotElementSpecification {
     @Override
     public Set<EnotAttribute> getAllowedAttributes() {
         return allowedAttributes;
+    }
+
+    @Override
+    public EnotElementBodyResolver getBodyResolver() {
+        return bodyResolver;
     }
 
     public EnotElementValidator getSpecificElementValidator() {

@@ -3,6 +3,7 @@ package com.github.flexca.enot.core.parser;
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
 import com.github.flexca.enot.core.expression.ConditionExpressionParser;
+import com.github.flexca.enot.core.serializer.EnotSerializer;
 import com.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.types.asn1.attribute.Asn1Attribute;
 import com.github.flexca.enot.core.element.EnotElement;
@@ -23,19 +24,20 @@ public class EnotParserSuccessCasesTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private EnotRegistry enotRegistry;
+    private EnotContext enotContext;
 
     private EnotParser enotParser;
 
     @BeforeEach
     void init() {
-        enotRegistry = new EnotRegistry.Builder()
+        EnotRegistry enotRegistry = new EnotRegistry.Builder()
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .build();
         ConditionExpressionParser conditionExpressionParser = new ConditionExpressionParser();
-        EnotContext enotContext = new EnotContext(enotRegistry, conditionExpressionParser,
-                new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser));
-        enotParser = new EnotParser(enotContext, objectMapper);
+        enotParser = new EnotParser(objectMapper);
+        enotContext = new EnotContext(enotRegistry, enotParser, new EnotSerializer(enotParser),
+                conditionExpressionParser, new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser));
+
     }
 
     @Test
@@ -44,7 +46,7 @@ public class EnotParserSuccessCasesTest {
         String path = "json/asn1/rfc/subject-dn-common-name.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        List<EnotElement> actual = enotParser.parse(json);
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
 
         assertThat(actual).hasSize(1);
 
@@ -86,7 +88,7 @@ public class EnotParserSuccessCasesTest {
         String path = "json/asn1/rfc/subject-dn-organizational-unit.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        List<EnotElement> actual = enotParser.parse(json);
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
 
         assertThat(actual).hasSize(1);
 
@@ -131,7 +133,7 @@ public class EnotParserSuccessCasesTest {
         String path = "json/asn1/rfc/extension-extended-key-usage.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        List<EnotElement> actual = enotParser.parse(json);
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
 
         assertThat(actual).hasSize(1);
 
@@ -187,7 +189,7 @@ public class EnotParserSuccessCasesTest {
         String path = "json/asn1/rfc/extension-key-usage.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        List<EnotElement> actual = enotParser.parse(json);
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
 
         assertThat(actual).hasSize(1);
 
@@ -251,7 +253,7 @@ public class EnotParserSuccessCasesTest {
         String path = "json/asn1/rfc/extension-certificate-policy.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        List<EnotElement> actual = enotParser.parse(json);
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
 
         assertThat(actual).hasSize(1);
 
@@ -311,7 +313,7 @@ public class EnotParserSuccessCasesTest {
         String path = "json/asn1/rfc/extension-authority-key-identifier.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        List<EnotElement> actual = enotParser.parse(json);
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
 
         assertThat(actual).hasSize(1);
 
@@ -361,7 +363,7 @@ public class EnotParserSuccessCasesTest {
         String path = "json/asn1/rfc/x509-tbs-validity.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);
 
-        List<EnotElement> actual = enotParser.parse(json);
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
 
         assertThat(actual).hasSize(1);
 

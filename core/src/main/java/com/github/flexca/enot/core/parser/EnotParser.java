@@ -3,6 +3,8 @@ package com.github.flexca.enot.core.parser;
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.exception.EnotParsingException;
 import com.github.flexca.enot.core.expression.ConditionExpressionParser;
+import com.github.flexca.enot.core.registry.EnotElementBodyResolver;
+import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.element.EnotElement;
@@ -25,17 +27,15 @@ public class EnotParser {
 
     private static final String COMMON_ERROR_MESSAGE = "Error during parsing of eNot, reason: ";
 
-    private final EnotContext enotContext;
     private final EnotParserValidator parserValidator;
     private final ObjectMapper objectMapper;
 
-    public EnotParser(EnotContext enotContext, ObjectMapper objectMapper) {
-        this.enotContext = enotContext;
-        this.parserValidator = new EnotParserValidator(enotContext);
+    public EnotParser(ObjectMapper objectMapper) {
+        this.parserValidator = new EnotParserValidator();
         this.objectMapper = objectMapper;
     }
 
-    public List<EnotElement> parse(String json) throws EnotParsingException {
+    public List<EnotElement> parse(String json, EnotContext enotContext) throws EnotParsingException {
 
         String currentPath = "";
         if (StringUtils.isBlank(json)) {
@@ -57,7 +57,7 @@ public class EnotParser {
 
         if (rootNode.isArray()) {
             try {
-                elements.addAll(parseElements(rootNode.asArray(), currentPath, jsonErrors));
+                elements.addAll(parseElements(rootNode.asArray(), currentPath, jsonErrors, enotContext));
             } catch (Exception e) {
                 cause = e;
                 jsonErrors.add(EnotJsonError.of(currentPath, e.getMessage()));
@@ -67,7 +67,7 @@ public class EnotParser {
             }
         } else if (rootNode.isObject()) {
             try {
-                Optional<EnotElement> element = parseElement(rootNode.asObject(), currentPath, jsonErrors);
+                Optional<EnotElement> element = parseElement(rootNode.asObject(), currentPath, jsonErrors, enotContext);
                 element.ifPresent(elements::add);
             } catch (Exception e) {
                 cause = e;
@@ -88,14 +88,15 @@ public class EnotParser {
         return elements;
     }
 
-    private List<EnotElement> parseElements(ArrayNode elementsArray, String parentPath, List<EnotJsonError> jsonErrors) {
+    private List<EnotElement> parseElements(ArrayNode elementsArray, String parentPath, List<EnotJsonError> jsonErrors,
+                                            EnotContext enotContext) {
 
         List<EnotElement> elements = new ArrayList<>(elementsArray.size());
         for (int i = 0; i < elementsArray.size(); i++) {
             JsonNode itemNode = elementsArray.get(i);
             String currentPath = parentPath + "/" + i;
             if (itemNode.isObject()) {
-                Optional<EnotElement> element = parseElement(itemNode.asObject(), currentPath, jsonErrors);
+                Optional<EnotElement> element = parseElement(itemNode.asObject(), currentPath, jsonErrors, enotContext);
                 element.ifPresent(elements::add);
             } else {
                 jsonErrors.add(EnotJsonError.of(currentPath, "eNot expecting object, but get " + itemNode.getNodeType().name()));
@@ -104,7 +105,8 @@ public class EnotParser {
         return elements;
     }
 
-    private Optional<EnotElement> parseElement(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors) {
+    private Optional<EnotElement> parseElement(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors,
+                                               EnotContext enotContext) {
 
         JsonNode typeNode = jsonElement.get(ENOT_ELEMENT_TYPE_NAME);
         if (typeNode == null) {
@@ -142,10 +144,26 @@ public class EnotParser {
         Map<EnotAttribute, Object> attributes = extractElementAttributes(jsonElement, typeSpecification, parentPath, jsonErrors);
         element.setAttributes(attributes);
 
-        Optional<Object> elementBody = extractElementBody(jsonElement, parentPath, jsonErrors);
-        elementBody.ifPresent(element::setBody);
-
-        parserValidator.validateElement(typeSpecification, element, parentPath, jsonErrors);
+        EnotElementSpecification elementSpecification = typeSpecification.getElementSpecification(element);
+        if (elementSpecification == null) {
+            jsonErrors.add(EnotJsonError.of(parentPath, "cannot find specification for element with attributes: "
+                    + attributes));
+            return Optional.empty();
+        }
+        EnotElementBodyResolver bodyResolver = elementSpecification.getBodyResolver();
+        if (bodyResolver == null) {
+            Optional<Object> elementBody = extractElementBody(jsonElement, parentPath, jsonErrors, enotContext);
+            elementBody.ifPresent(element::setBody);
+        } else {
+            try {
+                element.setBody(bodyResolver.resolveBody(element, enotContext));
+            } catch(Exception e) {
+                jsonErrors.add(EnotJsonError.of(parentPath + "/" + ENOT_ELEMENT_BODY_NAME,
+                        "failure during resolving element body, reason: " + e.getMessage()));
+                return Optional.empty();
+            }
+        }
+        parserValidator.validateElement(typeSpecification, element, parentPath, jsonErrors, enotContext);
         typeSpecification.getElementValidator().validateElement(element, parentPath, jsonErrors, enotContext);
 
         return Optional.of(element);
@@ -202,7 +220,8 @@ public class EnotParser {
         return attributes;
     }
 
-    private Optional<Object> extractElementBody(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors) {
+    private Optional<Object> extractElementBody(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors,
+                                                EnotContext enotContext) {
 
         String currentPath = parentPath + "/" + ENOT_ELEMENT_BODY_NAME;
 
@@ -215,7 +234,7 @@ public class EnotParser {
                 return Optional.empty();
             }
             if (bodyArrayNode.get(0).isObject()) {
-                List<EnotElement> elements = parseElements(bodyArrayNode, currentPath, jsonErrors);
+                List<EnotElement> elements = parseElements(bodyArrayNode, currentPath, jsonErrors, enotContext);
                 return CollectionUtils.isEmpty(elements) ? Optional.empty() : Optional.of(elements);
             } else {
                 List<Object> primitiveValues = new ArrayList<>();
@@ -233,7 +252,7 @@ public class EnotParser {
                 return CollectionUtils.isEmpty(primitiveValues) ? Optional.empty() : Optional.of(primitiveValues);
             }
         } else if (bodyNode.isObject()) {
-            Optional<EnotElement> element = parseElement(bodyNode.asObject(), currentPath, jsonErrors);
+            Optional<EnotElement> element = parseElement(bodyNode.asObject(), currentPath, jsonErrors, enotContext);
             return element.isEmpty() ? Optional.empty() : Optional.of(element.get());
         }  else {
             Optional<Object> objectBody = extractPrimitiveValue(bodyNode);
@@ -283,6 +302,10 @@ public class EnotParser {
             return Optional.of(valueNode.asDecimal());
         } else if (valueNode.isBigInteger()) {
             return Optional.of(valueNode.asBigInteger());
+        } else if (valueNode.isInt()) {
+            return Optional.of(valueNode.asInt());
+        } else if (valueNode.isLong()) {
+            return Optional.of(valueNode.asLong());
         } else if (valueNode.isBoolean()) {
             return Optional.of(valueNode.asBoolean());
         }  else {

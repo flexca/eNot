@@ -22,38 +22,37 @@ public class EnotSerializer {
 
     public static final String COMMON_ERROR_MESSAGE = "Failure during serialization: ";
 
-    private final EnotContext enotContext;
     private final EnotParser enotParser;
 
-    public EnotSerializer(EnotContext enotContext, EnotParser enotParser) {
-        this.enotContext = enotContext;
+    public EnotSerializer(EnotParser enotParser) {
         this.enotParser = enotParser;
     }
 
-    public List<byte[]> serialize(String json, SerializationContext context) throws EnotParsingException, EnotSerializationException {
-        List<EnotElement> elements = enotParser.parse(json);
+    public List<byte[]> serialize(String json, SerializationContext context, EnotContext enotContext) throws EnotParsingException, EnotSerializationException {
+        List<EnotElement> elements = enotParser.parse(json, enotContext);
         if(CollectionUtils.isEmpty(elements)) {
             return Collections.emptyList();
         }
-        return elements.size() > 1 ? serialize(elements, context) : serialize(elements.get(0), context);
+        return elements.size() > 1 ? serialize(elements, context, enotContext) : serialize(elements.get(0), context, enotContext);
     }
 
-    public List<byte[]> serialize(List<EnotElement> elements, SerializationContext context) throws EnotSerializationException {
+    public List<byte[]> serialize(List<EnotElement> elements, SerializationContext context, EnotContext enotContext) throws EnotSerializationException {
 
         List<byte[]> serializationResult = new ArrayList<>();
         for (int i = 0; i < elements.size(); i++) {
             EnotElement element = elements.get(i);
-            serializationResult.addAll(serializeElement(element, context, "/" + i));
+            serializationResult.addAll(serializeElement(element, context, "/" + i, enotContext));
         }
 
         return serializationResult;
     }
 
-    public List<byte[]> serialize(EnotElement element, SerializationContext context) throws EnotSerializationException {
-        return serializeElement(element, context, "");
+    public List<byte[]> serialize(EnotElement element, SerializationContext context, EnotContext enotContext) throws EnotSerializationException {
+        return serializeElement(element, context, "", enotContext);
     }
 
-    private List<byte[]> serializeElement(EnotElement element, SerializationContext context, String jsonPath) throws EnotSerializationException {
+    private List<byte[]> serializeElement(EnotElement element, SerializationContext context, String jsonPath, EnotContext enotContext)
+            throws EnotSerializationException {
 
         EnotTypeSpecification typeSpecification = enotContext.getEnotRegistry().getTypeSpecification(element.getType()).orElseThrow(() ->
             new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,

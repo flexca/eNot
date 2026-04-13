@@ -1,0 +1,24 @@
+{
+  "type": "system",
+  "optional": true,
+  "attributes": {
+    "kind": "loop",
+    "items_name": "dns_name"
+  },
+  "body": {
+    "type": "asn.1",
+    "optional": true,
+    "attributes": {
+      "tag": "tagged_object",
+      "implicit": 2
+    },
+    "body": {
+      "type": "asn.1",
+      "optional": true,
+      "attributes": {
+        "tag": "ia5_string"
+      },
+      "body": "${value}"
+    }
+  }
+}
