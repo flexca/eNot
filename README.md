@@ -4,15 +4,98 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.org/projects/jdk/17/)
 
-**eNot** (**Encoding Notations**) is a general purpose templating engine that serializes structured data into binary formats such as **ASN.1** and **BER-TLV**.
-
-A template describes the binary structure declaratively in JSON. At serialization time, placeholders are resolved from a parameter map, control structures (loops, conditions) are evaluated, and the result is encoded into the target binary format.
+**eNot** (**Encoding Notations**) is a JSON-driven templating engine that serializes structured data into binary formats — primarily **ASN.1 DER**, with **BER-TLV** support showing the design is not limited to a single format.
 
 ---
 
-## Why eNot?
+## The problem it solves
 
-Most PKI and smart-card tooling either hard-codes binary structures or requires developers to work directly with low-level ASN.1 / BER-TLV APIs. eNot sits in between: templates are human-readable JSON files that can be version-controlled, reviewed, and reused, while the engine handles all binary encoding details.
+If you have ever written PKI tooling, you know the drill: encoding a Subject Distinguished Name, a Subject Alternative Name extension, or an X.509 Validity block means either reaching for a heavy framework that makes all the structural decisions for you, or writing low-level ASN.1 code that is brittle, hard to review, and even harder to reuse.
+
+eNot takes a different approach. The binary structure is described as a plain JSON template:
+
+```json
+{
+  "type": "asn.1",
+  "attributes": { "tag": "utf8_string" },
+  "body": "${common_name}"
+}
+```
+
+At serialization time you supply the values:
+
+```java
+Enot enot = new Enot(registry, objectMapper);
+List<byte[]> der = enot.serialize(templateJson,
+        new SerializationContext.Builder(objectMapper)
+                .withParam("common_name", "Alice")
+                .build());
+```
+
+That's it. The engine resolves `${common_name}`, encodes the UTF-8 string as DER, and returns the bytes. No hard-coded structures, no framework lock-in.
+
+---
+
+## Going further — loops, conditions, and composition
+
+Real certificate structures are not flat. eNot handles this with built-in control-flow elements.
+
+**Loops** iterate over an array of parameters and produce one encoded element per entry — useful for multi-valued SANs or Organizational Unit lists:
+
+```json
+{
+  "type": "system",
+  "attributes": { "kind": "loop", "items_name": "dns_name" },
+  "body": {
+    "type": "asn.1",
+    "attributes": { "tag": "tagged_object", "implicit": 2 },
+    "body": {
+      "type": "asn.1",
+      "attributes": { "tag": "ia5_string" },
+      "body": "${value}"
+    }
+  }
+}
+```
+
+**Conditions** encode a body only when an expression evaluates to `true` — for example, choosing between `UTCTime` and `GeneralizedTime` based on whether a date falls before or after 2050 (exactly as RFC 5280 requires):
+
+```json
+{
+  "type": "system",
+  "attributes": {
+    "kind": "condition",
+    "expression": "${expires_on} < '2050-01-01T00:00:00Z'"
+  },
+  "body": {
+    "type": "asn.1",
+    "attributes": { "tag": "utc_time" },
+    "body": "${expires_on}"
+  }
+}
+```
+
+**References** let one template include another by identifier at parse time, so large structures (like a full SAN extension) are assembled from smaller, independently testable pieces rather than one monolithic file.
+
+---
+
+## Why templates in JSON?
+
+The format was a deliberate choice:
+- Templates are **plain text** — version-controlled, diff-able, reviewable in a pull request
+- The structure mirrors the binary output — a `sequence` wrapping a `set` wrapping a `utf8_string` is exactly how it looks in the JSON tree
+- The engine is **format-agnostic** — the same parser and serializer infrastructure drives both the `asn.1` and `ber-tlv` type systems; new formats plug in via `EnotRegistry`
+- Placeholder resolution, condition evaluation, and loop iteration are all **handled by the engine**, not scattered across application code
+
+---
+
+## Status
+
+> **eNot is not yet published to Maven Central.** Build locally first:
+> ```
+> mvn install
+> ```
+> Then reference the snapshot version (see [Quick Start](docs/quick-start.md)).
 
 ---
 
@@ -21,33 +104,30 @@ Most PKI and smart-card tooling either hard-codes binary structures or requires 
 | Module | Description |
 |--------|-------------|
 | `core` | Parser, serializer, expression engine, type registry |
-| `ber-tlv` | BER-TLV extension (PoC — shows eNot is not ASN.1-only) |
-| `web-tool` | Browser-based template editor and serializer (planned) |
+| `ber-tlv` | BER-TLV type extension — proof that the engine is not tied to ASN.1 |
 
 ---
 
-## Quick start
+## Building
 
-→ **[Quick Start Guide](docs/quick-start.md)**
+Requirements: **Java 17+**, **Maven 3.8+**
+
+```
+mvn install          # build and run all tests
+mvn -pl core test    # run only core module tests
+```
 
 ---
 
 ## Documentation
 
-| Document                                        | Description |
-|-------------------------------------------------|-------------|
-| [Quick Start](docs/quick-start.md)              | Add the dependency, parse a template, serialize with parameters |
-| [Format overview](docs/format/README.md)        | Element structure, values, placeholders |
-| [ASN.1 elements](docs/format/asn1.md)           | All ASN.1 tags and accepted body types |
-| [System elements](docs/format/system.md)        | loop, condition, bit_map, sha1, hex_to_bin, bin_to_hex, … |
+| Document | Description |
+|----------|-------------|
+| [Quick Start](docs/quick-start.md) | Dependency, first template, serialization |
+| [Format overview](docs/format/README.md) | Element structure, values, placeholders, scoping |
+| [ASN.1 elements](docs/format/asn1.md) | All tags and accepted body types |
+| [System elements](docs/format/system.md) | loop, condition, group, reference, bit_map, sha1, … |
 | [Expression syntax](docs/format/expressions.md) | Operators, functions, type rules |
-
----
-
-## Requirements
-
-- Java 17+
-- Maven 3.8+
 
 ---
 

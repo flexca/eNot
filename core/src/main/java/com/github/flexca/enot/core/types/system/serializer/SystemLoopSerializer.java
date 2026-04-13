@@ -3,17 +3,16 @@ package com.github.flexca.enot.core.types.system.serializer;
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.exception.EnotSerializationException;
-import com.github.flexca.enot.core.expression.ConditionExpressionEvaluator;
 import com.github.flexca.enot.core.parser.EnotJsonError;
 import com.github.flexca.enot.core.parser.EnotParser;
-import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.serializer.BaseElementSerializer;
 import com.github.flexca.enot.core.serializer.ElementSerializationResult;
 import com.github.flexca.enot.core.serializer.EnotSerializer;
 import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import com.github.flexca.enot.core.types.system.attribute.SystemAttribute;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SystemLoopSerializer extends BaseElementSerializer {
 
