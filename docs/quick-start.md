@@ -9,7 +9,14 @@
 
 ## 1. Add the dependency
 
-> **Note:** eNot is not yet published to Maven Central. Until the first release, build locally with `mvn install` and reference the snapshot:
+> **Note:** eNot is not yet published to Maven Central. Until the first release, clone the repository and install locally:
+> ```
+> git clone https://github.com/flexca/eNot.git
+> cd eNot
+> mvn install
+> ```
+
+Then reference the snapshot in your project:
 
 ```xml
 <dependency>
@@ -23,7 +30,9 @@
 
 ## 2. Write a template
 
-Create a JSON template. This example encodes an X.509 Subject DN Common Name as an ASN.1 SET:
+A template is a JSON file that describes the binary structure. Elements have a `type` (the encoding engine), `attributes` (configuration), and a `body` (the payload). Placeholders like `${common_name}` are resolved from parameters at serialization time.
+
+This example encodes a named field — an OID paired with a UTF-8 string value — wrapped in a SEQUENCE inside a SET (a common pattern in ASN.1 attribute structures):
 
 ```json
 {
@@ -48,8 +57,6 @@ Create a JSON template. This example encodes an X.509 Subject DN Common Name as 
 }
 ```
 
-`${common_name}` is a placeholder — its value is supplied at serialization time.
-
 ---
 
 ## 3. Parse and serialize
@@ -67,7 +74,7 @@ import java.util.List;
 // 1. Build the registry — register the type specifications you need
 EnotRegistry registry = new EnotRegistry.Builder()
         .withTypeSpecifications(
-                new SystemTypeSpecification(),   // loop, condition, bit_map, …
+                new SystemTypeSpecification(),   // loop, condition, group, …
                 new Asn1TypeSpecification()       // asn.1 tags
         )
         .build();
@@ -78,39 +85,61 @@ ObjectMapper objectMapper = new ObjectMapper();
 Enot enot = new Enot(registry, objectMapper);
 
 // 3. Build a serialization context with placeholder values
+//    Params can be supplied as individual entries, a Map, or a JSON string —
+//    all three forms can be mixed on the same builder.
 SerializationContext context = new SerializationContext.Builder(objectMapper)
-        .withParam("common_name", "Alice")
+        .withParam("common_name", "Alice")           // single entry
+        .withParams(Map.of("country", "US"))          // from a Map
+        .withParams("{\"org\": \"Example Inc\"}")     // from a JSON string
         .build();
 
-// 4. Serialize — parse the template and encode in one call
-List<byte[]> encoded = enot.serialize(templateJson, context);   // templateJson is a String
+// 4. Serialize — returns one byte[] per top-level element produced by the template.
+//    A flat template produces one entry; a LOOP at the root produces one per iteration.
+List<byte[]> encoded = enot.serialize(templateJson, context);
 
-// encoded.get(0) now contains the DER-encoded SET
 byte[] der = encoded.get(0);
 ```
 
 ---
 
-## 4. Supplying nested parameters (LOOP)
+## 4. Repeating structures (LOOP)
 
-When a template contains a `loop` element, pass the array of items under its `items_name` key:
+When a structure repeats for each item in a list, use a `loop` element. Mark it `optional: true` so it produces an empty result — rather than an error — when the array parameter is absent.
+
+Template:
+
+```json
+{
+  "type": "system",
+  "optional": true,
+  "attributes": { "kind": "loop", "items_name": "entries" },
+  "body": {
+    "type": "asn.1",
+    "attributes": { "tag": "utf8_string" },
+    "body": "${value}"
+  }
+}
+```
+
+Inside the loop body, `${value}` (and any other placeholder) is resolved from the **current iteration's map entry**. Pass the array under the `items_name` key:
 
 ```java
 SerializationContext context = new SerializationContext.Builder(objectMapper)
-        .withParam("organizational_units", List.of(
-                Map.of("unit", "Engineering"),
-                Map.of("unit", "Security")
+        .withParam("entries", List.of(
+                Map.of("value", "first"),
+                Map.of("value", "second")
         ))
         .build();
 
 List<byte[]> encoded = enot.serialize(templateJson, context);
+// encoded.size() == 2
 ```
 
 ---
 
 ## 5. Conditional encoding
 
-Templates can select encoding based on a condition expression:
+A `condition` element serializes its body only when an expression evaluates to `true`; otherwise it produces no output. This lets a single template cover multiple encoding variants depending on the input.
 
 ```json
 {
@@ -127,14 +156,15 @@ Templates can select encoding based on a condition expression:
 }
 ```
 
-The `body` is only serialized when the expression evaluates to `true`.  
-See the [Expression syntax](format/expressions.md) for the full expression syntax.
+Here the body is encoded as `UTCTime` only when the date is before 2050 — the encoding rule required by RFC 5280 for X.509 validity dates, and a good illustration of how conditions work for any date-driven encoding choice.
+
+See [Expression syntax](format/expressions.md) for all available operators and functions.
 
 ---
 
 ## Next steps
 
-- [Format overview](format/) — element structure, values, placeholders
-- [ASN.1 elements](format/asn1.md) — all tags and body types
-- [System elements](format/system.md) — loop, condition, bit_map, sha1, …
+- [Format overview](format/) — element structure, values, placeholders, scoping rules
+- [ASN.1 elements](format/asn1.md) — all tags and accepted body types
+- [System elements](format/system.md) — loop, condition, group, reference, bit_map, sha1, …
 - [Expression syntax](format/expressions.md) — operators, functions, type rules
