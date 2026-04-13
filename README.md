@@ -10,7 +10,7 @@
 
 ## The problem it solves
 
-If you have ever written PKI tooling, you know the drill: encoding a Subject Distinguished Name, a Subject Alternative Name extension, or an X.509 Validity block means either reaching for a heavy framework that makes all the structural decisions for you, or writing low-level ASN.1 code that is brittle, hard to review, and even harder to reuse.
+Whenever an application needs to produce structured binary data — network protocols, smart-card commands, certificate fields, device provisioning payloads — the choices are usually the same: reach for a heavy framework that makes all the structural decisions for you, or write low-level encoding code that is brittle, hard to review, and even harder to reuse across projects.
 
 eNot takes a different approach. The binary structure is described as a plain JSON template:
 
@@ -38,9 +38,9 @@ That's it. The engine resolves `${common_name}`, encodes the UTF-8 string as DER
 
 ## Going further — loops, conditions, and composition
 
-Real certificate structures are not flat. eNot handles this with built-in control-flow elements.
+Binary structures are rarely flat. eNot handles this with built-in control-flow elements.
 
-**Loops** iterate over an array of parameters and produce one encoded element per entry — useful for multi-valued SANs or Organizational Unit lists:
+**Loops** iterate over an array of parameters and produce one encoded element per entry — any repeated structure maps directly to a loop:
 
 ```json
 {
@@ -58,7 +58,7 @@ Real certificate structures are not flat. eNot handles this with built-in contro
 }
 ```
 
-**Conditions** encode a body only when an expression evaluates to `true` — for example, choosing between `UTCTime` and `GeneralizedTime` based on whether a date falls before or after 2050 (exactly as RFC 5280 requires):
+**Conditions** encode a body only when an expression evaluates to `true`. The body is simply skipped when the expression is false, so a single template can cover multiple encoding variants depending on the input. One example is encoding a date in a different format depending on its value (as RFC 5280 requires for X.509 validity dates):
 
 ```json
 {
@@ -75,7 +75,7 @@ Real certificate structures are not flat. eNot handles this with built-in contro
 }
 ```
 
-**References** let one template include another by identifier at parse time, so large structures (like a full SAN extension) are assembled from smaller, independently testable pieces rather than one monolithic file.
+**References** let one template include another by identifier at parse time, so large or complex structures are assembled from smaller, independently testable pieces rather than one monolithic file — the same composability principle that makes software maintainable applies directly to binary templates.
 
 ---
 
