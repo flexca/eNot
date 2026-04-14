@@ -11,6 +11,7 @@ import com.github.flexca.enot.core.serializer.SimpleElementSerializer;
 import com.github.flexca.enot.core.types.asn1.Asn1EnotValueType;
 import com.github.flexca.enot.core.types.asn1.Asn1Tag;
 import org.apache.commons.collections4.CollectionUtils;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
 
 import java.util.Collections;
@@ -54,7 +55,7 @@ public class Asn1BitStringSerializer extends SimpleElementSerializer {
             }
 
             return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
-                    new DEROctetString(binaryInput)));
+                    new DERBitString(binaryInput)));
         }
 
         throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, Collections.singletonList(

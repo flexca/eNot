@@ -14,7 +14,8 @@ public enum Asn1Attribute implements EnotAttribute {
 
     TAG("tag", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     IMPLICIT("implicit", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
-    EXPLICIT("explicit", new EnotValueSpecification(CommonEnotValueType.INTEGER, false));
+    EXPLICIT("explicit", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
+    APPLY_PADDING("apply_padding", new EnotValueSpecification(CommonEnotValueType.BINARY, false));
 
     private static final Map<String, Asn1Attribute> BY_NAME = new HashMap<>();
     static {

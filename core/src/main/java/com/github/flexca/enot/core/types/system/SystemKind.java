@@ -2,21 +2,28 @@ package com.github.flexca.enot.core.types.system;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.flexca.enot.core.element.attribute.EnotAttribute;
+import com.github.flexca.enot.core.element.value.CommonEnotValueType;
+import com.github.flexca.enot.core.element.value.EnotValueSpecification;
 import com.github.flexca.enot.core.registry.EnotElementBodyResolver;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
-import com.github.flexca.enot.core.element.attribute.EnotAttribute;
-import com.github.flexca.enot.core.element.value.EnotValueSpecification;
-import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.serializer.ElementSerializer;
 import com.github.flexca.enot.core.types.system.attribute.SystemAttribute;
+import com.github.flexca.enot.core.types.system.serializer.SystemBinToHexSerializer;
+import com.github.flexca.enot.core.types.system.serializer.SystemBitMapSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemConditionSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemGroupSerializer;
+import com.github.flexca.enot.core.types.system.serializer.SystemHexToBinSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemLoopSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemReferenceSerializer;
-import com.github.flexca.enot.core.types.system.SystemReferenceBodyResolver;
+import com.github.flexca.enot.core.types.system.serializer.SystemSha1Serializer;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public enum SystemKind implements EnotElementSpecification {
 
@@ -63,7 +70,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
             null,
             null,
-            null),
+            new SystemBitMapSerializer()),
 
     SHA1("sha1",
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
@@ -72,7 +79,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND),
             null,
             null,
-            null),
+            new SystemSha1Serializer()),
 
     HEX_TO_BIN("hex_to_bin",
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
@@ -81,7 +88,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND),
             null,
             null,
-            null),
+            new SystemHexToBinSerializer()),
 
     BIN_TO_HEX("bin_to_hex",
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
@@ -90,7 +97,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND),
             null,
             null,
-            null);
+            new SystemBinToHexSerializer());
 
     private static final Map<String, SystemKind> BY_NAME = new HashMap<>();
     static {
