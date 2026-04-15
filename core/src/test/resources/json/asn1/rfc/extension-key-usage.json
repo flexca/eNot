@@ -34,8 +34,8 @@
           "type": "system",
           "attributes": {
             "kind": "bit_map",
-            "byte_order": "little_endian",
-            "bit_order": "lsb_first"
+            "byte_order": "big_endian",
+            "bit_order": "msb_first"
           },
           "body": [
             "${digital_signature}",

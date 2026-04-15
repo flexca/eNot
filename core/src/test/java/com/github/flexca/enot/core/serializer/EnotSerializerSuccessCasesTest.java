@@ -17,8 +17,8 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1UTCTime;
-import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
@@ -184,21 +184,18 @@ public class EnotSerializerSuccessCasesTest {
     // -----------------------------------------------------------------------
     // extension-key-usage.json  →  SEQUENCE { OID(2.5.29.15), [BOOLEAN], OCTET_STRING { BIT_STRING } }
     //
-    // Template uses lsb_first little_endian input order:
-    //   boolean[0]=digital_signature maps to bit0 (LSB) of first byte,
-    //   first byte group → least-significant byte of the output (little_endian).
+    // Template uses msb_first big_endian input order, matching RFC 5280 bit numbering:
+    //   boolean[0]=digital_signature → named bit 0 → MSB of byte[0] (shift=7)
+    //   boolean[2]=key_encipherment  → named bit 2 → shift=5
     //
     // For digital_signature=true, key_encipherment=true, all others false (9 bits):
-    //   group0 (lsb): 1,0,1,0,0,0,0,0 → byteValue=0x05 → little_endian → bytes[1]
-    //   partial (decipher_only=false) → bytes[0]=0x00
-    //   apply_padding=true: trim([0x00,0x05])→[0x00,0x05], padBits=0 (bit0 of 0x05 is set)
-    //   DERBitString([0x00, 0x05], 0)
+    //   byte[0]: digital_sig(shift=7) | key_enc(shift=5) = 0x80|0x20 = 0xA0
+    //   byte[1]: decipher_only=false → 0x00
+    //   apply_padding=true: trim([0xA0,0x00])→[0xA0], padBits=5
+    //   KeyUsage.digitalSignature=0x80, KeyUsage.keyEncipherment=0x20 → intValue=0xA0
     // -----------------------------------------------------------------------
 
     private static final String KEY_USAGE_OID = "2.5.29.15";
-
-    // Expected bit string bytes for digital_signature=true, key_encipherment=true
-    private static final byte[] KU_DIGITAL_SIG_KEY_ENC = new byte[]{0x00, 0x05};
 
     @Test
     void testSerializeKeyUsageWithoutCritical() throws Exception {
@@ -225,7 +222,16 @@ public class EnotSerializerSuccessCasesTest {
 
         assertThat(((ASN1ObjectIdentifier) root.getObjectAt(0)).getId()).isEqualTo(KEY_USAGE_OID);
 
-        assertKeyUsageBitString(root.getObjectAt(1), KU_DIGITAL_SIG_KEY_ENC, 0);
+        KeyUsage ku = parseKeyUsage(root.getObjectAt(1));
+        assertThat(ku.hasUsages(KeyUsage.digitalSignature)).isTrue();
+        assertThat(ku.hasUsages(KeyUsage.nonRepudiation)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.keyEncipherment)).isTrue();
+        assertThat(ku.hasUsages(KeyUsage.dataEncipherment)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.keyAgreement)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.keyCertSign)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.cRLSign)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.encipherOnly)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.decipherOnly)).isFalse();
     }
 
     @Test
@@ -255,15 +261,64 @@ public class EnotSerializerSuccessCasesTest {
         assertThat(((ASN1ObjectIdentifier) root.getObjectAt(0)).getId()).isEqualTo(KEY_USAGE_OID);
         assertThat(ASN1Boolean.getInstance(root.getObjectAt(1)).isTrue()).isTrue();
 
-        assertKeyUsageBitString(root.getObjectAt(2), KU_DIGITAL_SIG_KEY_ENC, 0);
+        KeyUsage ku = parseKeyUsage(root.getObjectAt(2));
+        assertThat(ku.hasUsages(KeyUsage.digitalSignature)).isTrue();
+        assertThat(ku.hasUsages(KeyUsage.nonRepudiation)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.keyEncipherment)).isTrue();
+        assertThat(ku.hasUsages(KeyUsage.dataEncipherment)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.keyAgreement)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.keyCertSign)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.cRLSign)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.encipherOnly)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.decipherOnly)).isFalse();
     }
 
-    /** Decodes the OCTET_STRING wrapper and asserts the inner BIT_STRING value and padding. */
-    private void assertKeyUsageBitString(Object asn1Object, byte[] expectedBytes, int expectedPadBits) throws Exception {
-        ASN1OctetString octetString = (ASN1OctetString) asn1Object;
-        DERBitString bitString = (DERBitString) ASN1Primitive.fromByteArray(octetString.getOctets());
-        assertThat(bitString.getPadBits()).isEqualTo(expectedPadBits);
-        assertThat(bitString.getBytes()).isEqualTo(expectedBytes);
+    @Test
+    void testSerializeKeyUsageWithDecipherOnly() throws Exception {
+        // RFC 5280 §4.2.1.3: decipherOnly may only be asserted when keyAgreement is also set.
+        // decipherOnly = (1 << 15) maps to named bit 8 → MSB of byte[1].
+        // With msb_first big_endian and 9 input booleans:
+        //   byte[0]: digital_sig(shift=7) | key_agreement(shift=3) = 0x88
+        //   byte[1]: decipher_only(shift=7) = 0x80  (partial byte, padBits=7)
+
+        String json = ResourceReaderTestUtils.readResourceFileAsString("json/asn1/rfc/extension-key-usage.json");
+
+        List<byte[]> result = enotSerializer.serialize(json, ctx(Map.of(
+                "digital_signature", true,
+                "non_repudiation",   false,
+                "key_encipherment",  false,
+                "data_encipherment", false,
+                "key_agreement",     true,
+                "key_cert_sign",     false,
+                "crl_sign",          false,
+                "encipher_only",     false,
+                "decipher_only",     true
+        )), enotContext);
+
+        assertThat(result).hasSize(1);
+
+        ASN1Sequence root = (ASN1Sequence) ASN1Primitive.fromByteArray(result.get(0));
+        // critical is optional and absent → 2 children: OID + OCTET_STRING
+        assertThat(root.size()).isEqualTo(2);
+
+        assertThat(((ASN1ObjectIdentifier) root.getObjectAt(0)).getId()).isEqualTo(KEY_USAGE_OID);
+
+        KeyUsage ku = parseKeyUsage(root.getObjectAt(1));
+        assertThat(ku.hasUsages(KeyUsage.digitalSignature)).isTrue();
+        assertThat(ku.hasUsages(KeyUsage.nonRepudiation)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.keyEncipherment)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.dataEncipherment)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.keyAgreement)).isTrue();
+        assertThat(ku.hasUsages(KeyUsage.keyCertSign)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.cRLSign)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.encipherOnly)).isFalse();
+        assertThat(ku.hasUsages(KeyUsage.decipherOnly)).isTrue();
+    }
+
+    /** Extracts the KeyUsage from an OCTET_STRING-wrapped DER BIT_STRING. */
+    private KeyUsage parseKeyUsage(Object asn1Object) throws Exception {
+        ASN1OctetString octetString = ASN1OctetString.getInstance(asn1Object);
+        return KeyUsage.getInstance(ASN1Primitive.fromByteArray(octetString.getOctets()));
     }
 
     // -----------------------------------------------------------------------

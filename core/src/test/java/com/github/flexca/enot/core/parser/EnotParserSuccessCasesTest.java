@@ -229,7 +229,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement bitMapElement = (EnotElement) bitStringElement.getBody();
         assertThat(bitMapElement.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(bitMapElement.isOptional()).isFalse();
-        assertThat(bitMapElement.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "bit_map", SystemAttribute.BYTE_ORDER, "little_endian", SystemAttribute.BIT_ORDER, "lsb_first"));
+        assertThat(bitMapElement.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "bit_map", SystemAttribute.BYTE_ORDER, "big_endian", SystemAttribute.BIT_ORDER, "msb_first"));
         assertThat(bitMapElement.getBody()).isInstanceOf(List.class);
 
         List<String> bitMapBody = (List<String>) bitMapElement.getBody();
