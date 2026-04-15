@@ -9,12 +9,15 @@ import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
 import com.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
 import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
+import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1UTCTime;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -176,6 +179,91 @@ public class EnotSerializerSuccessCasesTest {
         assertThat(seq.size()).isEqualTo(2);
         assertThat(seq.getObjectAt(0)).isInstanceOf(ASN1UTCTime.class);
         assertThat(seq.getObjectAt(1)).isInstanceOf(ASN1GeneralizedTime.class);
+    }
+
+    // -----------------------------------------------------------------------
+    // extension-key-usage.json  →  SEQUENCE { OID(2.5.29.15), [BOOLEAN], OCTET_STRING { BIT_STRING } }
+    //
+    // Template uses lsb_first little_endian input order:
+    //   boolean[0]=digital_signature maps to bit0 (LSB) of first byte,
+    //   first byte group → least-significant byte of the output (little_endian).
+    //
+    // For digital_signature=true, key_encipherment=true, all others false (9 bits):
+    //   group0 (lsb): 1,0,1,0,0,0,0,0 → byteValue=0x05 → little_endian → bytes[1]
+    //   partial (decipher_only=false) → bytes[0]=0x00
+    //   apply_padding=true: trim([0x00,0x05])→[0x00,0x05], padBits=0 (bit0 of 0x05 is set)
+    //   DERBitString([0x00, 0x05], 0)
+    // -----------------------------------------------------------------------
+
+    private static final String KEY_USAGE_OID = "2.5.29.15";
+
+    // Expected bit string bytes for digital_signature=true, key_encipherment=true
+    private static final byte[] KU_DIGITAL_SIG_KEY_ENC = new byte[]{0x00, 0x05};
+
+    @Test
+    void testSerializeKeyUsageWithoutCritical() throws Exception {
+
+        String json = ResourceReaderTestUtils.readResourceFileAsString("json/asn1/rfc/extension-key-usage.json");
+
+        List<byte[]> result = enotSerializer.serialize(json, ctx(Map.of(
+                "digital_signature", true,
+                "non_repudiation",   false,
+                "key_encipherment",  true,
+                "data_encipherment", false,
+                "key_agreement",     false,
+                "key_cert_sign",     false,
+                "crl_sign",          false,
+                "encipher_only",     false,
+                "decipher_only",     false
+        )), enotContext);
+
+        assertThat(result).hasSize(1);
+
+        ASN1Sequence root = (ASN1Sequence) ASN1Primitive.fromByteArray(result.get(0));
+        // critical is optional and absent → 2 children: OID + OCTET_STRING
+        assertThat(root.size()).isEqualTo(2);
+
+        assertThat(((ASN1ObjectIdentifier) root.getObjectAt(0)).getId()).isEqualTo(KEY_USAGE_OID);
+
+        assertKeyUsageBitString(root.getObjectAt(1), KU_DIGITAL_SIG_KEY_ENC, 0);
+    }
+
+    @Test
+    void testSerializeKeyUsageWithCritical() throws Exception {
+
+        String json = ResourceReaderTestUtils.readResourceFileAsString("json/asn1/rfc/extension-key-usage.json");
+
+        List<byte[]> result = enotSerializer.serialize(json, ctx(Map.ofEntries(
+                Map.entry("key_usage_critical", true),
+                Map.entry("digital_signature",  true),
+                Map.entry("non_repudiation",    false),
+                Map.entry("key_encipherment",   true),
+                Map.entry("data_encipherment",  false),
+                Map.entry("key_agreement",      false),
+                Map.entry("key_cert_sign",      false),
+                Map.entry("crl_sign",           false),
+                Map.entry("encipher_only",      false),
+                Map.entry("decipher_only",      false)
+        )), enotContext);
+
+        assertThat(result).hasSize(1);
+
+        ASN1Sequence root = (ASN1Sequence) ASN1Primitive.fromByteArray(result.get(0));
+        // critical present → 3 children: OID + BOOLEAN(true) + OCTET_STRING
+        assertThat(root.size()).isEqualTo(3);
+
+        assertThat(((ASN1ObjectIdentifier) root.getObjectAt(0)).getId()).isEqualTo(KEY_USAGE_OID);
+        assertThat(ASN1Boolean.getInstance(root.getObjectAt(1)).isTrue()).isTrue();
+
+        assertKeyUsageBitString(root.getObjectAt(2), KU_DIGITAL_SIG_KEY_ENC, 0);
+    }
+
+    /** Decodes the OCTET_STRING wrapper and asserts the inner BIT_STRING value and padding. */
+    private void assertKeyUsageBitString(Object asn1Object, byte[] expectedBytes, int expectedPadBits) throws Exception {
+        ASN1OctetString octetString = (ASN1OctetString) asn1Object;
+        DERBitString bitString = (DERBitString) ASN1Primitive.fromByteArray(octetString.getOctets());
+        assertThat(bitString.getPadBits()).isEqualTo(expectedPadBits);
+        assertThat(bitString.getBytes()).isEqualTo(expectedBytes);
     }
 
     // -----------------------------------------------------------------------

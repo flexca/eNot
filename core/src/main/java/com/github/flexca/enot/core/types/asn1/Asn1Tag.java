@@ -125,7 +125,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
             new EnotValueSpecification(Asn1EnotValueType.ASN1_ELEMENT, false),
             Set.of(Asn1Attribute.TAG),
-            Set.of(Asn1Attribute.TAG),
+            Set.of(Asn1Attribute.TAG, Asn1Attribute.APPLY_PADDING),
             null,
             new Asn1BitStringSerializer()),
 

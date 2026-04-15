@@ -223,7 +223,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement bitStringElement = (EnotElement) octetStringElement.getBody();
         assertThat(bitStringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
         assertThat(bitStringElement.isOptional()).isFalse();
-        assertThat(bitStringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "bit_string"));
+        assertThat(bitStringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "bit_string", Asn1Attribute.APPLY_PADDING, true));
         assertThat(bitStringElement.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement bitMapElement = (EnotElement) bitStringElement.getBody();
@@ -235,15 +235,15 @@ public class EnotParserSuccessCasesTest {
         List<String> bitMapBody = (List<String>) bitMapElement.getBody();
         assertThat(bitMapBody).hasSize(9);
         assertThat(bitMapBody).containsExactly(
-                "${key_usage.digital_signature}",
-                "${key_usage.non_repudiation}",
-                "${key_usage.key_encipherment}",
-                "${key_usage.data_encipherment}",
-                "${key_usage.key_agreement}",
-                "${key_usage.key_cert_sign}",
-                "${key_usage.crl_sign}",
-                "${key_usage.encipher_only}",
-                "${key_usage.decipher_only}"
+                "${digital_signature}",
+                "${non_repudiation}",
+                "${key_encipherment}",
+                "${data_encipherment}",
+                "${key_agreement}",
+                "${key_cert_sign}",
+                "${crl_sign}",
+                "${encipher_only}",
+                "${decipher_only}"
         );
     }
 
