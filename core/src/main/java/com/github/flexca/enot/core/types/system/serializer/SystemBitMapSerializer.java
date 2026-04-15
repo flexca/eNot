@@ -91,7 +91,7 @@ public class SystemBitMapSerializer extends SimpleElementSerializer {
             }
             bitCount++;
             if (bitCount >= 8) {
-                int index = ByteOrder.LITTLE_ENDIAN.equals(byteOrder) ? byteCount : (bytesLength - byteCount - 1);
+                int index = ByteOrder.BIG_ENDIAN.equals(byteOrder) ? byteCount : (bytesLength - byteCount - 1);
                 bytes[index] = (byte) (byteValue & 0xFF);
                 byteValue = 0;
                 bitCount = 0;
@@ -99,7 +99,7 @@ public class SystemBitMapSerializer extends SimpleElementSerializer {
             }
         }
         if (serializedBody.size() % 8 != 0) {
-            int index = ByteOrder.LITTLE_ENDIAN.equals(byteOrder) ? byteCount : (bytesLength - byteCount - 1);
+            int index = ByteOrder.BIG_ENDIAN.equals(byteOrder) ? byteCount : (bytesLength - byteCount - 1);
             bytes[index] = (byte) (byteValue & 0xFF);
         }
         return bytes;

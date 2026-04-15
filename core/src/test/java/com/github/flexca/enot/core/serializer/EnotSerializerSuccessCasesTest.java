@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -178,8 +179,130 @@ public class EnotSerializerSuccessCasesTest {
     }
 
     // -----------------------------------------------------------------------
+    // bit_map — 4 combinations of bit_order × byte_order
+    //
+    // byte_order and bit_order describe the INPUT data layout.
+    // Output is always big-endian MSB-first (standard Java / network byte order).
+    //
+    // Logical value: [0xFE, 0xCA]  (big-endian output)
+    //   0xFE = 1111_1110,  0xCA = 1100_1010
+    //
+    // -----------------------------------------------------------------------
+
+    @Test
+    void testBitMapMsbFirstBigEndian() throws Exception {
+        // Input already in big-endian MSB-first order — no reordering needed.
+        // group[0]=0xFE=[1,1,1,1,1,1,1,0] → bytes[0]
+        // group[1]=0xCA=[1,1,0,0,1,0,1,0] → bytes[1]
+        List<Boolean> bits = List.of(
+                true,  true, true,  true,  true, true,  true, false,
+                true,  true, false, false, true, false, true, false);
+
+        byte[] result = serializeBitMap("big_endian", "msb_first", bits);
+        assertThat(result).isEqualTo(new byte[]{(byte) 0xFE, (byte) 0xCA});
+    }
+
+    @Test
+    void testBitMapMsbFirstLittleEndian() throws Exception {
+        // Input is little-endian (LSB group first) MSB-first within each byte.
+        // Serializer reverses byte groups to produce big-endian output.
+        // group[0]=0xCA=[1,1,0,0,1,0,1,0] → reversed → bytes[1]
+        // group[1]=0xFE=[1,1,1,1,1,1,1,0] → reversed → bytes[0]
+        List<Boolean> bits = List.of(
+                true, true, false, false, true, false, true, false,
+                true, true, true,  true,  true, true,  true, false);
+
+        byte[] result = serializeBitMap("little_endian", "msb_first", bits);
+        assertThat(result).isEqualTo(new byte[]{(byte) 0xFE, (byte) 0xCA});
+    }
+
+    @Test
+    void testBitMapLsbFirstBigEndian() throws Exception {
+        // Input is big-endian, LSB-first within each byte.
+        // 0xFE=1111_1110: bit0=0,bit1=1..bit7=1 → [F,T,T,T,T,T,T,T]
+        // 0xCA=1100_1010: bit0=0,bit1=1,bit2=0,bit3=1,bit4=0,bit5=0,bit6=1,bit7=1 → [F,T,F,T,F,F,T,T]
+        List<Boolean> bits = List.of(
+                false, true, true,  true, true, true,  true, true,
+                false, true, false, true, false, false, true, true);
+
+        byte[] result = serializeBitMap("big_endian", "lsb_first", bits);
+        assertThat(result).isEqualTo(new byte[]{(byte) 0xFE, (byte) 0xCA});
+    }
+
+    @Test
+    void testBitMapLsbFirstLittleEndian() throws Exception {
+        // Input is little-endian LSB-first — both orderings reversed vs output.
+        // group[0]=0xCA(LSB first)=[F,T,F,T,F,F,T,T] → reversed → bytes[1]
+        // group[1]=0xFE(LSB first)=[F,T,T,T,T,T,T,T] → reversed → bytes[0]
+        List<Boolean> bits = List.of(
+                false, true, false, true, false, false, true, true,
+                false, true, true,  true, true,  true,  true, true);
+
+        byte[] result = serializeBitMap("little_endian", "lsb_first", bits);
+        assertThat(result).isEqualTo(new byte[]{(byte) 0xFE, (byte) 0xCA});
+    }
+
+    @Test
+    void testBitMapPartialByteSingleGroup() throws Exception {
+        // 5 bits, big_endian msb_first: [1,0,1,1,0] packed from bit7 downward
+        // = 1011_0000 = 0xB0, remaining 3 bits are zero
+        List<Boolean> bits = List.of(true, false, true, true, false);
+
+        byte[] result = serializeBitMap("big_endian", "msb_first", bits);
+        assertThat(result).hasSize(1);
+        assertThat(result).isEqualTo(new byte[]{(byte) 0xB0});
+    }
+
+    @Test
+    void testBitMapPartialByteAfterCompleteGroup() throws Exception {
+        // 10 bits, big_endian msb_first:
+        // group[0] = [1,1,1,1,1,1,1,0] = 0xFE (complete) → bytes[0]
+        // partial   = [1,1]             = 1100_0000 = 0xC0  → bytes[1]
+        List<Boolean> bits = List.of(
+                true, true, true, true, true, true, true, false,
+                true, true);
+
+        byte[] result = serializeBitMap("big_endian", "msb_first", bits);
+        assertThat(result).hasSize(2);
+        assertThat(result).isEqualTo(new byte[]{(byte) 0xFE, (byte) 0xC0});
+    }
+
+    // -----------------------------------------------------------------------
     // helpers
     // -----------------------------------------------------------------------
+
+    private byte[] serializeBitMap(String byteOrder, String bitOrder, List<Boolean> bits) throws Exception {
+        // Build body as JSON array of individually named placeholders: ["${b0}", "${b1}", ...]
+        // This avoids the ContextNode wrapping issue that occurs when a single placeholder
+        // resolves to a List — individual primitive params unwrap cleanly.
+        StringBuilder bodyArray = new StringBuilder("[");
+        for (int i = 0; i < bits.size(); i++) {
+            if (i > 0) bodyArray.append(",");
+            bodyArray.append("\"${b").append(i).append("}\"");
+        }
+        bodyArray.append("]");
+
+        String json = """
+                {
+                  "type": "system",
+                  "attributes": {
+                    "kind": "bit_map",
+                    "byte_order": "%s",
+                    "bit_order": "%s"
+                  },
+                  "body": %s
+                }
+                """.formatted(byteOrder, bitOrder, bodyArray);
+
+        Map<String, Object> params = new HashMap<>();
+        for (int i = 0; i < bits.size(); i++) {
+            params.put("b" + i, bits.get(i));
+        }
+
+        List<byte[]> result = enotSerializer.serialize(json, ctx(params), enotContext);
+        assertThat(result).hasSize(1);
+        return result.get(0);
+    }
 
     /** Parses one DER blob and asserts SET { SEQUENCE { OID(2.5.4.11), UTF8String(expectedUnit) } } */
     private void assertOrgUnitDer(byte[] der, String expectedUnit) throws Exception {

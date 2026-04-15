@@ -217,20 +217,34 @@ Converts an ordered list of boolean values into a compact bit-field byte
 array. Each boolean in the `body` array maps to one bit in declaration
 order.
 
+**`byte_order` and `bit_order` describe the input data layout.**
+The output is always in **big-endian, MSB-first** order — standard Java /
+network byte order — regardless of the input layout.
+
+| Attribute | Effect on input interpretation |
+|-----------|-------------------------------|
+| `byte_order: "big_endian"` | First group of 8 booleans → most-significant byte of output (no reordering) |
+| `byte_order: "little_endian"` | First group of 8 booleans → least-significant byte; groups are reversed in the output |
+| `bit_order: "msb_first"` | First boolean in a group = bit 7 (most significant bit) |
+| `bit_order: "lsb_first"` | First boolean in a group = bit 0 (least significant bit) |
+
 **Attributes:**
 
 | Attribute | Required | Description |
 |-----------|----------|-------------|
 | `kind` | ✅ | `"bit_map"` |
-| `byte_order` | ✅ | `"big_endian"` or `"little_endian"` |
-| `bit_order` | ✅ | `"msb_first"` or `"lsb_first"` |
+| `byte_order` | ✅ | `"big_endian"` or `"little_endian"` — describes input byte group order |
+| `bit_order` | ✅ | `"msb_first"` or `"lsb_first"` — describes input bit order within each byte |
 
 **Body:** a JSON array of boolean placeholders or literals.
 
 The output is raw binary and is almost always wrapped in a
 `bit_string` ASN.1 element.
 
-**Example — X.509 Key Usage extension:**
+**Example — X.509 Key Usage extension (RFC 5280):**
+
+The Key Usage bit string is defined MSB-first in a single byte, so both
+`byte_order` and `bit_order` are `"big_endian"` / `"msb_first"`:
 
 ```json
 {
@@ -240,8 +254,8 @@ The output is raw binary and is almost always wrapped in a
     "type": "system",
     "attributes": {
       "kind": "bit_map",
-      "byte_order": "little_endian",
-      "bit_order": "lsb_first"
+      "byte_order": "big_endian",
+      "bit_order": "msb_first"
     },
     "body": [
       "${key_usage.digital_signature}",
@@ -264,8 +278,8 @@ The output is raw binary and is almost always wrapped in a
 {
   "key_usage": {
     "digital_signature": true,
-    "key_encipherment": true,
     "non_repudiation": false,
+    "key_encipherment": true,
     "data_encipherment": false,
     "key_agreement": false,
     "key_cert_sign": false,

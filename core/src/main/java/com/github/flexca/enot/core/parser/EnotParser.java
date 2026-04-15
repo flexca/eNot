@@ -2,10 +2,8 @@ package com.github.flexca.enot.core.parser;
 
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.exception.EnotParsingException;
-import com.github.flexca.enot.core.expression.ConditionExpressionParser;
 import com.github.flexca.enot.core.registry.EnotElementBodyResolver;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
-import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
@@ -156,6 +154,11 @@ public class EnotParser {
             elementBody.ifPresent(element::setBody);
         } else {
             try {
+
+                String compositeIdentifier = bodyResolver.getUniqueCompositeIdentifier(element);
+                if (StringUtils.isNotBlank(compositeIdentifier)) {
+                    // TODO: detect cyclic dependency
+                }
                 element.setBody(bodyResolver.resolveBody(element, enotContext));
             } catch(Exception e) {
                 jsonErrors.add(EnotJsonError.of(parentPath + "/" + ENOT_ELEMENT_BODY_NAME,
