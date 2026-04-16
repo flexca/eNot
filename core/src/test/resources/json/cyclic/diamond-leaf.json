@@ -1,0 +1,7 @@
+{
+  "type": "asn.1",
+  "attributes": {
+    "tag": "object_identifier"
+  },
+  "body": "1.2.3.4"
+}

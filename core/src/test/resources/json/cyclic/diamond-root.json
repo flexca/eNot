@@ -1,0 +1,18 @@
+[
+  {
+    "type": "system",
+    "attributes": {
+      "kind": "reference",
+      "reference_type": "test_resources",
+      "reference_identifier": "json/cyclic/diamond-left.json"
+    }
+  },
+  {
+    "type": "system",
+    "attributes": {
+      "kind": "reference",
+      "reference_type": "test_resources",
+      "reference_identifier": "json/cyclic/diamond-right.json"
+    }
+  }
+]
