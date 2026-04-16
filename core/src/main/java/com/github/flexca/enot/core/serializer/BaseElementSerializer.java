@@ -16,8 +16,46 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Abstract base for all element serializers, providing recursive body traversal
+ * and placeholder resolution.
+ *
+ * <p>An element body can take three structural forms, all handled transparently:</p>
+ * <ul>
+ *   <li><b>Collection</b> — a list of child elements or primitive values (e.g. the
+ *       items of a SEQUENCE or the boolean flags of a bit_map).</li>
+ *   <li><b>Single {@link EnotElement}</b> — one nested element whose serializer is
+ *       looked up from the registry and invoked recursively.</li>
+ *   <li><b>Primitive</b> — a literal value or a {@code ${placeholder}} string that
+ *       is resolved against the current {@link SerializationContext} and wrapped in
+ *       an {@link ElementSerializationResult} with the appropriate
+ *       {@link CommonEnotValueType}.</li>
+ * </ul>
+ *
+ * <p>Subclasses call {@link #serializeBody} to obtain the already-serialized children
+ * and then decide how to combine them into the final output (e.g. encode as a DER
+ * SEQUENCE, pack into a byte array, etc.).</p>
+ */
 public abstract class BaseElementSerializer implements ElementSerializer {
 
+    /**
+     * Recursively serializes the body of an element.
+     *
+     * <p>Dispatches to one of three paths depending on the runtime type of {@code body}:
+     * <ol>
+     *   <li>{@link Collection} — each item is serialized as a child element or primitive.</li>
+     *   <li>{@link EnotElement} — the element's serializer is looked up and called.</li>
+     *   <li>Everything else — treated as a primitive value or placeholder string.</li>
+     * </ol>
+     * </p>
+     *
+     * @param body        the raw body object from the parsed element
+     * @param context     the active serialization context for placeholder resolution
+     * @param jsonPath    JSON Pointer prefix used in error messages
+     * @param enotContext the registry and shared configuration
+     * @return the serialized fragments from all body children; never {@code null}
+     * @throws EnotSerializationException if any child cannot be serialized
+     */
     protected List<ElementSerializationResult> serializeBody(Object body, SerializationContext context, String jsonPath,
                                                              EnotContext enotContext) throws EnotSerializationException {
 
