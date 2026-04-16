@@ -3,6 +3,7 @@ package com.github.flexca.enot.core.types.system;
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
+import com.github.flexca.enot.core.parser.context.ParsingContext;
 import com.github.flexca.enot.core.registry.EnotElementBodyResolver;
 import com.github.flexca.enot.core.registry.EnotElementReferenceResolver;
 import com.github.flexca.enot.core.types.system.attribute.SystemAttribute;
@@ -30,7 +31,13 @@ public class SystemReferenceBodyResolver implements EnotElementBodyResolver {
     }
 
     @Override
-    public Object resolveBody(EnotElement element, EnotContext enotContext) {
+    public Object resolveBody(EnotElement element, EnotContext enotContext, ParsingContext parsingContext) {
+
+        String compositeIdentifier = getUniqueCompositeIdentifier(element);
+        if (!parsingContext.addCompositeIdentifier(compositeIdentifier)) {
+            throw new EnotInvalidArgumentException("cyclic dependency detected for element with composite identifier: "
+                    + compositeIdentifier);
+        }
 
         String referenceType = getReferenceType(element);
         EnotElementReferenceResolver referenceResolver = enotContext.getEnotRegistry().getElementReferenceResolver(referenceType);
@@ -39,7 +46,7 @@ public class SystemReferenceBodyResolver implements EnotElementBodyResolver {
                     + referenceType);
         }
         String referenceIdentifier = getReferenceIdentifier(element);
-        return referenceResolver.resolve(referenceIdentifier, enotContext);
+        return referenceResolver.resolve(referenceIdentifier, enotContext, parsingContext);
     }
 
     private String getReferenceType(EnotElement element) {

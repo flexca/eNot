@@ -3,6 +3,7 @@ package com.github.flexca.enot.core.testutil;
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
+import com.github.flexca.enot.core.parser.context.ParsingContext;
 import com.github.flexca.enot.core.registry.EnotElementReferenceResolver;
 
 import java.util.List;
@@ -17,10 +18,10 @@ public class TestResourcesReferenceResolver implements EnotElementReferenceResol
     }
 
     @Override
-    public List<EnotElement> resolve(String referenceIdentifier, EnotContext enotContext) {
+    public List<EnotElement> resolve(String referenceIdentifier, EnotContext enotContext, ParsingContext parsingContext) {
         try {
             String json = ResourceReaderTestUtils.readResourceFileAsString(referenceIdentifier);
-            return enotContext.getEnotParser().parse(json, enotContext);
+            return enotContext.getEnotParser().parse(json, enotContext, parsingContext);
         } catch(Exception e) {
             throw new EnotInvalidArgumentException("cannot resolve eNot element with identifier: " + referenceIdentifier
                     + ", reson: " + e.getMessage(), e);

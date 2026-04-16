@@ -2,6 +2,7 @@ package com.github.flexca.enot.core.registry;
 
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.element.EnotElement;
+import com.github.flexca.enot.core.parser.context.ParsingContext;
 
 /**
  * Strategy interface for resolving an element's body dynamically at parse time.
@@ -59,5 +60,5 @@ public interface EnotElementBodyResolver {
      * @return the resolved body; the concrete type depends on the element kind
      *         (e.g. {@code List<EnotElement>} for {@code system/reference})
      */
-    Object resolveBody(EnotElement element, EnotContext enotContext);
+    Object resolveBody(EnotElement element, EnotContext enotContext, ParsingContext parsingContext);
 }

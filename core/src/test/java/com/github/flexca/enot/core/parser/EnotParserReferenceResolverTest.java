@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.github.flexca.enot.core.exception.EnotParsingException;
 
 public class EnotParserReferenceResolverTest {
 
@@ -121,5 +124,84 @@ public class EnotParserReferenceResolverTest {
         EnotElement taggedObject = (EnotElement) resolvedLoop.getBody();
         assertThat(taggedObject.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
         assertThat(taggedObject.getAttribute(Asn1Attribute.TAG)).isEqualTo("tagged_object");
+    }
+
+    @Test
+    void testCyclicDependencyAtoB() throws Exception {
+        // A → B → A: the reference element inside cyclic-a.json has identifier
+        // "test_resources:json/cyclic/cyclic-b.json". When cyclic-b.json is then
+        // parsed and tries to resolve cyclic-a.json, that succeeds (adds cyclic-a).
+        // On the second round cyclic-a.json tries to resolve cyclic-b.json again
+        // — but cyclic-b is already in the ParsingContext, so the cycle is detected.
+        String json = ResourceReaderTestUtils.readResourceFileAsString("json/cyclic/cyclic-a.json");
+
+        assertThatThrownBy(() -> enotParser.parse(json, enotContext))
+                .isInstanceOf(EnotParsingException.class)
+                .hasMessageContaining("cyclic dependency detected")
+                .hasMessageContaining("test_resources:json/cyclic/cyclic-b.json");
+    }
+
+    @Test
+    void testCyclicDependencySelfReference() throws Exception {
+        // A → A: a template that references itself.
+        // On the first recursion the identifier is already present in the context.
+        String json = ResourceReaderTestUtils.readResourceFileAsString("json/cyclic/self-ref.json");
+
+        assertThatThrownBy(() -> enotParser.parse(json, enotContext))
+                .isInstanceOf(EnotParsingException.class)
+                .hasMessageContaining("cyclic dependency detected")
+                .hasMessageContaining("test_resources:json/cyclic/self-ref.json");
+    }
+
+    @Test
+    void testDiamondDependencyNoCycle() throws Exception {
+        // Diamond: root → left → leaf
+        //                 → right → leaf
+        // Each branch gets an independent ParsingContext copy, so resolving
+        // "leaf" from two sibling branches does not trigger a cycle error.
+        String json = ResourceReaderTestUtils.readResourceFileAsString("json/cyclic/diamond-root.json");
+
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
+
+        // root is an array → two reference elements
+        assertThat(actual).hasSize(2);
+
+        EnotElement leftRef = actual.get(0);
+        assertThat(leftRef.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
+        assertThat(leftRef.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
+                .isEqualTo("json/cyclic/diamond-left.json");
+        // leftRef.body = [ref-to-leaf];  ref-to-leaf.body = [oid]
+        assertThat(leftRef.getBody()).isInstanceOf(List.class);
+        @SuppressWarnings("unchecked")
+        List<EnotElement> leftBody = (List<EnotElement>) leftRef.getBody();
+        assertThat(leftBody).hasSize(1);
+        EnotElement leftLeafRef = leftBody.get(0);
+        assertThat(leftLeafRef.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
+        assertThat(leftLeafRef.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
+                .isEqualTo("json/cyclic/diamond-leaf.json");
+        assertThat(leftLeafRef.getBody()).isInstanceOf(List.class);
+        @SuppressWarnings("unchecked")
+        List<EnotElement> leftLeafBody = (List<EnotElement>) leftLeafRef.getBody();
+        assertThat(leftLeafBody).hasSize(1);
+        assertThat(leftLeafBody.get(0).getAttribute(Asn1Attribute.TAG)).isEqualTo("object_identifier");
+
+        EnotElement rightRef = actual.get(1);
+        assertThat(rightRef.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
+        assertThat(rightRef.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
+                .isEqualTo("json/cyclic/diamond-right.json");
+        // rightRef.body = [ref-to-leaf];  ref-to-leaf.body = [oid]
+        assertThat(rightRef.getBody()).isInstanceOf(List.class);
+        @SuppressWarnings("unchecked")
+        List<EnotElement> rightBody = (List<EnotElement>) rightRef.getBody();
+        assertThat(rightBody).hasSize(1);
+        EnotElement rightLeafRef = rightBody.get(0);
+        assertThat(rightLeafRef.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
+        assertThat(rightLeafRef.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
+                .isEqualTo("json/cyclic/diamond-leaf.json");
+        assertThat(rightLeafRef.getBody()).isInstanceOf(List.class);
+        @SuppressWarnings("unchecked")
+        List<EnotElement> rightLeafBody = (List<EnotElement>) rightLeafRef.getBody();
+        assertThat(rightLeafBody).hasSize(1);
+        assertThat(rightLeafBody.get(0).getAttribute(Asn1Attribute.TAG)).isEqualTo("object_identifier");
     }
 }

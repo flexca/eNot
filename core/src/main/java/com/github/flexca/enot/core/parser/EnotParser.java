@@ -2,6 +2,7 @@ package com.github.flexca.enot.core.parser;
 
 import com.github.flexca.enot.core.EnotContext;
 import com.github.flexca.enot.core.exception.EnotParsingException;
+import com.github.flexca.enot.core.parser.context.ParsingContext;
 import com.github.flexca.enot.core.registry.EnotElementBodyResolver;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
@@ -16,6 +17,24 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.util.*;
 
+/**
+ * Parses eNot template JSON into a list of {@link EnotElement} instances.
+ *
+ * <p>The parser accepts a JSON object (single root element) or a JSON array
+ * (multiple root elements) and walks the tree recursively, resolving element
+ * types via the {@link com.github.flexca.enot.core.registry.EnotRegistry},
+ * validating attributes and body structure, and delegating dynamic body
+ * resolution to any registered {@link EnotElementBodyResolver}.</p>
+ *
+ * <p>Cyclic-dependency detection is handled transparently: a fresh
+ * {@link ParsingContext} is created for each top-level {@link #parse(String, EnotContext)}
+ * call, and a snapshot copy is passed to each body resolver so that sibling
+ * branches do not interfere with each other's tracking sets.</p>
+ *
+ * <p>All parse errors are collected into {@link EnotJsonError} entries and
+ * reported together via a single {@link EnotParsingException}, making it easy
+ * to surface multiple problems in one pass.</p>
+ */
 public class EnotParser {
 
     public static final String ENOT_ELEMENT_TYPE_NAME = "type";
@@ -33,7 +52,45 @@ public class EnotParser {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Parses {@code json} into a list of {@link EnotElement} instances using a
+     * fresh {@link ParsingContext}.
+     *
+     * <p>This is the standard entry point for top-level parsing. A new
+     * {@link ParsingContext} is created automatically so that cyclic-dependency
+     * detection starts from an empty state.</p>
+     *
+     * @param json        the eNot template as a JSON string; must not be blank
+     * @param enotContext the registry and shared services for this parse run
+     * @return a non-empty list of parsed root elements
+     * @throws EnotParsingException if the input is blank, not valid JSON, or
+     *                              contains structural or type errors
+     */
     public List<EnotElement> parse(String json, EnotContext enotContext) throws EnotParsingException {
+        ParsingContext parsingContext = new ParsingContext();
+        return parse(json, enotContext, parsingContext);
+    }
+
+    /**
+     * Parses {@code json} into a list of {@link EnotElement} instances using the
+     * supplied {@link ParsingContext}.
+     *
+     * <p>Use this overload when parsing is initiated from within an
+     * {@link EnotElementBodyResolver} (e.g. {@code system/reference} resolution),
+     * so that the caller's already-populated context — carrying the set of
+     * composite identifiers currently being resolved — is passed through.
+     * This allows cycle detection to span across template boundaries.</p>
+     *
+     * @param json           the eNot template as a JSON string; must not be blank
+     * @param enotContext    the registry and shared services for this parse run
+     * @param parsingContext the active parsing context propagated from the caller;
+     *                       must be a {@link ParsingContext#copy() copy} so that
+     *                       sibling branches remain independent
+     * @return a non-empty list of parsed root elements
+     * @throws EnotParsingException if the input is blank, not valid JSON, or
+     *                              contains structural or type errors
+     */
+    public List<EnotElement> parse(String json, EnotContext enotContext, ParsingContext parsingContext) throws EnotParsingException {
 
         String currentPath = "";
         if (StringUtils.isBlank(json)) {
@@ -55,7 +112,7 @@ public class EnotParser {
 
         if (rootNode.isArray()) {
             try {
-                elements.addAll(parseElements(rootNode.asArray(), currentPath, jsonErrors, enotContext));
+                elements.addAll(parseElements(rootNode.asArray(), currentPath, jsonErrors, enotContext, parsingContext));
             } catch (Exception e) {
                 cause = e;
                 jsonErrors.add(EnotJsonError.of(currentPath, e.getMessage()));
@@ -65,7 +122,8 @@ public class EnotParser {
             }
         } else if (rootNode.isObject()) {
             try {
-                Optional<EnotElement> element = parseElement(rootNode.asObject(), currentPath, jsonErrors, enotContext);
+                Optional<EnotElement> element = parseElement(rootNode.asObject(), currentPath, jsonErrors, enotContext,
+                        parsingContext);
                 element.ifPresent(elements::add);
             } catch (Exception e) {
                 cause = e;
@@ -87,14 +145,15 @@ public class EnotParser {
     }
 
     private List<EnotElement> parseElements(ArrayNode elementsArray, String parentPath, List<EnotJsonError> jsonErrors,
-                                            EnotContext enotContext) {
+                                            EnotContext enotContext, ParsingContext parsingContext) {
 
         List<EnotElement> elements = new ArrayList<>(elementsArray.size());
         for (int i = 0; i < elementsArray.size(); i++) {
             JsonNode itemNode = elementsArray.get(i);
             String currentPath = parentPath + "/" + i;
             if (itemNode.isObject()) {
-                Optional<EnotElement> element = parseElement(itemNode.asObject(), currentPath, jsonErrors, enotContext);
+                Optional<EnotElement> element = parseElement(itemNode.asObject(), currentPath, jsonErrors, enotContext,
+                        parsingContext);
                 element.ifPresent(elements::add);
             } else {
                 jsonErrors.add(EnotJsonError.of(currentPath, "eNot expecting object, but get " + itemNode.getNodeType().name()));
@@ -104,7 +163,7 @@ public class EnotParser {
     }
 
     private Optional<EnotElement> parseElement(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors,
-                                               EnotContext enotContext) {
+                                               EnotContext enotContext, ParsingContext parsingContext) {
 
         JsonNode typeNode = jsonElement.get(ENOT_ELEMENT_TYPE_NAME);
         if (typeNode == null) {
@@ -150,16 +209,11 @@ public class EnotParser {
         }
         EnotElementBodyResolver bodyResolver = elementSpecification.getBodyResolver();
         if (bodyResolver == null) {
-            Optional<Object> elementBody = extractElementBody(jsonElement, parentPath, jsonErrors, enotContext);
+            Optional<Object> elementBody = extractElementBody(jsonElement, parentPath, jsonErrors, enotContext, parsingContext);
             elementBody.ifPresent(element::setBody);
         } else {
             try {
-
-                String compositeIdentifier = bodyResolver.getUniqueCompositeIdentifier(element);
-                if (StringUtils.isNotBlank(compositeIdentifier)) {
-                    // TODO: detect cyclic dependency
-                }
-                element.setBody(bodyResolver.resolveBody(element, enotContext));
+                element.setBody(bodyResolver.resolveBody(element, enotContext, parsingContext.copy()));
             } catch(Exception e) {
                 jsonErrors.add(EnotJsonError.of(parentPath + "/" + ENOT_ELEMENT_BODY_NAME,
                         "failure during resolving element body, reason: " + e.getMessage()));
@@ -224,7 +278,7 @@ public class EnotParser {
     }
 
     private Optional<Object> extractElementBody(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors,
-                                                EnotContext enotContext) {
+                                                EnotContext enotContext, ParsingContext parsingContext) {
 
         String currentPath = parentPath + "/" + ENOT_ELEMENT_BODY_NAME;
 
@@ -237,7 +291,7 @@ public class EnotParser {
                 return Optional.empty();
             }
             if (bodyArrayNode.get(0).isObject()) {
-                List<EnotElement> elements = parseElements(bodyArrayNode, currentPath, jsonErrors, enotContext);
+                List<EnotElement> elements = parseElements(bodyArrayNode, currentPath, jsonErrors, enotContext, parsingContext);
                 return CollectionUtils.isEmpty(elements) ? Optional.empty() : Optional.of(elements);
             } else {
                 List<Object> primitiveValues = new ArrayList<>();
@@ -255,7 +309,7 @@ public class EnotParser {
                 return CollectionUtils.isEmpty(primitiveValues) ? Optional.empty() : Optional.of(primitiveValues);
             }
         } else if (bodyNode.isObject()) {
-            Optional<EnotElement> element = parseElement(bodyNode.asObject(), currentPath, jsonErrors, enotContext);
+            Optional<EnotElement> element = parseElement(bodyNode.asObject(), currentPath, jsonErrors, enotContext, parsingContext);
             return element.isEmpty() ? Optional.empty() : Optional.of(element.get());
         }  else {
             Optional<Object> objectBody = extractPrimitiveValue(bodyNode);
