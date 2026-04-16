@@ -8,9 +8,9 @@ import java.util.List;
 
 public class ExampleParamsExtractor {
 
-    public ContextNode extractExampleParams(EnotElement elements) {
+    public ContextNode extractExampleParams(List<EnotElement> elements) {
 
-
+        return null;
     }
 
     private ContextNode extractPlaceholdersFromElementBody(EnotElement element, List<String> pathParts) {
@@ -23,5 +23,6 @@ public class ExampleParamsExtractor {
         } else {
 
         }
+        return null;
     }
 }
