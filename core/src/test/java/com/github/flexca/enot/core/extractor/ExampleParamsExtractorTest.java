@@ -17,6 +17,7 @@ import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class ExampleParamsExtractorTest {
                 .withElementReferenceResolver(new TestResourcesReferenceResolver())
                 .build();
         ConditionExpressionParser conditionExpressionParser = new ConditionExpressionParser();
-        enotParser = new EnotParser(new ObjectMapper());
+        enotParser = new EnotParser(new ObjectMapper(), new ObjectMapper(new YAMLFactory()));
         enotContext = new EnotContext(enotRegistry, enotParser, new EnotSerializer(enotParser),
                 conditionExpressionParser, new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser));
         extractor = new ExampleParamsExtractor(enotContext);

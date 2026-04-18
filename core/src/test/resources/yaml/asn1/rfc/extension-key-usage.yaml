@@ -1,0 +1,37 @@
+type: asn.1
+attributes:
+  tag: sequence
+body:
+  - type: asn.1
+    attributes:
+      tag: object_identifier
+    body: "2.5.29.15"
+  - type: asn.1
+    optional: true
+    attributes:
+      tag: boolean
+    body: "${key_usage_critical}"
+  - type: asn.1
+    attributes:
+      tag: octet_string
+    body:
+      type: asn.1
+      attributes:
+        tag: bit_string
+        apply_padding: true
+      body:
+        type: system
+        attributes:
+          kind: bit_map
+          byte_order: big_endian
+          bit_order: msb_first
+        body:
+          - "${digital_signature}"
+          - "${non_repudiation}"
+          - "${key_encipherment}"
+          - "${data_encipherment}"
+          - "${key_agreement}"
+          - "${key_cert_sign}"
+          - "${crl_sign}"
+          - "${encipher_only}"
+          - "${decipher_only}"

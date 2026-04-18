@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.org/projects/jdk/17/)
 
-**eNot** (**Encoding Notations**) is a JSON-driven templating engine that serializes structured data into binary formats — primarily **ASN.1 DER**, with **BER-TLV** support showing the design is not limited to a single format.
+**eNot** (**Encoding Notations**) is a templating engine that serializes structured data into binary formats — primarily **ASN.1 DER**, with **BER-TLV** support showing the design is not limited to a single format. Templates can be written in **JSON** or **YAML**; the engine detects the format automatically.
 
 ---
 
@@ -12,7 +12,7 @@
 
 Whenever an application needs to produce structured binary data — network protocols, smart-card commands, certificate fields, device provisioning payloads — the choices are usually the same: reach for a heavy framework that makes all the structural decisions for you, or write low-level encoding code that is brittle, hard to review, and even harder to reuse across projects.
 
-eNot takes a different approach. The binary structure is described as a plain JSON template:
+eNot takes a different approach. The binary structure is described as a plain template — in JSON:
 
 ```json
 {
@@ -20,6 +20,15 @@ eNot takes a different approach. The binary structure is described as a plain JS
   "attributes": { "tag": "utf8_string" },
   "body": "${common_name}"
 }
+```
+
+or equivalently in YAML:
+
+```yaml
+type: asn.1
+attributes:
+  tag: utf8_string
+body: "${common_name}"
 ```
 
 At serialization time you supply the values:
@@ -79,12 +88,13 @@ Binary structures are rarely flat. eNot handles this with built-in control-flow 
 
 ---
 
-## Why templates in JSON?
+## Why templates in JSON or YAML?
 
 The format was a deliberate choice:
 - Templates are **plain text** — version-controlled, diff-able, reviewable in a pull request
-- The structure mirrors the binary output — a `sequence` wrapping a `set` wrapping a `utf8_string` is exactly how it looks in the JSON tree
-- The engine is **format-agnostic** — the same parser and serializer infrastructure drives both the `asn.1` and `ber-tlv` type systems; new formats plug in via `EnotRegistry`
+- Both **JSON** and **YAML** are supported out of the box — the engine detects which one you pass and routes it to the correct parser automatically; no configuration needed
+- The structure mirrors the binary output — a `sequence` wrapping a `set` wrapping a `utf8_string` is exactly how it looks in the template tree
+- The engine is **encoding-format-agnostic** — the same parser and serializer infrastructure drives both the `asn.1` and `ber-tlv` type systems; new formats plug in via `EnotRegistry`
 - Placeholder resolution, condition evaluation, and loop iteration are all **handled by the engine**, not scattered across application code
 
 ---

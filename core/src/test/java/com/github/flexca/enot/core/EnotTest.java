@@ -15,6 +15,7 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -28,17 +29,20 @@ public class EnotTest {
     private static final String COMMON_NAME_VALUE = "Alice";
 
     private Enot enot;
-    private ObjectMapper objectMapper;
+    private ObjectMapper jsonObjectMapper;
+    private ObjectMapper yamlObjectMapper;
+
     private String commonNameJson;
 
     @BeforeEach
     void init() throws Exception {
-        objectMapper = new ObjectMapper();
+        jsonObjectMapper = new ObjectMapper();
+        yamlObjectMapper = new ObjectMapper(new YAMLFactory());
         EnotRegistry registry = new EnotRegistry.Builder()
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .withElementReferenceResolver(new TestResourcesReferenceResolver())
                 .build();
-        enot = new Enot(registry, objectMapper);
+        enot = new Enot(registry, jsonObjectMapper, yamlObjectMapper);
         commonNameJson = ResourceReaderTestUtils.readResourceFileAsString(COMMON_NAME_JSON);
     }
 
@@ -146,7 +150,7 @@ public class EnotTest {
 
         assertThat(json).isNotBlank();
         @SuppressWarnings("unchecked")
-        Map<String, Object> parsed = objectMapper.readValue(json, Map.class);
+        Map<String, Object> parsed = jsonObjectMapper.readValue(json, Map.class);
         assertThat(parsed).containsOnlyKeys("common_name");
         assertThat(parsed.get("common_name")).isEqualTo("replace with your value");
     }
@@ -156,7 +160,7 @@ public class EnotTest {
     // -----------------------------------------------------------------------
 
     private SerializationContext ctx(Map<String, Object> params) {
-        return new SerializationContext.Builder(objectMapper).withParams(params).build();
+        return new SerializationContext.Builder(jsonObjectMapper).withParams(params).build();
     }
 
     private void assertCommonNameDer(byte[] der, String expectedValue) throws Exception {

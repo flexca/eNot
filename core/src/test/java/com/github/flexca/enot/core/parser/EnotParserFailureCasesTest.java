@@ -11,9 +11,9 @@ import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.core.exc.UnexpectedEndOfInputException;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.List;
 
@@ -22,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EnotParserFailureCasesTest {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper jsonObjectMapper = new ObjectMapper();
+    private ObjectMapper yamlObjectMapper = new ObjectMapper(new YAMLFactory());
 
     private EnotContext enotContext;
 
@@ -35,7 +36,7 @@ public class EnotParserFailureCasesTest {
                 .withTypeSpecification(new Asn1TypeSpecification())
                 .build();
         ConditionExpressionParser conditionExpressionParser = new ConditionExpressionParser();
-        enotParser = new EnotParser(objectMapper);
+        enotParser = new EnotParser(jsonObjectMapper, yamlObjectMapper);
         enotContext = new EnotContext(enotRegistry, enotParser, new EnotSerializer(enotParser),
                 conditionExpressionParser, new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser));
     }
@@ -85,6 +86,8 @@ public class EnotParserFailureCasesTest {
     @Test
     void testNotJsonInput() throws Exception {
 
+        // "not json" does not start with { or [ so it is treated as YAML.
+        // YAML parses it as a plain scalar string — valid YAML, but not a valid eNot root node.
         EnotParsingException parsingException = assertThrows(EnotParsingException.class, () -> {
             enotParser.parse("not json", enotContext);
         });
@@ -93,7 +96,7 @@ public class EnotParserFailureCasesTest {
         assertThat(jsonErrors).hasSize(1);
         EnotJsonError error = jsonErrors.get(0);
         assertThat(error.getJsonPointer()).isEqualTo("");
-        assertThat(parsingException.getCause().getClass()).isEqualTo(StreamReadException.class);
+        assertThat(error.getDetails()).isEqualTo("eNot expecting object or array as root JSON node");
     }
 
     @Test

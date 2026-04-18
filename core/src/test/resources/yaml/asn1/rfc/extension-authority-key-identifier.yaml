@@ -1,0 +1,25 @@
+type: asn.1
+attributes:
+  tag: sequence
+body:
+  - type: asn.1
+    attributes:
+      tag: object_identifier
+    body: "2.5.29.35"
+  - type: asn.1
+    optional: true
+    attributes:
+      tag: boolean
+    body: "${authority_key_identifier_critical}"
+  - type: asn.1
+    attributes:
+      tag: octet_string
+    body:
+      type: system
+      attributes:
+        kind: sha1
+      body:
+        type: system
+        attributes:
+          kind: hex_to_bin
+        body: "${issuer_public_key_hex}"

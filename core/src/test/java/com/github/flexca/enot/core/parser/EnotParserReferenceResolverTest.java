@@ -23,10 +23,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.github.flexca.enot.core.exception.EnotParsingException;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 public class EnotParserReferenceResolverTest {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper jsonObjectMapper = new ObjectMapper();
+    private ObjectMapper yamlObjectMapper = new ObjectMapper(new YAMLFactory());
 
     private EnotContext enotContext;
 
@@ -39,7 +41,7 @@ public class EnotParserReferenceResolverTest {
                 .withElementReferenceResolver(new TestResourcesReferenceResolver())
                 .build();
         ConditionExpressionParser conditionExpressionParser = new ConditionExpressionParser();
-        enotParser = new EnotParser(objectMapper);
+        enotParser = new EnotParser(jsonObjectMapper, yamlObjectMapper);
         enotContext = new EnotContext(enotRegistry, enotParser, new EnotSerializer(enotParser),
                 conditionExpressionParser, new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser));
     }

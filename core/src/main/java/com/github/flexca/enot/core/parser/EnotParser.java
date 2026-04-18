@@ -8,6 +8,7 @@ import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
+import com.github.flexca.enot.core.util.FormatUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
@@ -45,11 +46,13 @@ public class EnotParser {
     private static final String COMMON_ERROR_MESSAGE = "Error during parsing of eNot, reason: ";
 
     private final EnotParserValidator parserValidator;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper jsonObjectMapper;
+    private final ObjectMapper yamlObjectMapper;
 
-    public EnotParser(ObjectMapper objectMapper) {
+    public EnotParser(ObjectMapper jsonObjectMapper, ObjectMapper yamlObjectMapper) {
         this.parserValidator = new EnotParserValidator();
-        this.objectMapper = objectMapper;
+        this.jsonObjectMapper = jsonObjectMapper;
+        this.yamlObjectMapper = yamlObjectMapper;
     }
 
     /**
@@ -60,15 +63,15 @@ public class EnotParser {
      * {@link ParsingContext} is created automatically so that cyclic-dependency
      * detection starts from an empty state.</p>
      *
-     * @param json        the eNot template as a JSON string; must not be blank
+     * @param jsonOrYaml        the eNot template as a JSON or YAML string; must not be blank
      * @param enotContext the registry and shared services for this parse run
      * @return a non-empty list of parsed root elements
      * @throws EnotParsingException if the input is blank, not valid JSON, or
      *                              contains structural or type errors
      */
-    public List<EnotElement> parse(String json, EnotContext enotContext) throws EnotParsingException {
+    public List<EnotElement> parse(String jsonOrYaml, EnotContext enotContext) throws EnotParsingException {
         ParsingContext parsingContext = new ParsingContext();
-        return parse(json, enotContext, parsingContext);
+        return parse(jsonOrYaml, enotContext, parsingContext);
     }
 
     /**
@@ -81,7 +84,7 @@ public class EnotParser {
      * composite identifiers currently being resolved — is passed through.
      * This allows cycle detection to span across template boundaries.</p>
      *
-     * @param json           the eNot template as a JSON string; must not be blank
+     * @param jsonOrYaml     the eNot template as a JSON or YAML string; must not be blank
      * @param enotContext    the registry and shared services for this parse run
      * @param parsingContext the active parsing context propagated from the caller;
      *                       must be a {@link ParsingContext#copy() copy} so that
@@ -90,18 +93,29 @@ public class EnotParser {
      * @throws EnotParsingException if the input is blank, not valid JSON, or
      *                              contains structural or type errors
      */
-    public List<EnotElement> parse(String json, EnotContext enotContext, ParsingContext parsingContext) throws EnotParsingException {
+    public List<EnotElement> parse(String jsonOrYaml, EnotContext enotContext, ParsingContext parsingContext) throws EnotParsingException {
 
         String currentPath = "";
-        if (StringUtils.isBlank(json)) {
+        if (StringUtils.isBlank(jsonOrYaml)) {
             throw new EnotParsingException(COMMON_ERROR_MESSAGE,
                     Collections.singletonList(EnotJsonError.of(currentPath, "blank JSON input provided")));
         }
 
         List<EnotElement> elements = new ArrayList<>();
         JsonNode rootNode;
+
+        EnotInputFormat inputFormat = FormatUtils.detectInputFormat(jsonOrYaml);
+        if (EnotInputFormat.UNSUPPORTED.equals(inputFormat)) {
+            throw new EnotParsingException(COMMON_ERROR_MESSAGE, Collections.singletonList(EnotJsonError.of(currentPath,
+                    "unsupported input format, make sure you providing valid JSON or YAML")));
+        }
+
         try {
-            rootNode = objectMapper.readValue(json, JsonNode.class);
+            if(EnotInputFormat.JSON.equals(inputFormat)) {
+                rootNode = jsonObjectMapper.readValue(jsonOrYaml, JsonNode.class);
+            } else {
+                rootNode = yamlObjectMapper.readValue(jsonOrYaml, JsonNode.class);
+            }
         } catch(Exception e) {
             throw new EnotParsingException(COMMON_ERROR_MESSAGE,
                     Collections.singletonList(EnotJsonError.of(currentPath, e.getMessage())), e);

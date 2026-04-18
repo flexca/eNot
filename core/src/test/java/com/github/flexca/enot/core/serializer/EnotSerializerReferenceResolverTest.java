@@ -19,6 +19,7 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,8 @@ public class EnotSerializerReferenceResolverTest {
 
     private static final String SAN_OID = "2.5.29.17";
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper jsonObjectMapper = new ObjectMapper();
+    private ObjectMapper yamlObjectMapper = new ObjectMapper(new YAMLFactory());
 
     private EnotContext enotContext;
 
@@ -43,7 +45,7 @@ public class EnotSerializerReferenceResolverTest {
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .withElementReferenceResolver(new TestResourcesReferenceResolver())
                 .build();
-        enotParser = new EnotParser(objectMapper);
+        enotParser = new EnotParser(jsonObjectMapper, yamlObjectMapper);
         enotSerializer = new EnotSerializer(enotParser);
         ConditionExpressionParser expressionParser = new ConditionExpressionParser();
         ConditionExpressionEvaluator conditionExpressionEvaluator = new ConditionExpressionEvaluator(enotRegistry, expressionParser);
@@ -51,7 +53,7 @@ public class EnotSerializerReferenceResolverTest {
     }
 
     private SerializationContext ctx(Map<String, Object> params) {
-        return new SerializationContext.Builder(objectMapper).withParams(params).build();
+        return new SerializationContext.Builder(jsonObjectMapper).withParams(params).build();
     }
 
     // -----------------------------------------------------------------------

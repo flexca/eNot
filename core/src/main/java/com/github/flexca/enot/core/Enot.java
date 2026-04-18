@@ -23,18 +23,20 @@ public class Enot {
     private final EnotParser enotParser;
     private final EnotSerializer enotSerializer;
     private final ExampleParamsExtractor exampleParamsExtractor;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper jsonObjectMapper;
+    private final ObjectMapper yamlObjectMapper;
 
-    public Enot(EnotRegistry enotRegistry, ObjectMapper objectMapper) {
+    public Enot(EnotRegistry enotRegistry, ObjectMapper jsonObjectMapper, ObjectMapper yamlObjectMapper) {
 
         ConditionExpressionParser conditionExpressionParser = new ConditionExpressionParser();
         ConditionExpressionEvaluator conditionExpressionEvaluator = new ConditionExpressionEvaluator(enotRegistry, conditionExpressionParser);
 
-        enotParser = new EnotParser(objectMapper);
+        enotParser = new EnotParser(jsonObjectMapper, yamlObjectMapper);
         enotSerializer = new EnotSerializer(enotParser);
         enotContext = new EnotContext(enotRegistry, enotParser, enotSerializer, conditionExpressionParser, conditionExpressionEvaluator);
         exampleParamsExtractor = new ExampleParamsExtractor(enotContext);
-        this.objectMapper = objectMapper;
+        this.jsonObjectMapper = jsonObjectMapper;
+        this.yamlObjectMapper = yamlObjectMapper;
     }
 
     public List<EnotElement> parse(String json) throws EnotParsingException {
@@ -54,7 +56,7 @@ public class Enot {
     }
 
     public String getParamsExampleJson(String json) throws EnotParsingException {
-        return objectMapper.writeValueAsString(getParamsExample(json));
+        return jsonObjectMapper.writeValueAsString(getParamsExample(json));
     }
 
     public Map<String, Object> getParamsExample(String json) throws EnotParsingException {
@@ -63,7 +65,7 @@ public class Enot {
     }
 
     public String getParamsExampleJson(EnotElement element) {
-        return objectMapper.writeValueAsString(getParamsExample(element));
+        return jsonObjectMapper.writeValueAsString(getParamsExample(element));
     }
 
     public Map<String, Object> getParamsExample(EnotElement element) {
@@ -71,7 +73,7 @@ public class Enot {
     }
 
     public String getParamsExampleJson(List<EnotElement> elements) {
-        return objectMapper.writeValueAsString(getParamsExample(elements));
+        return jsonObjectMapper.writeValueAsString(getParamsExample(elements));
     }
 
     public Map<String, Object> getParamsExample(List<EnotElement> elements) {

@@ -22,6 +22,7 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +35,8 @@ public class EnotSerializerSuccessCasesTest {
     private static final String COMMON_NAME_OID    = "2.5.4.3";
     private static final String ORG_UNIT_OID       = "2.5.4.11";
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper jsonObjectMapper = new ObjectMapper();
+    private ObjectMapper yamlObjectMapper = new ObjectMapper(new YAMLFactory());
 
     private EnotContext enotContext;
 
@@ -47,7 +49,7 @@ public class EnotSerializerSuccessCasesTest {
         EnotRegistry enotRegistry = new EnotRegistry.Builder()
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .build();
-        enotParser = new EnotParser(objectMapper);
+        enotParser = new EnotParser(jsonObjectMapper, yamlObjectMapper);
         enotSerializer = new EnotSerializer(enotParser);
         ConditionExpressionParser expressionParser = new ConditionExpressionParser();
         ConditionExpressionEvaluator conditionExpressionEvaluator = new ConditionExpressionEvaluator(enotRegistry, expressionParser);
@@ -56,7 +58,7 @@ public class EnotSerializerSuccessCasesTest {
     }
 
     private SerializationContext ctx(Map<String, Object> params) {
-        return new SerializationContext.Builder(objectMapper).withParams(params).build();
+        return new SerializationContext.Builder(jsonObjectMapper).withParams(params).build();
     }
 
     // -----------------------------------------------------------------------

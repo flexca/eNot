@@ -1,0 +1,21 @@
+type: system
+attributes:
+  kind: loop
+  items_name: organizational_units
+body:
+  type: asn.1
+  attributes:
+    tag: set
+  body:
+    type: asn.1
+    attributes:
+      tag: sequence
+    body:
+      - type: asn.1
+        attributes:
+          tag: object_identifier
+        body: "2.5.4.11"
+      - type: asn.1
+        attributes:
+          tag: utf8_string
+        body: "${unit}"

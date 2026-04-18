@@ -1,0 +1,40 @@
+type: asn.1
+attributes:
+  tag: sequence
+body:
+  - type: system
+    attributes:
+      kind: condition
+      expression: "${valid_from} >= '2050-01-01T00:00:00Z'"
+    body:
+      type: asn.1
+      attributes:
+        tag: generalized_time
+      body: "${valid_from}"
+  - type: system
+    attributes:
+      kind: condition
+      expression: "${valid_from} < '2050-01-01T00:00:00Z'"
+    body:
+      type: asn.1
+      attributes:
+        tag: utc_time
+      body: "${valid_from}"
+  - type: system
+    attributes:
+      kind: condition
+      expression: "${expires_on} >= '2050-01-01T00:00:00Z'"
+    body:
+      type: asn.1
+      attributes:
+        tag: generalized_time
+      body: "${expires_on}"
+  - type: system
+    attributes:
+      kind: condition
+      expression: "${expires_on} < '2050-01-01T00:00:00Z'"
+    body:
+      type: asn.1
+      attributes:
+        tag: utc_time
+      body: "${expires_on}"
