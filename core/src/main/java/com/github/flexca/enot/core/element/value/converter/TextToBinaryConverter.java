@@ -17,7 +17,7 @@ public class TextToBinaryConverter implements EnotBinaryConverter {
         if (input instanceof String stringInput) {
             return stringInput.getBytes(StandardCharsets.UTF_8);
         } else {
-            throw new EnotInvalidArgumentException("expecting input of type " + CommonEnotValueType.INTEGER.getName());
+            throw new EnotInvalidArgumentException("expecting input of type " + CommonEnotValueType.TEXT.getName());
         }
     }
 }

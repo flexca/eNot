@@ -7,8 +7,10 @@ import java.util.regex.Pattern;
 
 public class PlaceholderUtils {
 
-    public static final String SYSTEM_VARIABLE_PREFIX = "system.";
-    public static final String GLOBAL_PARAM_PREFIX = "global.";
+    public static final String SYSTEM_VARIABLE = "system";
+    public static final String SYSTEM_VARIABLE_PREFIX = SYSTEM_VARIABLE + ".";
+    public static final String GLOBAL_PARAM = "global";
+    public static final String GLOBAL_PARAM_PREFIX = GLOBAL_PARAM + ".";
 
     private static final Pattern VARIABLE_NAME_REGEXP = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*$");
 
@@ -62,5 +64,23 @@ public class PlaceholderUtils {
         }
 
         return VARIABLE_NAME_REGEXP.matcher(inputWithoutPrefix).matches();
+    }
+
+    public static boolean isGlobalVariable(String input) {
+
+        if(StringUtils.isBlank(input)) {
+            return false;
+        }
+
+        return input.startsWith(GLOBAL_PARAM_PREFIX);
+    }
+
+    public static boolean isSystemVariable(String input) {
+
+        if(StringUtils.isBlank(input)) {
+            return false;
+        }
+
+        return input.startsWith(SYSTEM_VARIABLE_PREFIX);
     }
 }

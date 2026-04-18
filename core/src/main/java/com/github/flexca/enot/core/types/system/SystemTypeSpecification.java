@@ -1,5 +1,6 @@
 package com.github.flexca.enot.core.types.system;
 
+import com.github.flexca.enot.core.registry.EnotElementPathAltering;
 import com.github.flexca.enot.core.registry.EnotElementSpecification;
 import com.github.flexca.enot.core.registry.EnotElementValidator;
 import com.github.flexca.enot.core.registry.EnotTypeSpecification;
@@ -57,6 +58,23 @@ public class SystemTypeSpecification implements EnotTypeSpecification {
             return null;
         }
         return kind.getElementSerializer();
+    }
+
+    @Override
+    public EnotElementPathAltering getPathAltering(EnotElement element) {
+        SystemKind kind = getKindByElement(element);
+        if (SystemKind.LOOP.equals(kind)) {
+            Object itemsName = element.getAttributes().get(SystemAttribute.ITEMS_NAME);
+            if (itemsName instanceof String itemsNameStr) {
+                return EnotElementPathAltering.arrayScope(itemsNameStr);
+            }
+        } else if (SystemKind.GROUP.equals(kind)) {
+            Object groupName = element.getAttributes().get(SystemAttribute.GROUP_NAME);
+            if (groupName instanceof String groupNameStr) {
+                return EnotElementPathAltering.mapScope(groupNameStr);
+            }
+        }
+        return EnotElementPathAltering.none();
     }
 
     private SystemKind getKindByElement(EnotElement element) {

@@ -60,4 +60,8 @@ public interface EnotTypeSpecification {
      * @return serializer
      */
     ElementSerializer getSerializer(EnotElement element);
+
+    default EnotElementPathAltering getPathAltering(EnotElement element) {
+        return EnotElementPathAltering.none();
+    }
 }

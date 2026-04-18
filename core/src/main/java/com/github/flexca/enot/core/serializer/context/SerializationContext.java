@@ -326,29 +326,28 @@ public class SerializationContext {
 
     private static ContextNode fromMap(Map<String, Object> input) {
 
-        return extractMap(null, input);
+        return extractMap(input);
     }
 
-    private static ContextNode extractNode(ContextNode parent, Object input) {
+    private static ContextNode extractNode(Object input) {
 
         if (input instanceof Map<?, ?> mapChild) {
-            return extractMap(parent, mapChild);
+            return extractMap(mapChild);
         } else if (input instanceof Collection<?> arrayChild) {
-            return extractArray(parent, arrayChild);
+            return extractArray(arrayChild);
         } else {
-            return extractPrimitive(parent, input);
+            return extractPrimitive(input);
         }
     }
 
-    private static ContextMap extractMap(ContextNode parent, Map<?, ?> input) {
+    private static ContextMap extractMap(Map<?, ?> input) {
 
         ContextMap contextMap = new ContextMap();
-        contextMap.setParent(parent);
         Map<String, ContextNode> items = new HashMap<>();
         contextMap.setItems(items);
         input.forEach((key, value) -> {
             if (key instanceof String stringKey) {
-                items.put(stringKey, extractNode(contextMap, value));
+                items.put(stringKey, extractNode(value));
             } else {
                 throw new EnotInvalidArgumentException("key of params map node must be string");
             }
@@ -356,30 +355,27 @@ public class SerializationContext {
         return contextMap;
     }
 
-    private static ContextArray extractArray(ContextNode parent, Collection<?> input) {
+    private static ContextArray extractArray(Collection<?> input) {
 
         ContextArray contextArray = new ContextArray();
-        contextArray.setParent(parent);
         List<ContextNode> items = new ArrayList<>();
         contextArray.setItems(items);
         for (Object value : input) {
-            items.add(extractNode(contextArray, value));
+            items.add(extractNode(value));
         }
         return contextArray;
     }
 
-    private static ContextPrimitive extractPrimitive(ContextNode parent, Object input) {
+    private static ContextPrimitive extractPrimitive(Object input) {
 
         ContextPrimitive contextPrimitive = new ContextPrimitive();
-        contextPrimitive.setParent(parent);
         contextPrimitive.setValue(input);
         return contextPrimitive;
     }
 
     private static Map<String, Object> jsonToMap(ObjectMapper objectMapper, String json) {
 
-        TypeReference<Map<String, Object>> paramsType = new TypeReference<>() {
-        };
+        TypeReference<Map<String, Object>> paramsType = new TypeReference<>() {};
         Map<String, Object> params = objectMapper.readValue(json, paramsType);
         return params;
     }

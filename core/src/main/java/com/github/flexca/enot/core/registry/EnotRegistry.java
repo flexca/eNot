@@ -1,14 +1,13 @@
 package com.github.flexca.enot.core.registry;
 
-import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
-import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.element.value.EnotValueType;
+import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
+import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
