@@ -2,7 +2,6 @@ package com.github.flexca.enot.core.types.asn1.reverse;
 
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
-import com.github.flexca.enot.core.exception.EnotException;
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
 import com.github.flexca.enot.core.exception.EnotRuntimeException;
 import com.github.flexca.enot.core.types.asn1.Asn1Tag;
