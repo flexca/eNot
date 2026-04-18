@@ -6,10 +6,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class DateTimeUtils {
 
-    private static ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
+    private static final ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC  = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
@@ -32,5 +33,13 @@ public class DateTimeUtils {
 
     public static String formatForAsn1(ZonedDateTime input) {
         return input == null ? null : input.format(DATE_TIME_FORMATTER_ASN1);
+    }
+
+    public static ZonedDateTime toZonedDateTime(Date input) {
+        return input == null ? null : ZonedDateTime.ofInstant(input.toInstant(), UTC_ZONE_ID);
+    }
+
+    public static String format(ZonedDateTime input) {
+        return input == null ? null : input.format(DATE_TIME_FORMATTER_UTC);
     }
 }
