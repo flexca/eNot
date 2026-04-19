@@ -64,7 +64,7 @@ public class EnotParser {
      * {@link ParsingContext} is created automatically so that cyclic-dependency
      * detection starts from an empty state.</p>
      *
-     * @param jsonOrYaml        the eNot template as a JSON or YAML string; must not be blank
+     * @param jsonOrYaml  the eNot template as a JSON or YAML string; must not be blank
      * @param enotContext the registry and shared services for this parse run
      * @return a non-empty list of parsed root elements
      * @throws EnotParsingException if the input is blank, not valid JSON, or
@@ -111,13 +111,21 @@ public class EnotParser {
                     "unsupported input format, make sure you providing valid JSON or YAML")));
         }
 
+        if (EnotInputFormat.JSON.equals(inputFormat) && jsonObjectMapper == null) {
+            throw new EnotParsingException(COMMON_ERROR_MESSAGE, Collections.singletonList(EnotJsonError.of(currentPath,
+                    "cannot parse JSON input as jsonObjectMapper is not set")));
+        } else if (yamlObjectMapper == null) {
+            throw new EnotParsingException(COMMON_ERROR_MESSAGE, Collections.singletonList(EnotJsonError.of(currentPath,
+                    "cannot parse YAML input as yamlObjectMapper is not set")));
+        }
+
         try {
-            if(EnotInputFormat.JSON.equals(inputFormat)) {
+            if (EnotInputFormat.JSON.equals(inputFormat)) {
                 rootNode = jsonObjectMapper.readValue(jsonOrYaml, JsonNode.class);
             } else {
                 rootNode = yamlObjectMapper.readValue(jsonOrYaml, JsonNode.class);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new EnotParsingException(COMMON_ERROR_MESSAGE,
                     Collections.singletonList(EnotJsonError.of(currentPath, e.getMessage())), e);
         }
@@ -149,7 +157,7 @@ public class EnotParser {
         }
 
         if (CollectionUtils.isNotEmpty(jsonErrors)) {
-            if(cause == null) {
+            if (cause == null) {
                 throw new EnotParsingException(COMMON_ERROR_MESSAGE, jsonErrors);
             } else {
                 throw new EnotParsingException(COMMON_ERROR_MESSAGE, jsonErrors, cause);
@@ -229,7 +237,7 @@ public class EnotParser {
         } else {
             try {
                 element.setBody(bodyResolver.resolveBody(element, enotContext, parsingContext.copy()));
-            } catch(Exception e) {
+            } catch (Exception e) {
                 jsonErrors.add(EnotJsonError.of(parentPath + "/" + ENOT_ELEMENT_BODY_NAME,
                         "failure during resolving element body, reason: " + e.getMessage()));
                 return Optional.empty();
@@ -244,11 +252,11 @@ public class EnotParser {
     private boolean extractOptional(ObjectNode jsonElement, String parentPath, List<EnotJsonError> jsonErrors) {
 
         JsonNode optionalNode = jsonElement.get(ENOT_ELEMENT_OPTIONAL_NAME);
-        if(optionalNode == null) {
+        if (optionalNode == null) {
             return false;
         }
         String currentPath = parentPath + "/" + ENOT_ELEMENT_OPTIONAL_NAME;
-        if(!optionalNode.isBoolean()) {
+        if (!optionalNode.isBoolean()) {
             jsonErrors.add(EnotJsonError.of(currentPath, "eNot element field " + ENOT_ELEMENT_OPTIONAL_NAME
                     + " if provided (by default is false) must be boolean, provided: " + optionalNode.getNodeType().name()));
             return false;
@@ -259,7 +267,7 @@ public class EnotParser {
     private Map<EnotAttribute, Object> extractElementAttributes(ObjectNode jsonElement, EnotTypeSpecification typeSpecification, String parentPath, List<EnotJsonError> jsonErrors) {
 
         JsonNode attributesNode = jsonElement.get(ENOT_ELEMENT_ATTRIBUTES_NAME);
-        if(attributesNode == null || attributesNode.isNull()) {
+        if (attributesNode == null || attributesNode.isNull()) {
             return Collections.emptyMap();
         }
 
@@ -302,7 +310,7 @@ public class EnotParser {
             return Optional.empty();
         } else if (bodyNode.isArray()) {
             ArrayNode bodyArrayNode = bodyNode.asArray();
-            if(bodyArrayNode.isEmpty()) {
+            if (bodyArrayNode.isEmpty()) {
                 return Optional.empty();
             }
             if (bodyArrayNode.get(0).isObject()) {
@@ -311,9 +319,9 @@ public class EnotParser {
             } else {
                 List<Object> primitiveValues = new ArrayList<>();
                 int i = 0;
-                for(JsonNode primitiveItem : bodyArrayNode) {
+                for (JsonNode primitiveItem : bodyArrayNode) {
                     Optional<Object> objectBody = extractPrimitiveValue(primitiveItem, false, currentPath, jsonErrors);
-                    if(objectBody.isEmpty()) {
+                    if (objectBody.isEmpty()) {
                         jsonErrors.add(EnotJsonError.of(currentPath + "/" + i, "unexpected eNot element body JSON type: " + bodyNode.getNodeType().name()
                                 + ", expecting boolean, number, string, object or array"));
                     } else {
@@ -326,7 +334,7 @@ public class EnotParser {
         } else if (bodyNode.isObject()) {
             Optional<EnotElement> element = parseElement(bodyNode.asObject(), currentPath, jsonErrors, enotContext, parsingContext);
             return element.isEmpty() ? Optional.empty() : Optional.of(element.get());
-        }  else {
+        } else {
             Optional<Object> objectBody = extractPrimitiveValue(bodyNode, false, currentPath, jsonErrors);
             if (objectBody.isEmpty()) {
                 jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot element body JSON type: " + bodyNode.getNodeType().name()
@@ -373,7 +381,7 @@ public class EnotParser {
             String stringValue = valueNode.asString();
             if (!attributeValue) {
                 Optional<String> variableName = PlaceholderUtils.extractPlaceholder(stringValue);
-                if(variableName.isPresent() && !PlaceholderUtils.isValidVariableName(variableName.get())) {
+                if (variableName.isPresent() && !PlaceholderUtils.isValidVariableName(variableName.get())) {
                     jsonErrors.add(EnotJsonError.of(currentPath, "invalid variable name " + stringValue
                             + ", make sure you are using only letters, digits and underscores"));
                     return Optional.empty();
@@ -390,7 +398,7 @@ public class EnotParser {
             return Optional.of(valueNode.asLong());
         } else if (valueNode.isBoolean()) {
             return Optional.of(valueNode.asBoolean());
-        }  else {
+        } else {
             return Optional.empty();
         }
     }

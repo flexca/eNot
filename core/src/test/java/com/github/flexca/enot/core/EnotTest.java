@@ -1,6 +1,7 @@
 package com.github.flexca.enot.core;
 
 import com.github.flexca.enot.core.element.EnotElement;
+import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
 import com.github.flexca.enot.core.registry.EnotRegistry;
 import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import com.github.flexca.enot.core.testutil.ResourceReaderTestUtils;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EnotTest {
 
@@ -42,7 +44,11 @@ public class EnotTest {
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .withElementReferenceResolver(new TestResourcesReferenceResolver())
                 .build();
-        enot = new Enot(registry, jsonObjectMapper, yamlObjectMapper);
+        enot = new Enot.Builder()
+                .withRegistry(registry)
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .build();
         commonNameJson = ResourceReaderTestUtils.readResourceFileAsString(COMMON_NAME_JSON);
     }
 
@@ -153,6 +159,31 @@ public class EnotTest {
         Map<String, Object> parsed = jsonObjectMapper.readValue(json, Map.class);
         assertThat(parsed).containsOnlyKeys("common_name");
         assertThat(parsed.get("common_name")).isEqualTo("replace with your value");
+    }
+
+    // -----------------------------------------------------------------------
+    // Builder failures
+    // -----------------------------------------------------------------------
+
+    @Test
+    void testBuilderFailsWhenRegistryNotSet() {
+        EnotInvalidConfigurationException ex = assertThrows(EnotInvalidConfigurationException.class, () ->
+                new Enot.Builder()
+                        .withJsonObjectMapper(jsonObjectMapper)
+                        .build());
+        assertThat(ex.getMessage()).contains("enotRegistry must be set");
+    }
+
+    @Test
+    void testBuilderFailsWhenBothMappersNotSet() {
+        EnotRegistry registry = new EnotRegistry.Builder()
+                .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
+                .build();
+        EnotInvalidConfigurationException ex = assertThrows(EnotInvalidConfigurationException.class, () ->
+                new Enot.Builder()
+                        .withRegistry(registry)
+                        .build());
+        assertThat(ex.getMessage()).contains("at least one of jsonObjectMapper or yamlObjectMapper must be set");
     }
 
     // -----------------------------------------------------------------------

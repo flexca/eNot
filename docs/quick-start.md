@@ -82,7 +82,10 @@ EnotRegistry registry = new EnotRegistry.Builder()
 ObjectMapper objectMapper = new ObjectMapper();
 
 // 2. Create the Enot facade — wires parser, serializer and expression engine
-Enot enot = new Enot(registry, objectMapper);
+Enot enot = new Enot.Builder()
+        .withRegistry(registry)
+        .withJsonObjectMapper(objectMapper)
+        .build();
 
 // 3. Build a serialization context with placeholder values
 //    Params can be supplied as individual entries, a Map, or a JSON string —
