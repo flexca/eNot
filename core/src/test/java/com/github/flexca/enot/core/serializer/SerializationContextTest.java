@@ -1,6 +1,7 @@
 package com.github.flexca.enot.core.serializer;
 
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
+import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
 import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -540,5 +541,142 @@ public class SerializationContextTest {
                 "Bob:bob1.com",
                 "Bob:bob2.com"
         );
+    }
+
+    // --- YAML string params ---
+
+    @Test
+    void buildFromYamlString() {
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParams("subject_cn: Alice\ncountry: PL")
+                .build();
+
+        assertThat(ctx.resolvePlaceholderValue("subject_cn")).isEqualTo("Alice");
+        assertThat(ctx.resolvePlaceholderValue("country")).isEqualTo("PL");
+    }
+
+    // --- Global param auto-extracted from withParams ---
+
+    @Test
+    void globalParamAutoExtractedFromMap() {
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withParams(Map.of(
+                        "subject_cn", "Alice",
+                        "global.issuer", "My CA"
+                ))
+                .build();
+
+        assertThat(ctx.resolvePlaceholderValue("subject_cn")).isEqualTo("Alice");
+        assertThat(ctx.resolvePlaceholderValue("global.issuer")).isEqualTo("My CA");
+        assertThat(ctx.resolvePlaceholderValue("issuer")).isNull();
+    }
+
+    @Test
+    void globalParamAutoExtractedFromJsonString() {
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withParams("{\"subject_cn\": \"Alice\", \"global.issuer\": \"My CA\"}")
+                .build();
+
+        assertThat(ctx.resolvePlaceholderValue("subject_cn")).isEqualTo("Alice");
+        assertThat(ctx.resolvePlaceholderValue("global.issuer")).isEqualTo("My CA");
+    }
+
+    // --- Multiple withParams calls and mixing ---
+
+    @Test
+    void multipleWithParamsMapCallsAreMerged() {
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withParams(Map.of("cn", "Alice"))
+                .withParams(Map.of("country", "PL"))
+                .build();
+
+        assertThat(ctx.resolvePlaceholderValue("cn")).isEqualTo("Alice");
+        assertThat(ctx.resolvePlaceholderValue("country")).isEqualTo("PL");
+    }
+
+    @Test
+    void withParamAndWithParamsMapCanBeMixed() {
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withParams(Map.of("cn", "Alice"))
+                .withParam("country", "PL")
+                .build();
+
+        assertThat(ctx.resolvePlaceholderValue("cn")).isEqualTo("Alice");
+        assertThat(ctx.resolvePlaceholderValue("country")).isEqualTo("PL");
+    }
+
+    // --- Builder validation failures ---
+
+    @Test
+    void withParamBlankKeyThrows() {
+        assertThatThrownBy(() ->
+                new SerializationContext.Builder()
+                        .withJsonObjectMapper(jsonObjectMapper)
+                        .withParam("", "value")
+        ).isInstanceOf(EnotInvalidArgumentException.class);
+    }
+
+    @Test
+    void withParamInvalidNameThrows() {
+        assertThatThrownBy(() ->
+                new SerializationContext.Builder()
+                        .withJsonObjectMapper(jsonObjectMapper)
+                        .withParam("invalid name", "value")
+        ).isInstanceOf(EnotInvalidArgumentException.class);
+    }
+
+    @Test
+    void withParamSystemVariableThrows() {
+        assertThatThrownBy(() ->
+                new SerializationContext.Builder()
+                        .withJsonObjectMapper(jsonObjectMapper)
+                        .withParam("system.some_var", "value")
+        ).isInstanceOf(EnotInvalidArgumentException.class);
+    }
+
+    @Test
+    void withParamsJsonStringWithoutJsonMapperThrows() {
+        assertThatThrownBy(() ->
+                new SerializationContext.Builder()
+                        .withYamlObjectMapper(yamlObjectMapper)
+                        .withParams("{\"cn\": \"Alice\"}")
+        ).isInstanceOf(EnotInvalidConfigurationException.class);
+    }
+
+    @Test
+    void withParamsYamlStringWithoutYamlMapperThrows() {
+        assertThatThrownBy(() ->
+                new SerializationContext.Builder()
+                        .withJsonObjectMapper(jsonObjectMapper)
+                        .withParams("cn: Alice")
+        ).isInstanceOf(EnotInvalidConfigurationException.class);
+    }
+
+    @Test
+    void withParamsBlankStringThrows() {
+        assertThatThrownBy(() ->
+                new SerializationContext.Builder()
+                        .withJsonObjectMapper(jsonObjectMapper)
+                        .withParams("   ")
+        ).isInstanceOf(EnotInvalidArgumentException.class);
+    }
+
+    // --- Type preservation from JSON ---
+
+    @Test
+    void booleanParamFromJsonPreservesType() {
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withParams("{\"is_ca\": true}")
+                .build();
+
+        Object value = ctx.resolvePlaceholderValue("is_ca");
+        assertThat(value).isInstanceOf(Boolean.class);
+        assertThat(value).isEqualTo(true);
     }
 }
