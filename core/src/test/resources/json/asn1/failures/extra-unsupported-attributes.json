@@ -1,0 +1,25 @@
+[
+  {
+    "type": "asn.1",
+    "attributes": {
+      "tag": "utf8_string",
+      "apply_padding": true
+    },
+    "body": "${name}"
+  },
+  {
+    "type": "system",
+    "attributes": {
+      "kind": "loop",
+      "items_name": "entries",
+      "expression": "${flag} == true"
+    },
+    "body": {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "utf8_string"
+      },
+      "body": "${value}"
+    }
+  }
+]

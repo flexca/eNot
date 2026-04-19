@@ -1,0 +1,28 @@
+[
+  {
+    "type": "system",
+    "attributes": {
+      "kind": "loop"
+    },
+    "body": {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "utf8_string"
+      },
+      "body": "${value}"
+    }
+  },
+  {
+    "type": "system",
+    "attributes": {
+      "kind": "condition"
+    },
+    "body": {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "boolean"
+      },
+      "body": "${flag}"
+    }
+  }
+]

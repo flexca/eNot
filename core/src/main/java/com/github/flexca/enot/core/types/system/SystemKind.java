@@ -18,6 +18,7 @@ import com.github.flexca.enot.core.types.system.serializer.SystemHexToBinSeriali
 import com.github.flexca.enot.core.types.system.serializer.SystemLoopSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemReferenceSerializer;
 import com.github.flexca.enot.core.types.system.serializer.SystemSha1Serializer;
+import com.github.flexca.enot.core.types.system.validation.SystemConditionValidator;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
             Set.of(SystemAttribute.KIND, SystemAttribute.EXPRESSION),
             null,
-            null,
+            new SystemConditionValidator(),
             new SystemConditionSerializer()),
 
     GROUP("group",

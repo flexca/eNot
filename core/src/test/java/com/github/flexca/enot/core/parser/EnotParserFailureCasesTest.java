@@ -178,6 +178,134 @@ public class EnotParserFailureCasesTest {
                 jsonErrors)).isTrue();
     }
 
+    @Test
+    void testMissingRequiredAttributeCases() throws Exception {
+        String path = "json/asn1/failures/missing-required-attributes.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/0/attributes",
+                "missing required attributes for eNot element: [items_name]", jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/1/attributes",
+                "missing required attributes for eNot element: [expression]", jsonErrors)).isTrue();
+    }
+
+    @Test
+    void testExtraUnsupportedAttributeCases() throws Exception {
+        String path = "json/asn1/failures/extra-unsupported-attributes.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/0/attributes",
+                "unsupported attributes for eNot element: [apply_padding]", jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/1/attributes",
+                "unsupported attributes for eNot element: [expression]", jsonErrors)).isTrue();
+    }
+
+    @Test
+    void testInvalidExpressionCases() throws Exception {
+        String path = "json/asn1/failures/invalid-expression-cases.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/0/body",
+                "invalid variable name ${invalid name}, make sure you are using only letters, digits and underscores",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/1/body/body",
+                "invalid variable name ${invalid$var}, make sure you are using only letters, digits and underscores",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/2/expression",
+                "invalid variable name: valid.name, use only letters, digits or underscore",
+                jsonErrors)).isTrue();
+        assertThat(jsonErrors.stream().anyMatch(e -> e.getJsonPointer().equals("/3/expression")
+                && e.getDetails().startsWith("failure during expression parsing"))).isTrue();
+    }
+
+    @Test
+    void testBlankTypeField() throws Exception {
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse("{\"type\": \"\"}", enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(jsonErrors).hasSize(1);
+        assertThat(jsonErrors.get(0).getJsonPointer()).isEqualTo("/type");
+        assertThat(jsonErrors.get(0).getDetails()).isEqualTo("eNot element field value type is blank");
+    }
+
+    @Test
+    void testArrayItemNotObjectCase() throws Exception {
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse("[42]", enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(jsonErrors).hasSize(1);
+        assertThat(jsonErrors.get(0).getJsonPointer()).isEqualTo("/0");
+        assertThat(jsonErrors.get(0).getDetails()).startsWith("eNot expecting object, but get ");
+    }
+
+    @Test
+    void testExpressionNotStringCase() throws Exception {
+        String json = "{\"type\": \"system\", \"attributes\": {\"kind\": \"condition\", \"expression\": true}," +
+                " \"body\": {\"type\": \"asn.1\", \"attributes\": {\"tag\": \"utf8_string\"}, \"body\": \"${value}\"}}";
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/expression",
+                "expression must be of string type", jsonErrors)).isTrue();
+    }
+
+    @Test
+    void testInvalidFieldTypeCases() throws Exception {
+        String path = "json/asn1/failures/invalid-field-type-cases.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/0/optional",
+                "eNot element field optional if provided (by default is false) must be boolean, provided: STRING",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/1/attributes",
+                "eNot element field attributes must be JSON object, provided: ARRAY",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/2/tag",
+                "value for attribute tag must be set",
+                jsonErrors)).isTrue();
+    }
+
+    @Test
+    void testInvalidAttributeValueCases() throws Exception {
+        String path = "json/asn1/failures/invalid-attribute-value-cases.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/0",
+                "cannot find specification for element with attributes: {}",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/1/attributes/implicit",
+                "Invalid value type for attribute, expecting integer",
+                jsonErrors)).isTrue();
+    }
+
+    @Test
+    void testInvalidBodyTypeCases() throws Exception {
+        String path = "json/asn1/failures/invalid-body-type-cases.json";
+        String json = ResourceReaderTestUtils.readResourceFileAsString(path);
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/0/body",
+                "eNot element body type must be of type BOOLEAN",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/1/body",
+                "eNot element body type must be of type INTEGER",
+                jsonErrors)).isTrue();
+        assertThat(isJsonErrorPresent("/2/body",
+                "eNot element body don't allow multiple values",
+                jsonErrors)).isTrue();
+    }
+
     private boolean isJsonErrorPresent(String jsonPointer, String details, List<EnotJsonError> jsonErrors) {
         return jsonErrors.stream()
                 .anyMatch(error -> error.getJsonPointer().equals(jsonPointer)

@@ -1,0 +1,19 @@
+[
+  {
+    "type": "asn.1"
+  },
+  {
+    "type": "asn.1",
+    "attributes": {
+      "tag": "tagged_object",
+      "implicit": "not_a_number"
+    },
+    "body": {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "utf8_string"
+      },
+      "body": "${value}"
+    }
+  }
+]

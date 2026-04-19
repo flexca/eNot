@@ -1,0 +1,51 @@
+[
+  {
+    "type": "asn.1",
+    "attributes": {
+      "tag": "utf8_string"
+    },
+    "body": "${invalid name}"
+  },
+  {
+    "type": "system",
+    "attributes": {
+      "kind": "condition",
+      "expression": "${valid_flag} == true"
+    },
+    "body": {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "utf8_string"
+      },
+      "body": "${invalid$var}"
+    }
+  },
+  {
+    "type": "system",
+    "attributes": {
+      "kind": "condition",
+      "expression": "${valid.name} == 'ok'"
+    },
+    "body": {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "utf8_string"
+      },
+      "body": "${value}"
+    }
+  },
+  {
+    "type": "system",
+    "attributes": {
+      "kind": "condition",
+      "expression": "=== broken syntax"
+    },
+    "body": {
+      "type": "asn.1",
+      "attributes": {
+        "tag": "boolean"
+      },
+      "body": "true"
+    }
+  }
+]

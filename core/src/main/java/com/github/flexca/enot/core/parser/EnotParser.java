@@ -9,6 +9,7 @@ import com.github.flexca.enot.core.registry.EnotTypeSpecification;
 import com.github.flexca.enot.core.element.EnotElement;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.util.FormatUtils;
+import com.github.flexca.enot.core.util.PlaceholderUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.databind.JsonNode;
@@ -280,7 +281,7 @@ public class EnotParser {
             }
             JsonNode attributeValueNode = attributesNode.asObject().get(attributeName);
             if (attributeValueNode == null || attributeValueNode.isNull()) {
-                jsonErrors.add(EnotJsonError.of(attributePath, " value for attribute " + attributeName + " must be set"));
+                jsonErrors.add(EnotJsonError.of(attributePath, "value for attribute " + attributeName + " must be set"));
                 continue;
             }
             Optional<Object> attributeValue = extractAttributeValue(attribute, attributeValueNode, currentPath, jsonErrors);
@@ -311,7 +312,7 @@ public class EnotParser {
                 List<Object> primitiveValues = new ArrayList<>();
                 int i = 0;
                 for(JsonNode primitiveItem : bodyArrayNode) {
-                    Optional<Object> objectBody = extractPrimitiveValue(primitiveItem);
+                    Optional<Object> objectBody = extractPrimitiveValue(primitiveItem, false, currentPath, jsonErrors);
                     if(objectBody.isEmpty()) {
                         jsonErrors.add(EnotJsonError.of(currentPath + "/" + i, "unexpected eNot element body JSON type: " + bodyNode.getNodeType().name()
                                 + ", expecting boolean, number, string, object or array"));
@@ -326,7 +327,7 @@ public class EnotParser {
             Optional<EnotElement> element = parseElement(bodyNode.asObject(), currentPath, jsonErrors, enotContext, parsingContext);
             return element.isEmpty() ? Optional.empty() : Optional.of(element.get());
         }  else {
-            Optional<Object> objectBody = extractPrimitiveValue(bodyNode);
+            Optional<Object> objectBody = extractPrimitiveValue(bodyNode, false, currentPath, jsonErrors);
             if (objectBody.isEmpty()) {
                 jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot element body JSON type: " + bodyNode.getNodeType().name()
                         + ", expecting boolean, number, string, object or array"));
@@ -346,7 +347,7 @@ public class EnotParser {
             List<Object> attributeValues = new ArrayList<>();
             for (int i = 0; i < valueNode.asArray().size(); i++) {
                 JsonNode itemNode = valueNode.asArray().get(i);
-                Optional<Object> primitiveValue = extractPrimitiveValue(itemNode);
+                Optional<Object> primitiveValue = extractPrimitiveValue(itemNode, false, parentPath, jsonErrors);
                 if (primitiveValue.isEmpty()) {
                     jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot attribute + " + attribute.getName() + " +  value JSON type: "
                             + itemNode.getNodeType().name() + ", expecting boolean, number or string"));
@@ -356,7 +357,7 @@ public class EnotParser {
             }
             return attributeValues.isEmpty() ? Optional.empty() : Optional.of(attributeValues);
         } else {
-            Optional<Object> primitiveValue = extractPrimitiveValue(valueNode);
+            Optional<Object> primitiveValue = extractPrimitiveValue(valueNode, false, parentPath, jsonErrors);
             if (primitiveValue.isEmpty()) {
                 jsonErrors.add(EnotJsonError.of(currentPath, "unexpected eNot attribute + " + attribute.getName() + " +  value JSON type: "
                         + valueNode.getNodeType().name() + ", expecting boolean, number or string"));
@@ -365,10 +366,20 @@ public class EnotParser {
         }
     }
 
-    private Optional<Object> extractPrimitiveValue(JsonNode valueNode) {
+    private Optional<Object> extractPrimitiveValue(JsonNode valueNode, boolean attributeValue, String currentPath,
+                                                   List<EnotJsonError> jsonErrors) {
 
         if (valueNode.isString()) {
-            return Optional.of(valueNode.asString());
+            String stringValue = valueNode.asString();
+            if (!attributeValue) {
+                Optional<String> variableName = PlaceholderUtils.extractPlaceholder(stringValue);
+                if(variableName.isPresent() && !PlaceholderUtils.isValidVariableName(variableName.get())) {
+                    jsonErrors.add(EnotJsonError.of(currentPath, "invalid variable name " + stringValue
+                            + ", make sure you are using only letters, digits and underscores"));
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(stringValue);
         } else if (valueNode.isBigDecimal()) {
             return Optional.of(valueNode.asDecimal());
         } else if (valueNode.isBigInteger()) {

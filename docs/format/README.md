@@ -184,16 +184,18 @@ a string value in the JSON that matches the pattern:
 "${name}"
 ```
 
-The name may contain letters, digits, underscores, and dots:
+The name may contain letters, digits, and underscores. It must start
+with a letter or underscore:
 
 ```
 "${cn}"
-"${subject.common_name}"
-"${key_usage.digital_signature}"
+"${subject_cn}"
+"${key_usage_digital_signature}"
 ```
 
-Dots in the name are **not** path separators — the entire string after
-`${` and before `}` is the lookup key in the current scope map.
+Dots are **not** allowed in plain variable names. The only exception is
+the reserved prefixes `global.` and `system.` which are handled
+specially by the engine (see [Global params](#global-params) below).
 
 ---
 

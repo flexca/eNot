@@ -1,0 +1,20 @@
+[
+  {
+    "type": "asn.1",
+    "optional": "yes",
+    "attributes": {
+      "tag": "utf8_string"
+    },
+    "body": "${value}"
+  },
+  {
+    "type": "asn.1",
+    "attributes": ["tag"]
+  },
+  {
+    "type": "asn.1",
+    "attributes": {
+      "tag": null
+    }
+  }
+]

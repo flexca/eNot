@@ -1,0 +1,23 @@
+[
+  {
+    "type": "asn.1",
+    "attributes": {
+      "tag": "boolean"
+    },
+    "body": "yes"
+  },
+  {
+    "type": "asn.1",
+    "attributes": {
+      "tag": "integer"
+    },
+    "body": "hello"
+  },
+  {
+    "type": "asn.1",
+    "attributes": {
+      "tag": "utf8_string"
+    },
+    "body": ["value1", "value2"]
+  }
+]

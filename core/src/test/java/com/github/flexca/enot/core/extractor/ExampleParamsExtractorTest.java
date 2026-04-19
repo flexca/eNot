@@ -114,8 +114,8 @@ public class ExampleParamsExtractorTest {
         ContextMap result = extractor.extractExampleParams(elements);
 
         // flat top-level placeholder (dot in name is not treated as a path separator)
-        assertThat(result.getItems()).containsKey("certificate_policy.critical");
-        assertThatPrimitive(result.get("certificate_policy.critical"));
+        assertThat(result.getItems()).containsKey("certificate_policy_critical");
+        assertThatPrimitive(result.get("certificate_policy_critical"));
 
         // outer LOOP: certificate_policy → [{ policy_oid, cps_qualifiers, unotice_qualifiers }]
         assertThat(result.get("certificate_policy")).isInstanceOf(ContextArray.class);

@@ -10,7 +10,7 @@ body:
     optional: true
     attributes:
       tag: boolean
-    body: "${certificate_policy.critical}"
+    body: "${certificate_policy_critical}"
   - type: asn.1
     attributes:
       tag: octet_string

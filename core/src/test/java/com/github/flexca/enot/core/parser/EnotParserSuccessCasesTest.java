@@ -278,7 +278,7 @@ public class EnotParserSuccessCasesTest {
         assertThat(criticalElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
         assertThat(criticalElement.isOptional()).isTrue();
         assertThat(criticalElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "boolean"));
-        assertThat((String) criticalElement.getBody()).isEqualTo("${certificate_policy.critical}");
+        assertThat((String) criticalElement.getBody()).isEqualTo("${certificate_policy_critical}");
 
         EnotElement octetStringElement = (EnotElement) rootBody.get(2);
         assertThat(octetStringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
@@ -658,7 +658,7 @@ public class EnotParserSuccessCasesTest {
         assertThat(criticalElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
         assertThat(criticalElement.isOptional()).isTrue();
         assertThat(criticalElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "boolean"));
-        assertThat((String) criticalElement.getBody()).isEqualTo("${certificate_policy.critical}");
+        assertThat((String) criticalElement.getBody()).isEqualTo("${certificate_policy_critical}");
 
         EnotElement octetStringElement = (EnotElement) rootBody.get(2);
         assertThat(octetStringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
