@@ -7,6 +7,7 @@ import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -15,12 +16,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ConditionExpressionEvaluatorSuccessCasesTest {
 
-    private ObjectMapper objectMapper;
+    private ObjectMapper jsonObjectMapper;
+    private ObjectMapper yamlObjectMapper;
+
     private ConditionExpressionEvaluator evaluator;
 
     @BeforeEach
     void init() {
-        objectMapper = new ObjectMapper();
+        jsonObjectMapper = new ObjectMapper();
+        yamlObjectMapper = new ObjectMapper(new YAMLFactory());
         EnotRegistry enotRegistry = new EnotRegistry.Builder()
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .build();
@@ -29,11 +33,17 @@ public class ConditionExpressionEvaluatorSuccessCasesTest {
     }
 
     private SerializationContext ctx() {
-        return new SerializationContext.Builder(objectMapper).build();
+        return new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .build();
     }
 
     private SerializationContext ctx(Map<String, Object> params) {
-        return new SerializationContext.Builder(objectMapper).withParams(params).build();
+        return new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParams(params).build();
     }
 
     // -----------------------------------------------------------------------
@@ -90,8 +100,10 @@ public class ConditionExpressionEvaluatorSuccessCasesTest {
 
     @Test
     void evaluateGlobalPlaceholderEquals() throws Exception {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
-                .withGlobalParam("env", "prod")
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParam("global.env", "prod")
                 .build();
         assertThat(evaluator.evaluate("${global.env} == 'prod'", ctx)).isTrue();
     }

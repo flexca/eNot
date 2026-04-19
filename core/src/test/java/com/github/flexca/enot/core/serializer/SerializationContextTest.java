@@ -5,6 +5,7 @@ import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -14,18 +15,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SerializationContextTest {
 
-    private ObjectMapper objectMapper;
+    private ObjectMapper jsonObjectMapper;
+    private ObjectMapper yamlObjectMapper;
 
     @BeforeEach
     void init() {
-        objectMapper = new ObjectMapper();
+        jsonObjectMapper = new ObjectMapper();
+        yamlObjectMapper = new ObjectMapper(new YAMLFactory());
     }
 
     // --- Builder ---
 
     @Test
     void buildFromMap() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of("subject_cn", "Alice"))
                 .build();
 
@@ -34,7 +38,8 @@ public class SerializationContextTest {
 
     @Test
     void buildFromJson() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams("{\"subject_cn\": \"Alice\"}")
                 .build();
 
@@ -43,7 +48,8 @@ public class SerializationContextTest {
 
     @Test
     void buildWithSingleParam() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParam("subject_cn", "Alice")
                 .build();
 
@@ -54,8 +60,9 @@ public class SerializationContextTest {
 
     @Test
     void resolveGlobalParam() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
-                .withGlobalParam("issuer_cn", "My CA")
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withParam("global.issuer_cn", "My CA")
                 .build();
 
         assertThat(ctx.resolvePlaceholderValue("global.issuer_cn")).isEqualTo("My CA");
@@ -63,8 +70,9 @@ public class SerializationContextTest {
 
     @Test
     void globalParamNotReturnedForPlainLookup() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
-                .withGlobalParam("issuer_cn", "My CA")
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withParam("global.issuer_cn", "My CA")
                 .build();
 
         assertThat(ctx.resolvePlaceholderValue("issuer_cn")).isNull();
@@ -74,7 +82,8 @@ public class SerializationContextTest {
 
     @Test
     void resolveNestedParamAfterPathStepForward() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of("subject", Map.of("cn", "Alice")))
                 .build();
 
@@ -87,7 +96,8 @@ public class SerializationContextTest {
 
     @Test
     void resolveRootParamAfterPathStepBack() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "subject_cn", "Alice",
                         "subject", Map.of("cn", "Bob")
@@ -104,7 +114,8 @@ public class SerializationContextTest {
 
     @Test
     void resolveArrayItemAtCurrentIndex() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "dns_names", List.of(
                                 Map.of("value", "alice.example.com"),
@@ -130,7 +141,8 @@ public class SerializationContextTest {
 
     @Test
     void resetIndexRestoresFirstArrayItem() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "items", List.of(
                                 Map.of("v", "first"),
@@ -151,7 +163,8 @@ public class SerializationContextTest {
 
     @Test
     void missingParamReturnsNull() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParam("subject_cn", "Alice")
                 .build();
 
@@ -164,7 +177,8 @@ public class SerializationContextTest {
     void hasNextReturnsTrueOnceForMapPath() {
         // A map path is not an array — it represents a single item, so hasNext()
         // should return true once (index 0) and false after nextIndex()
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of("subject", Map.of("cn", "Alice")))
                 .build();
 
@@ -181,7 +195,8 @@ public class SerializationContextTest {
 
     @Test
     void nextIndexPastEndThrows() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "items", List.of(Map.of("v", "only"))
                 ))
@@ -201,9 +216,10 @@ public class SerializationContextTest {
 
     @Test
     void globalParamVisibleInsideNestedPath() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of("subject", Map.of("cn", "Alice")))
-                .withGlobalParam("issuer_cn", "My CA")
+                .withParam("global.issuer_cn", "My CA")
                 .build();
 
         ctx.pathStepForward("subject");
@@ -217,9 +233,10 @@ public class SerializationContextTest {
 
     @Test
     void globalParamVisibleInsideArrayIteration() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of("items", List.of(Map.of("v", "first"))))
-                .withGlobalParam("issuer_cn", "My CA")
+                .withParam("global.issuer_cn", "My CA")
                 .build();
 
         ctx.pathStepForward("items");
@@ -233,7 +250,8 @@ public class SerializationContextTest {
 
     @Test
     void pathStepBackAtRootIsNoOp() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParam("subject_cn", "Alice")
                 .build();
 
@@ -245,7 +263,8 @@ public class SerializationContextTest {
 
     @Test
     void hasNextAtRootReturnsTrueInitially() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParam("subject_cn", "Alice")
                 .build();
 
@@ -256,7 +275,8 @@ public class SerializationContextTest {
 
     @Test
     void fullLoopSimulation() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "dns_names", List.of(
                                 Map.of("value", "alice.example.com"),
@@ -287,7 +307,8 @@ public class SerializationContextTest {
 
     @Test
     void nestedLoopSimulation() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "subjects", List.of(
                                 Map.of("cn", "Alice", "dns_names", List.of(
@@ -330,7 +351,8 @@ public class SerializationContextTest {
 
     @Test
     void pathStepForwardIntoMissingKeyReturnsNullSafely() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of("subject_cn", "Alice"))
                 .build();
 
@@ -345,7 +367,8 @@ public class SerializationContextTest {
 
     @Test
     void resetIndexAllowsSecondIteration() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "items", List.of(
                                 Map.of("v", "first"),
@@ -380,7 +403,8 @@ public class SerializationContextTest {
 
     @Test
     void numericParamPreservesType() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParam("count", 42)
                 .build();
 
@@ -391,7 +415,8 @@ public class SerializationContextTest {
 
     @Test
     void booleanParamPreservesType() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParam("is_ca", true)
                 .build();
 
@@ -402,7 +427,8 @@ public class SerializationContextTest {
 
     @Test
     void numericParamFromJsonPreservesType() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams("{\"count\": 42}")
                 .build();
 
@@ -415,7 +441,8 @@ public class SerializationContextTest {
 
     @Test
     void emptyArrayHasNextReturnsFalseImmediately() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of("items", List.of()))
                 .build();
 
@@ -430,7 +457,8 @@ public class SerializationContextTest {
 
     @Test
     void outerLoopSecondIterationResolvesCorrectly() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "subjects", List.of(
                                 Map.of("cn", "Alice"),
@@ -455,7 +483,8 @@ public class SerializationContextTest {
 
     @Test
     void primitiveArrayItemReturnsNull() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "dns_names", List.of("alice.example.com", "bob.example.com")
                 ))
@@ -473,7 +502,8 @@ public class SerializationContextTest {
 
     @Test
     void nestedLoopBothOuterItemsHaveMultipleInnerItems() {
-        SerializationContext ctx = new SerializationContext.Builder(objectMapper)
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
                 .withParams(Map.of(
                         "subjects", List.of(
                                 Map.of("cn", "Alice", "sans", List.of(

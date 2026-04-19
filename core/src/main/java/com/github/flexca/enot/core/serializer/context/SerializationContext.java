@@ -1,6 +1,9 @@
 package com.github.flexca.enot.core.serializer.context;
 
 import com.github.flexca.enot.core.exception.EnotInvalidArgumentException;
+import com.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
+import com.github.flexca.enot.core.parser.EnotInputFormat;
+import com.github.flexca.enot.core.util.FormatUtils;
 import com.github.flexca.enot.core.util.PlaceholderUtils;
 import org.apache.commons.lang3.StringUtils;
 import tools.jackson.core.type.TypeReference;
@@ -53,18 +56,17 @@ import java.util.Map;
  */
 public class SerializationContext {
 
-    private final ObjectMapper objectMapper;
-
     private final ContextNode params;
 
     private final Map<String, Object> globalParams;
 
     private final List<ContextState> currentPath = new ArrayList<>();
 
-    private SerializationContext(ObjectMapper objectMapper, Map<String, Object> params, Map<String, Object> globalParams) {
-        this.objectMapper = objectMapper;
-        this.params = fromMap(params);
-        this.globalParams = Collections.unmodifiableMap(globalParams);
+    private SerializationContext(Map<String, Object> params, Map<String, Object> globalParams) {
+        Map<String, Object> additionalGlobalParams = new HashMap<>();
+        this.params = fromMap(params, additionalGlobalParams);
+        this.globalParams = new HashMap<>(globalParams);
+        this.globalParams.putAll(additionalGlobalParams);
         this.currentPath.add(new ContextState(StringUtils.EMPTY, 0));
     }
 
@@ -89,8 +91,8 @@ public class SerializationContext {
      * @return the resolved value, or {@code null} if the name is not present
      */
     public Object resolvePlaceholderValue(String name) {
-        if (name.startsWith(PlaceholderUtils.GLOBAL_PARAM_PREFIX)) {
-            return globalParams.get(name.substring(PlaceholderUtils.GLOBAL_PARAM_PREFIX.length()));
+        if (PlaceholderUtils.isGlobalVariable(name)) {
+            return globalParams.get(name);
         } else {
             ContextNode currentContext = getCurrentContext();
             if (currentContext instanceof ContextMap contextMap) {
@@ -211,7 +213,8 @@ public class SerializationContext {
      */
     public static class Builder {
 
-        private final ObjectMapper objectMapper;
+        private ObjectMapper jsonObjectMapper;
+        private ObjectMapper yamlObjectMapper;
 
         private Map<String, Object> params = new HashMap<>();
         private Map<String, Object> globalParams = new HashMap<>();
@@ -219,11 +222,18 @@ public class SerializationContext {
         /**
          * Creates a new builder with the given {@link ObjectMapper}.
          *
-         * @param objectMapper mapper used to deserialize JSON params; must not
-         *                     be {@code null}
          */
-        public Builder(ObjectMapper objectMapper) {
-            this.objectMapper = objectMapper;
+        public Builder() {
+        }
+
+        public Builder withJsonObjectMapper(ObjectMapper jsonObjectMapper) {
+            this.jsonObjectMapper = jsonObjectMapper;
+            return this;
+        }
+
+        public Builder withYamlObjectMapper(ObjectMapper yamlObjectMapper) {
+            this.yamlObjectMapper = yamlObjectMapper;
+            return this;
         }
 
         /**
@@ -241,11 +251,29 @@ public class SerializationContext {
         /**
          * Deserializes {@code json} and merges the resulting map into params.
          *
-         * @param json a JSON object string, e.g. {@code {"cn":"Alice"}}
+         * @param jsonOrYaml a JSON or YAML object string, e.g. {@code {"cn":"Alice"}}
          * @return this builder
          */
-        public Builder withParams(String json) {
-            Map<String, Object> params = jsonToMap(objectMapper, json);
+        public Builder withParams(String jsonOrYaml) {
+
+            EnotInputFormat inputFormat = FormatUtils.detectInputFormat(jsonOrYaml);
+            if(EnotInputFormat.UNSUPPORTED.equals(inputFormat)) {
+                throw new EnotInvalidArgumentException("provide valid JSON or YAML");
+            }
+
+            Map<String, Object> params;
+            if (EnotInputFormat.JSON.equals(inputFormat)) {
+                if (jsonObjectMapper == null) {
+                    throw new EnotInvalidConfigurationException("JSON object mapper not set");
+                }
+                params = jsonOrYamlToMap(jsonObjectMapper, jsonOrYaml);
+            } else {
+                if (yamlObjectMapper == null) {
+                    throw new EnotInvalidConfigurationException("YAML object mapper not set");
+                }
+                params = jsonOrYamlToMap(yamlObjectMapper, jsonOrYaml);
+            }
+
             this.params.putAll(params);
             return this;
         }
@@ -258,31 +286,24 @@ public class SerializationContext {
          * @return this builder
          */
         public Builder withParam(String key, Object value) {
-            this.params.put(key, value);
-            return this;
-        }
 
-        /**
-         * Merges the given map into the global params.
-         *
-         * @param params global key/value pairs; resolved via the
-         *               {@code global.} placeholder prefix
-         * @return this builder
-         */
-        public Builder withGlobalParams(Map<String, Object> params) {
-            this.globalParams.putAll(params);
-            return this;
-        }
+            if (StringUtils.isBlank(key)) {
+                throw new EnotInvalidArgumentException("blank param key");
+            }
 
-        /**
-         * Adds a single global param entry.
-         *
-         * @param key   global param name (without the {@code global.} prefix)
-         * @param value global param value
-         * @return this builder
-         */
-        public Builder withGlobalParam(String key, Object value) {
-            this.globalParams.put(key, value);
+            if (!PlaceholderUtils.isValidVariableName(key)) {
+                throw new EnotInvalidArgumentException("not valid param name: [" + key + "], use letters, digits or underscore");
+            }
+
+            if (PlaceholderUtils.isGlobalVariable(key)) {
+                this.globalParams.put(key, value);
+            } else if (PlaceholderUtils.isSystemVariable(key)) {
+                throw new EnotInvalidArgumentException("system variables cannot be used in serialization context, register " +
+                        "EnotSystemVariableProvider in EnotRegistry to resolve system variable");
+            } else {
+                this.params.put(key, value);
+            }
+
             return this;
         }
 
@@ -292,7 +313,7 @@ public class SerializationContext {
          * @return a new, immutable-params context ready for serialization
          */
         public SerializationContext build() {
-            return new SerializationContext(objectMapper, params, globalParams);
+            return new SerializationContext(params, globalParams);
         }
     }
 
@@ -324,30 +345,34 @@ public class SerializationContext {
     }
 
 
-    private static ContextNode fromMap(Map<String, Object> input) {
+    private static ContextNode fromMap(Map<String, Object> input, Map<String, Object> globalCandidates) {
 
-        return extractMap(input);
+        return extractMap(input, globalCandidates);
     }
 
-    private static ContextNode extractNode(Object input) {
+    private static ContextNode extractNode(Object input, Map<String, Object> globalCandidates) {
 
         if (input instanceof Map<?, ?> mapChild) {
-            return extractMap(mapChild);
+            return extractMap(mapChild, globalCandidates);
         } else if (input instanceof Collection<?> arrayChild) {
-            return extractArray(arrayChild);
+            return extractArray(arrayChild, globalCandidates);
         } else {
             return extractPrimitive(input);
         }
     }
 
-    private static ContextMap extractMap(Map<?, ?> input) {
+    private static ContextMap extractMap(Map<?, ?> input, Map<String, Object> globalCandidates) {
 
         ContextMap contextMap = new ContextMap();
         Map<String, ContextNode> items = new HashMap<>();
         contextMap.setItems(items);
         input.forEach((key, value) -> {
             if (key instanceof String stringKey) {
-                items.put(stringKey, extractNode(value));
+                if(PlaceholderUtils.isGlobalVariable(stringKey)) {
+                    globalCandidates.put(stringKey, value);
+                } else {
+                    items.put(stringKey, extractNode(value, globalCandidates));
+                }
             } else {
                 throw new EnotInvalidArgumentException("key of params map node must be string");
             }
@@ -355,13 +380,13 @@ public class SerializationContext {
         return contextMap;
     }
 
-    private static ContextArray extractArray(Collection<?> input) {
+    private static ContextArray extractArray(Collection<?> input, Map<String, Object> globalCandidates) {
 
         ContextArray contextArray = new ContextArray();
         List<ContextNode> items = new ArrayList<>();
         contextArray.setItems(items);
         for (Object value : input) {
-            items.add(extractNode(value));
+            items.add(extractNode(value, globalCandidates));
         }
         return contextArray;
     }
@@ -373,10 +398,10 @@ public class SerializationContext {
         return contextPrimitive;
     }
 
-    private static Map<String, Object> jsonToMap(ObjectMapper objectMapper, String json) {
+    private static Map<String, Object> jsonOrYamlToMap(ObjectMapper objectMapper, String jsonOrYaml) {
 
         TypeReference<Map<String, Object>> paramsType = new TypeReference<>() {};
-        Map<String, Object> params = objectMapper.readValue(json, paramsType);
+        Map<String, Object> params = objectMapper.readValue(jsonOrYaml, paramsType);
         return params;
     }
 

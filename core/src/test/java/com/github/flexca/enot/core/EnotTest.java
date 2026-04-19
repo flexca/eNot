@@ -191,7 +191,11 @@ public class EnotTest {
     // -----------------------------------------------------------------------
 
     private SerializationContext ctx(Map<String, Object> params) {
-        return new SerializationContext.Builder(jsonObjectMapper).withParams(params).build();
+        return new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParams(params)
+                .build();
     }
 
     private void assertCommonNameDer(byte[] der, String expectedValue) throws Exception {

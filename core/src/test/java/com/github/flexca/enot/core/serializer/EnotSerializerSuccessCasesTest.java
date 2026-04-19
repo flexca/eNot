@@ -58,7 +58,11 @@ public class EnotSerializerSuccessCasesTest {
     }
 
     private SerializationContext ctx(Map<String, Object> params) {
-        return new SerializationContext.Builder(jsonObjectMapper).withParams(params).build();
+        return new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParams(params)
+                .build();
     }
 
     // -----------------------------------------------------------------------

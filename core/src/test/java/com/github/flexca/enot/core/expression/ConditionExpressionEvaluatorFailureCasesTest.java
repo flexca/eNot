@@ -9,6 +9,7 @@ import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 
 import java.util.Map;
 
@@ -16,12 +17,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ConditionExpressionEvaluatorFailureCasesTest {
 
-    private ObjectMapper objectMapper;
+    private ObjectMapper jsonObjectMapper = new ObjectMapper();
+    private ObjectMapper yamlObjectMapper = new ObjectMapper(new YAMLFactory());
+
     private ConditionExpressionEvaluator evaluator;
 
     @BeforeEach
     void init() {
-        objectMapper = new ObjectMapper();
         EnotRegistry enotRegistry = new EnotRegistry.Builder()
                 .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
                 .build();
@@ -30,11 +32,18 @@ public class ConditionExpressionEvaluatorFailureCasesTest {
     }
 
     private SerializationContext ctx() {
-        return new SerializationContext.Builder(objectMapper).build();
+        return new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .build();
     }
 
     private SerializationContext ctx(Map<String, Object> params) {
-        return new SerializationContext.Builder(objectMapper).withParams(params).build();
+        return new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParams(params)
+                .build();
     }
 
     // -----------------------------------------------------------------------
