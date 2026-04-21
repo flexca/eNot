@@ -1,0 +1,14 @@
+{
+  "type": "ber_tlv",
+  "attributes": {
+    "tag": "04",
+    "max_length": 1
+  },
+  "body": {
+    "type": "system",
+    "attributes": {
+      "kind": "hex_to_bin"
+    },
+    "body": "${value}"
+  }
+}

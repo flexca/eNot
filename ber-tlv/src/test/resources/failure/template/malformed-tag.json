@@ -1,0 +1,7 @@
+{
+  "type": "ber_tlv",
+  "attributes": {
+    "tag": "1F"
+  },
+  "body": "${value}"
+}

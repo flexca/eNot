@@ -1,0 +1,9 @@
+{
+  "type": "ber_tlv",
+  "attributes": {
+    "tag": "04",
+    "min_length": 10,
+    "max_length": 5
+  },
+  "body": "${value}"
+}

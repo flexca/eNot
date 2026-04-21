@@ -1,0 +1,34 @@
+{
+  "type": "ber_tlv",
+  "attributes": {
+    "tag": "73"
+  },
+  "body": [
+    {
+      "type": "ber_tlv",
+      "attributes": {
+        "tag": "06"
+      },
+      "body": {
+        "type": "system",
+        "attributes": {
+          "kind": "hex_to_bin"
+        },
+        "body": "${value1}"
+      }
+    },
+    {
+      "type": "ber_tlv",
+      "attributes": {
+        "tag": "04"
+      },
+      "body": {
+        "type": "system",
+        "attributes": {
+          "kind": "hex_to_bin"
+        },
+        "body": "${value1}"
+      }
+    }
+  ]
+}

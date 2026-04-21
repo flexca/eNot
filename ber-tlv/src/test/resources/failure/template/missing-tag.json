@@ -1,0 +1,5 @@
+{
+  "type": "ber_tlv",
+  "attributes": {},
+  "body": "${value}"
+}

@@ -1,0 +1,13 @@
+{
+  "type": "ber_tlv",
+  "attributes": {
+    "tag": "04"
+  },
+  "body": {
+    "type": "system",
+    "attributes": {
+      "kind": "hex_to_bin"
+    },
+    "body": "${value}"
+  }
+}

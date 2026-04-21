@@ -44,7 +44,6 @@ public enum SystemAttribute implements EnotAttribute {
     }
 
     @Override
-    @JsonValue
     public String getName() {
         return this.name;
     }
@@ -54,7 +53,6 @@ public enum SystemAttribute implements EnotAttribute {
         return valueSpecification;
     }
 
-    @JsonCreator
     public static SystemAttribute fromJsonString(String name) {
         return StringUtils.isBlank(name) ? null : BY_NAME.get(name.toLowerCase());
     }

@@ -1,0 +1,8 @@
+{
+  "type": "ber_tlv",
+  "attributes": {
+    "tag": "04",
+    "indefinite_form": "yes"
+  },
+  "body": "${value}"
+}
