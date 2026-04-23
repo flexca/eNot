@@ -1,7 +1,5 @@
 package com.github.flexca.enot.core.types.system.attribute;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.flexca.enot.core.element.attribute.EnotAttribute;
 import com.github.flexca.enot.core.element.value.CommonEnotValueType;
 import com.github.flexca.enot.core.element.value.EnotValueSpecification;
@@ -33,7 +31,7 @@ public enum SystemAttribute implements EnotAttribute {
     private final String name;
     private final EnotValueSpecification valueSpecification;
 
-    private SystemAttribute(String name, EnotValueSpecification valueSpecification) {
+    SystemAttribute(String name, EnotValueSpecification valueSpecification) {
         this.name = name;
         this.valueSpecification = valueSpecification;
     }

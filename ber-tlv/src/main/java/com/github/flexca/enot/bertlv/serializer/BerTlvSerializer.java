@@ -15,6 +15,7 @@ import com.github.flexca.enot.core.registry.EnotBinaryConverter;
 import com.github.flexca.enot.core.serializer.ElementSerializationResult;
 import com.github.flexca.enot.core.serializer.EnotSerializer;
 import com.github.flexca.enot.core.serializer.SimpleElementSerializer;
+import com.github.flexca.enot.core.util.BinaryUtils;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
@@ -71,7 +72,7 @@ public class BerTlvSerializer extends SimpleElementSerializer {
         BerTlvElement<?> result;
         if (elements.isEmpty()) {
             BerTlvLeafElement leafElement = new BerTlvLeafElement();
-            leafElement.setValue(BerTlvUtils.concatenateBinary(binaries));
+            leafElement.setValue(BinaryUtils.concatenateBinary(binaries));
             result = leafElement;
         } else {
             BerTlvNodeElement nodeElement = new BerTlvNodeElement();
