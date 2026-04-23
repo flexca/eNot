@@ -1,6 +1,7 @@
 package com.github.flexca.enot.webtool.service;
 
 import com.github.flexca.enot.core.Enot;
+import com.github.flexca.enot.core.exception.EnotException;
 import com.github.flexca.enot.core.parser.EnotInputFormat;
 import com.github.flexca.enot.core.serializer.context.SerializationContext;
 import com.github.flexca.enot.core.util.BinaryUtils;
@@ -27,7 +28,7 @@ public class EnotService {
         this.yamlObjectMapper = yamlObjectMapper;
     }
 
-    public String serialize(String template, String params) {
+    public String serialize(String template, String params) throws EnotException {
 
         SerializationContext serializationContext = new SerializationContext.Builder()
                 .withJsonObjectMapper(jsonObjectMapper)
@@ -38,7 +39,7 @@ public class EnotService {
         return Base64.getEncoder().encodeToString(BinaryUtils.concatenateBinary(result));
     }
 
-    public String getExampleParams(String template, EnotInputFormat format) {
+    public String getExampleParams(String template, EnotInputFormat format) throws EnotException {
 
         Map<String, Object> example = enot.getParamsExample(template);
         if (EnotInputFormat.JSON.equals(format)) {

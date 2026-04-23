@@ -1,5 +1,6 @@
 package com.github.flexca.enot.webtool.endpoint;
 
+import com.github.flexca.enot.core.exception.EnotException;
 import com.github.flexca.enot.core.parser.EnotInputFormat;
 import com.github.flexca.enot.webtool.model.ExampleParamsRequest;
 import com.github.flexca.enot.webtool.model.SerializeRequest;
@@ -18,13 +19,13 @@ public class EnotController {
     private final EnotService enotService;
 
     @PostMapping("/serialize")
-    public String encode(@RequestBody SerializeRequest serializeRequest) {
+    public String encode(@RequestBody SerializeRequest serializeRequest) throws EnotException {
 
         return enotService.serialize(serializeRequest.getTemplate(), serializeRequest.getParams());
     }
 
     @PostMapping("/example-params")
-    public String getExampleParams(@RequestBody ExampleParamsRequest exampleParamsRequest) {
+    public String getExampleParams(@RequestBody ExampleParamsRequest exampleParamsRequest) throws EnotException {
 
         return enotService.getExampleParams(exampleParamsRequest.getTemplate(), EnotInputFormat.fromName(exampleParamsRequest.getFormat()));
     }
