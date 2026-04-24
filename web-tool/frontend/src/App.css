@@ -1,3 +1,107 @@
+/* Terminal theme for Ant Design message popups */
+.ant-message-notice-content {
+  background: #232629 !important;
+  color: #ffb86c !important;
+  font-family: "Ubuntu Mono", "Fira Mono", "Consolas", monospace !important;
+  border: 1.5px solid #ff7800 !important;
+  box-shadow: 0 0 8px #ff7800aa;
+  border-radius: 8px !important;
+  font-size: 1.1em;
+  letter-spacing: 1px;
+}
+
+.ant-message-success .anticon {
+  color: #50fa7b !important;
+}
+.ant-message-error .anticon {
+  color: #ff5555 !important;
+}
+.ant-message-info .anticon {
+  color: #8be9fd !important;
+}
+.ant-select-selector {
+  background: #181a1b !important;
+  color: #ffb86c !important;
+  border: 1.5px solid #ff7800 !important;
+  font-family: "Ubuntu Mono", "Fira Mono", "Consolas", monospace !important;
+  font-size: 16px;
+  border-radius: 8px !important;
+  box-shadow: 0 0 8px #ff780055;
+  transition: border-color 0.2s;
+}
+
+.ant-select-focused .ant-select-selector, .ant-select-selector:focus, .ant-select-selector:hover {
+  border-color: #ffb86c !important;
+  box-shadow: 0 0 12px #ffb86c55;
+}
+
+.ant-select-dropdown {
+  background: #232629 !important;
+  color: #ffb86c !important;
+  font-family: "Ubuntu Mono", "Fira Mono", "Consolas", monospace !important;
+}
+
+.ant-select-item-option-selected {
+  background: #ff7800 !important;
+  color: #181a1b !important;
+}
+
+.ant-btn-example {
+  background: linear-gradient(90deg, #232629 0%, #ffb86c 100%) !important;
+  border: 1.5px solid #ffb86c !important;
+  color: #232629 !important;
+  font-family: "Ubuntu Mono", "Fira Mono", "Consolas", monospace !important;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 0 8px #ffb86c88;
+  border-radius: 8px;
+  margin-left: 0 !important;
+}
+
+.ant-btn-example:hover, .ant-btn-example:focus {
+  background: linear-gradient(90deg, #ffb86c 0%, #ff7800 100%) !important;
+  color: #181a1b !important;
+  border-color: #ff7800 !important;
+  box-shadow: 0 0 16px #ff7800aa;
+}
+/* Terminal/Futuristic Theme Additions */
+.terminal-editor {
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 2px #ff7800, 0 0 12px 0 #ff780055;
+  background: #181a1b !important;
+  font-family: "Ubuntu Mono", "Fira Mono", "Consolas", monospace !important;
+  color: #ffb86c !important;
+  margin-bottom: 16px;
+}
+
+.ant-layout {
+  background: #232629 !important;
+}
+
+.ant-btn-primary {
+  background: linear-gradient(90deg, #ff7800 0%, #ffb86c 100%) !important;
+  border: none !important;
+  color: #181a1b !important;
+  font-family: "Ubuntu Mono", "Fira Mono", "Consolas", monospace !important;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 0 8px #ff7800aa;
+}
+
+.ant-btn[disabled] {
+  opacity: 0.6;
+}
+
+.ant-select-selector {
+  background: #181a1b !important;
+  color: #ffb86c !important;
+  border: 1.5px solid #ff7800 !important;
+  font-family: "Ubuntu Mono", "Fira Mono", "Consolas", monospace !important;
+}
+
+.ant-typography {
+  color: #ffb86c !important;
+}
 .counter {
   font-size: 16px;
   padding: 5px 10px;
