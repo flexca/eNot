@@ -1,6 +1,8 @@
 package io.github.flexca.enot.core.types.system.attribute;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public enum ByteOrder {
@@ -26,5 +28,9 @@ public enum ByteOrder {
 
     public static ByteOrder fromName(String name) {
         return name == null ? null : BY_NAME.get(name.toLowerCase());
+    }
+
+    public static List<String> getNames() {
+        return Arrays.stream(values()).map(ByteOrder::getName).toList();
     }
 }
