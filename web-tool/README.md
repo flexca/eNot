@@ -8,18 +8,6 @@ eNot web-tool is a small web service with UI that allow quickly test serializati
 
 Build eNot project, run from eNot root directory:
 
-
-eNot web-tool is a lightweight web service with a user interface that allows you to quickly test the serialization of eNot templates.
-# eNot web-tool
-
-## Description
-
-```
-
-## How to Run
-
-First, build the eNot project from the root directory:
-
 ```cmd
 mvn clean install
 ```
@@ -51,6 +39,8 @@ After starting the eNot web-tool, open your browser and go to:
 ```
 http://localhost:8080
 ```
+
+![eNot web-tool UI](doc-img/web-tool-ui.png)
 
 1. Make sure the correct format is selected.
 2. Enter the following in the `Template` field:
