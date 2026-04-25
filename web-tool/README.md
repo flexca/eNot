@@ -40,7 +40,7 @@ After starting the eNot web-tool, open your browser and go to:
 http://localhost:8080
 ```
 
-![eNot web-tool UI](doc-img/web-tool-ui.png)
+![eNot web-tool UI](docs-img/web-tool-ui.png)
 
 1. Make sure the correct format is selected.
 2. Enter the following in the `Template` field:

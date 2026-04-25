@@ -12,6 +12,10 @@ on:
         required: true
         default: '1.x.x-SNAPSHOT'
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
