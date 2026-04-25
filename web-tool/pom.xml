@@ -13,8 +13,11 @@
 
     <artifactId>enot-web-tool</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
     <name>eNot web tool</name>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <modules>
         <module>frontend</module>
