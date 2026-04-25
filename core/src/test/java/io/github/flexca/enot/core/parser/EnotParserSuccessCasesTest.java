@@ -381,7 +381,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement validFromGeneralizedCondition = (EnotElement) rootBody.get(0);
         assertThat(validFromGeneralizedCondition.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(validFromGeneralizedCondition.isOptional()).isFalse();
-        assertThat(validFromGeneralizedCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "${valid_from} >= '2050-01-01T00:00:00Z'"));
+        assertThat(validFromGeneralizedCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "date_time(${valid_from}) >= date_time('2050-01-01T00:00:00Z')"));
         assertThat(validFromGeneralizedCondition.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement validFromGeneralizedTime = (EnotElement) validFromGeneralizedCondition.getBody();
@@ -393,7 +393,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement validFromUtcCondition = (EnotElement) rootBody.get(1);
         assertThat(validFromUtcCondition.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(validFromUtcCondition.isOptional()).isFalse();
-        assertThat(validFromUtcCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "${valid_from} < '2050-01-01T00:00:00Z'"));
+        assertThat(validFromUtcCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "date_time(${valid_from}) < date_time('2050-01-01T00:00:00Z')"));
         assertThat(validFromUtcCondition.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement validFromUtcTime = (EnotElement) validFromUtcCondition.getBody();
@@ -405,7 +405,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement expiresOnGeneralizedCondition = (EnotElement) rootBody.get(2);
         assertThat(expiresOnGeneralizedCondition.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(expiresOnGeneralizedCondition.isOptional()).isFalse();
-        assertThat(expiresOnGeneralizedCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "${expires_on} >= '2050-01-01T00:00:00Z'"));
+        assertThat(expiresOnGeneralizedCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "date_time(${expires_on}) >= date_time('2050-01-01T00:00:00Z')"));
         assertThat(expiresOnGeneralizedCondition.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement expiresOnGeneralizedTime = (EnotElement) expiresOnGeneralizedCondition.getBody();
@@ -417,7 +417,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement expiresOnUtcCondition = (EnotElement) rootBody.get(3);
         assertThat(expiresOnUtcCondition.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(expiresOnUtcCondition.isOptional()).isFalse();
-        assertThat(expiresOnUtcCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "${expires_on} < '2050-01-01T00:00:00Z'"));
+        assertThat(expiresOnUtcCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "date_time(${expires_on}) < date_time('2050-01-01T00:00:00Z')"));
         assertThat(expiresOnUtcCondition.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement expiresOnUtcTime = (EnotElement) expiresOnUtcCondition.getBody();
@@ -761,7 +761,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement validFromGeneralizedCondition = (EnotElement) rootBody.get(0);
         assertThat(validFromGeneralizedCondition.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(validFromGeneralizedCondition.isOptional()).isFalse();
-        assertThat(validFromGeneralizedCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "${valid_from} >= '2050-01-01T00:00:00Z'"));
+        assertThat(validFromGeneralizedCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "date_time(${valid_from}) >= date_time('2050-01-01T00:00:00Z')"));
         assertThat(validFromGeneralizedCondition.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement validFromGeneralizedTime = (EnotElement) validFromGeneralizedCondition.getBody();
@@ -773,7 +773,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement validFromUtcCondition = (EnotElement) rootBody.get(1);
         assertThat(validFromUtcCondition.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(validFromUtcCondition.isOptional()).isFalse();
-        assertThat(validFromUtcCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "${valid_from} < '2050-01-01T00:00:00Z'"));
+        assertThat(validFromUtcCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "date_time(${valid_from}) < date_time('2050-01-01T00:00:00Z')"));
         assertThat(validFromUtcCondition.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement validFromUtcTime = (EnotElement) validFromUtcCondition.getBody();
@@ -785,7 +785,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement expiresOnGeneralizedCondition = (EnotElement) rootBody.get(2);
         assertThat(expiresOnGeneralizedCondition.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(expiresOnGeneralizedCondition.isOptional()).isFalse();
-        assertThat(expiresOnGeneralizedCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "${expires_on} >= '2050-01-01T00:00:00Z'"));
+        assertThat(expiresOnGeneralizedCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "date_time(${expires_on}) >= date_time('2050-01-01T00:00:00Z')"));
         assertThat(expiresOnGeneralizedCondition.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement expiresOnGeneralizedTime = (EnotElement) expiresOnGeneralizedCondition.getBody();
@@ -797,7 +797,7 @@ public class EnotParserSuccessCasesTest {
         EnotElement expiresOnUtcCondition = (EnotElement) rootBody.get(3);
         assertThat(expiresOnUtcCondition.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
         assertThat(expiresOnUtcCondition.isOptional()).isFalse();
-        assertThat(expiresOnUtcCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "${expires_on} < '2050-01-01T00:00:00Z'"));
+        assertThat(expiresOnUtcCondition.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "condition", SystemAttribute.EXPRESSION, "date_time(${expires_on}) < date_time('2050-01-01T00:00:00Z')"));
         assertThat(expiresOnUtcCondition.getBody()).isInstanceOf(EnotElement.class);
 
         EnotElement expiresOnUtcTime = (EnotElement) expiresOnUtcCondition.getBody();

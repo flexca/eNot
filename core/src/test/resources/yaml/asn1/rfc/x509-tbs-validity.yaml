@@ -5,7 +5,7 @@ body:
   - type: system
     attributes:
       kind: condition
-      expression: "${valid_from} >= '2050-01-01T00:00:00Z'"
+      expression: "date_time(${valid_from}) >= date_time('2050-01-01T00:00:00Z')"
     body:
       type: asn.1
       attributes:
@@ -14,7 +14,7 @@ body:
   - type: system
     attributes:
       kind: condition
-      expression: "${valid_from} < '2050-01-01T00:00:00Z'"
+      expression: "date_time(${valid_from}) < date_time('2050-01-01T00:00:00Z')"
     body:
       type: asn.1
       attributes:
@@ -23,7 +23,7 @@ body:
   - type: system
     attributes:
       kind: condition
-      expression: "${expires_on} >= '2050-01-01T00:00:00Z'"
+      expression: "date_time(${expires_on}) >= date_time('2050-01-01T00:00:00Z')"
     body:
       type: asn.1
       attributes:
@@ -32,7 +32,7 @@ body:
   - type: system
     attributes:
       kind: condition
-      expression: "${expires_on} < '2050-01-01T00:00:00Z'"
+      expression: "date_time(${expires_on}) < date_time('2050-01-01T00:00:00Z')"
     body:
       type: asn.1
       attributes:

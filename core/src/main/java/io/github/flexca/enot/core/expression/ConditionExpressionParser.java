@@ -94,7 +94,6 @@ public class ConditionExpressionParser {
         return parseExpression(expressionWithoutSpaces);
     }
 
-
     private ExpressionBlock parseExpression(String expression) {
 
         Map<String, ExpressionBlock> blocks = new HashMap<>();
