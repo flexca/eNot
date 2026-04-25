@@ -1,6 +1,7 @@
 // API base URL: use VITE_API_URL if set, else fallback to current origin
 const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
 import React, { useState, useRef } from 'react';
+import { List } from 'antd';
 import { parseTree, findNodeAtLocation } from 'jsonc-parser';
 import { Layout, Button, Select, Typography, Row, Col, Space, message, Tooltip, Input, Divider } from 'antd';
 import { SettingOutlined, CopyOutlined, ExportOutlined, BulbOutlined, FileTextOutlined } from '@ant-design/icons';
@@ -16,14 +17,78 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 function App() {
-      // Placeholder for Copy button to prevent runtime error
-      const handleCopy = () => {
-        message.info('Copy is not implemented.');
-      };
-    // Placeholder for Serialize button to prevent runtime error
-    const handleSerialize = () => {
-      message.info('Serialize is not implemented.');
-    };
+  // Error state: array of { details, jsonPointer }
+  const [errors, setErrors] = useState([]);
+  // Copy button handler
+  const handleCopy = () => {
+    if (base64) {
+      navigator.clipboard.writeText(base64);
+      message.success('Copied to clipboard');
+    } else {
+      message.info('Nothing to copy');
+    }
+  };
+  // Serialize handler: call backend, show base64 on success, errors on failure
+  const handleSerialize = async () => {
+    setLoading(true);
+    setErrors([]);
+    setBase64('');
+    try {
+      const payload = { template, params, format };
+      const response = await fetch(`${API_BASE_URL}/enot/api/v1/serialize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      let text = await response.text();
+      let data = null;
+      let jsonErrors = null;
+      try {
+        data = JSON.parse(text);
+      } catch {}
+      if (data && Array.isArray(data.jsonErrors)) {
+        jsonErrors = data.jsonErrors;
+      }
+      // Show error panel for syntax errors (jsonErrors present)
+      if (jsonErrors && jsonErrors.length > 0) {
+        setErrors(jsonErrors);
+        setBase64('');
+        message.error('Validation errors found');
+        return;
+      }
+      // Show error panel for generic errors (errorType === 'generic' and errorMessage)
+      if (data && data.errorType === 'generic' && data.errorMessage) {
+        setErrors([{ details: data.errorMessage }]);
+        setBase64('');
+        message.error(data.errorMessage);
+        return;
+      }
+      if (!response.ok) {
+        message.error((data && data.errorMessage) || text || 'Failed to serialize');
+        return;
+      }
+      // If errorMessage is present, treat as a general error
+      if (data && data.errorMessage) {
+        message.error(data.errorMessage);
+        setBase64('');
+        return;
+      }
+      // Success: show base64, hide errors
+      setErrors([]);
+      if (data && data.base64) {
+        setBase64(data.base64);
+        message.success('Serialization successful');
+      } else {
+        setBase64(text || '');
+        message.success('Serialization successful');
+      }
+    } catch (e) {
+      message.error('Failed to serialize');
+      setBase64('');
+    } finally {
+      setLoading(false);
+    }
+  };
   const [format, setFormat] = useState('yaml');
   const [template, setTemplate] = useState('');
   const [params, setParams] = useState('');
@@ -45,6 +110,7 @@ function App() {
   // Connect to backend to get example params
   const handleGetExampleParams = async () => {
     setLoading(true);
+    setErrors([]);
     try {
       const payload = { template, format };
       const response = await fetch(`${API_BASE_URL}/enot/api/v1/example-params`, {
@@ -52,26 +118,33 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+      let text = await response.text();
       let data = null;
-      let errorText = null;
-      // Try to parse JSON regardless of content-type, fallback to text
+      let jsonErrors = null;
       try {
-        data = await response.clone().json();
-      } catch (jsonErr) {
-        try {
-          errorText = await response.text();
-        } catch (textErr) {
-          errorText = '[unreadable response]';
-        }
+        data = JSON.parse(text);
+      } catch {}
+      if (data && Array.isArray(data.jsonErrors)) {
+        jsonErrors = data.jsonErrors;
       }
-
-      if (!response.ok) {
-        // Show error message only
-        message.error((data && data.errorMessage) || errorText || 'Failed to load example params');
+      // Show error panel for syntax errors (jsonErrors present)
+      if (jsonErrors && jsonErrors.length > 0) {
+        setErrors(jsonErrors);
+        setParams('');
+        message.error('Validation errors found');
         return;
       }
-
+      // Show error panel for generic errors (errorType === 'generic' and errorMessage)
+      if (data && data.errorType === 'generic' && data.errorMessage) {
+        setErrors([{ details: data.errorMessage }]);
+        setParams('');
+        message.error(data.errorMessage);
+        return;
+      }
+      if (!response.ok) {
+        message.error((data && data.errorMessage) || text || 'Failed to load example params');
+        return;
+      }
       if (data) {
         if (data.errorType) {
           message.error(data.errorMessage || 'Error occurred');
@@ -80,7 +153,7 @@ function App() {
         setParams(JSON.stringify(data, null, 2));
         message.success('Example params loaded');
       } else {
-        setParams(errorText);
+        setParams(text);
         message.success('Example params loaded');
       }
     } catch (e) {
@@ -97,7 +170,7 @@ function App() {
         <Header style={{ background: 'transparent', padding: '24px 24px 0 24px', border: 'none', boxShadow: 'none' }}>
           <Row align="middle" justify="start" style={{ gap: 16 }}>
             <Col style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <Title level={3} style={{ margin: 0, color: '#ff7800', fontFamily: TERMINAL_FONT, letterSpacing: 2, textAlign: 'left' }}>eNot Terminal</Title>
+              <Title level={3} style={{ margin: 0, color: '#ff7800', fontFamily: TERMINAL_FONT, letterSpacing: 2, textAlign: 'left' }}>eNot web-tool</Title>
               <Select
                 value={format}
                 onChange={setFormat}
@@ -186,6 +259,27 @@ function App() {
                   </Button>
                 </Tooltip>
               </div>
+              {/* Error Panel: only show if errors exist */}
+              {errors.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <List
+                    header={<div style={{ color: '#ff5555', fontWeight: 'bold' }}>Errors</div>}
+                    bordered
+                    dataSource={errors}
+                    renderItem={item => (
+                      <List.Item style={{ color: '#ff5555', fontFamily: TERMINAL_FONT }}>
+                        {item.details}
+                        {item.jsonPointer && (
+                          <span style={{ color: '#888', marginLeft: 8 }}>
+                            (Pointer: {item.jsonPointer})
+                          </span>
+                        )}
+                      </List.Item>
+                    )}
+                    style={{ background: '#232629', border: '1.5px solid #ff5555', borderRadius: 8, marginTop: 8 }}
+                  />
+                </div>
+              )}
             </Col>
             <Col xs={24} md={12} style={{ border: 'none', paddingLeft: 12, paddingRight: 0 }}>
               <Title level={5} style={{ textAlign: 'left', marginBottom: 8, color: '#50fa7b', fontFamily: TERMINAL_FONT, letterSpacing: 1 }}>
@@ -214,44 +308,47 @@ function App() {
             </Col>
           </Row>
           <Divider />
-          <Row style={{ marginTop: 24, width: '100%', margin: 0 }}>
-            <Col xs={24} style={{ paddingLeft: 0, paddingRight: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 0, textAlign: 'left', maxWidth: '100%' }}>
-                <Title level={5} style={{ margin: 0, flex: 'none', textAlign: 'left', color: '#8be9fd', fontFamily: TERMINAL_FONT, letterSpacing: 1 }}>Base64 Output</Title>
-                <Tooltip title="Copy to clipboard">
-                  <Button
-                    type="text"
-                    icon={<CopyOutlined />}
-                    onClick={handleCopy}
-                    disabled={!base64}
-                    style={{ marginLeft: 8, color: '#8be9fd' }}
-                  />
-                </Tooltip>
-              </div>
-              <Input.TextArea
-                value={base64}
-                readOnly
-                autoSize={{ minRows: 2, maxRows: 4 }}
-                style={{
-                  fontFamily: TERMINAL_FONT,
-                  marginTop: 8,
-                  background: '#181a1b',
-                  color: '#8be9fd',
-                  border: '1.5px solid #ff7800',
-                  boxShadow: TERMINAL_BORDER,
-                  borderRadius: 8,
-                  padding: 12,
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  overflowX: 'auto',
-                  maxWidth: '100%',
-                }}
-              />
-            </Col>
-          </Row>
+          {/* Base64 Output: only show if base64 is present and no errors */}
+          {base64 && errors.length === 0 && (
+            <Row style={{ marginTop: 24, width: '100%', margin: 0 }}>
+              <Col xs={24} style={{ paddingLeft: 0, paddingRight: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 0, textAlign: 'left', maxWidth: '100%' }}>
+                  <Title level={5} style={{ margin: 0, flex: 'none', textAlign: 'left', color: '#8be9fd', fontFamily: TERMINAL_FONT, letterSpacing: 1 }}>Base64 Output</Title>
+                  <Tooltip title="Copy to clipboard">
+                    <Button
+                      type="text"
+                      icon={<CopyOutlined />}
+                      onClick={handleCopy}
+                      disabled={!base64}
+                      style={{ marginLeft: 8, color: '#8be9fd' }}
+                    />
+                  </Tooltip>
+                </div>
+                <Input.TextArea
+                  value={base64}
+                  readOnly
+                  autoSize={{ minRows: 2, maxRows: 4 }}
+                  style={{
+                    fontFamily: TERMINAL_FONT,
+                    marginTop: 8,
+                    background: '#181a1b',
+                    color: '#8be9fd',
+                    border: '1.5px solid #ff7800',
+                    boxShadow: TERMINAL_BORDER,
+                    borderRadius: 8,
+                    padding: 12,
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    overflowX: 'auto',
+                    maxWidth: '100%',
+                  }}
+                />
+              </Col>
+            </Row>
+          )}
         </Content>
         <Footer style={{ textAlign: 'center', background: 'transparent', border: 'none', boxShadow: 'none', color: '#ff7800', fontFamily: TERMINAL_FONT, letterSpacing: 1 }}>
-          <Text type="secondary">eNot Terminal © {new Date().getFullYear()}</Text>
+          <Text type="secondary">eNot web-tool, {new Date().getFullYear()}</Text>
         </Footer>
       </Layout>
     </>

@@ -28,14 +28,14 @@ public class ErrorResponse {
     }
 
     public static ErrorResponse fromException(EnotRuntimeException enotRuntimeException) {
-        return new ErrorResponse(ErrorType.SYNTAX, enotRuntimeException.getMessage(), null);
+        return new ErrorResponse(ErrorType.GENERIC, enotRuntimeException.getMessage(), null);
     }
 
     public static ErrorResponse fromException(EnotException enotException) {
-        return new ErrorResponse(ErrorType.SYNTAX, enotException.getMessage(), null);
+        return new ErrorResponse(ErrorType.GENERIC, enotException.getMessage(), null);
     }
 
     public static ErrorResponse fromException(Exception exception) {
-        return new ErrorResponse(ErrorType.SYNTAX, "Unexpected error. Check logs for details", null);
+        return new ErrorResponse(ErrorType.GENERIC, "Unexpected error. Check logs for details", null);
     }
 }
