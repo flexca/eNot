@@ -49,16 +49,24 @@ public class PlaceholderUtils {
     }
 
     public static boolean isValidVariableName(String input) {
+        return isValidVariableName(input, true);
+    }
+
+    public static boolean isValidVariableName(String input, boolean takeIntoAccountPrefixes) {
 
         if(StringUtils.isBlank(input)) {
             return false;
         }
 
         String inputWithoutPrefix;
-        if (input.startsWith(SYSTEM_VARIABLE_PREFIX)) {
-            inputWithoutPrefix = input.substring(SYSTEM_VARIABLE_PREFIX.length());
-        } else if (input.startsWith(GLOBAL_PARAM_PREFIX)) {
-            inputWithoutPrefix = input.substring(GLOBAL_PARAM_PREFIX.length());
+        if(takeIntoAccountPrefixes) {
+            if (input.startsWith(SYSTEM_VARIABLE_PREFIX)) {
+                inputWithoutPrefix = input.substring(SYSTEM_VARIABLE_PREFIX.length());
+            } else if (input.startsWith(GLOBAL_PARAM_PREFIX)) {
+                inputWithoutPrefix = input.substring(GLOBAL_PARAM_PREFIX.length());
+            } else {
+                inputWithoutPrefix = input;
+            }
         } else {
             inputWithoutPrefix = input;
         }

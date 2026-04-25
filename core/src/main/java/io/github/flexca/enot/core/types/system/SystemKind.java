@@ -18,7 +18,11 @@ import io.github.flexca.enot.core.types.system.serializer.SystemHexToBinSerializ
 import io.github.flexca.enot.core.types.system.serializer.SystemLoopSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemReferenceSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemSha1Serializer;
+import io.github.flexca.enot.core.types.system.validation.SystemBitMapValidator;
 import io.github.flexca.enot.core.types.system.validation.SystemConditionValidator;
+import io.github.flexca.enot.core.types.system.validation.SystemGroupValidator;
+import io.github.flexca.enot.core.types.system.validation.SystemLoopValidator;
+import io.github.flexca.enot.core.types.system.validation.SystemReferenceValidator;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +38,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME),
             Set.of(SystemAttribute.KIND, SystemAttribute.ITEMS_NAME, SystemAttribute.MIN_ITEMS, SystemAttribute.MAX_ITEMS),
             null,
-            null,
+            new SystemLoopValidator(),
             new SystemLoopSerializer()),
 
     CONDITION("condition",
@@ -52,7 +56,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.GROUP_NAME),
             Set.of(SystemAttribute.KIND, SystemAttribute.GROUP_NAME),
             null,
-            null,
+            new SystemGroupValidator(),
             new SystemGroupSerializer()),
 
     REFERENCE("reference",
@@ -61,7 +65,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.REFERENCE_TYPE, SystemAttribute.REFERENCE_IDENTIFIER),
             Set.of(SystemAttribute.KIND, SystemAttribute.REFERENCE_TYPE, SystemAttribute.REFERENCE_IDENTIFIER),
             new SystemReferenceBodyResolver(),
-            null,
+            new SystemReferenceValidator(),
             new SystemReferenceSerializer()),
 
     BIT_MAP("bit_map",
@@ -70,7 +74,7 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
             Set.of(SystemAttribute.KIND, SystemAttribute.BYTE_ORDER, SystemAttribute.BIT_ORDER),
             null,
-            null,
+            new SystemBitMapValidator(),
             new SystemBitMapSerializer()),
 
     SHA1("sha1",
