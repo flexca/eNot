@@ -20,7 +20,7 @@ Then reference the snapshot in your project:
 
 ```xml
 <dependency>
-    <groupId>com.github.flexca.enot</groupId>
+    <groupId>io.github.flexca.enot</groupId>
     <artifactId>enot-core</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -62,11 +62,11 @@ This example encodes a named field â€” an OID paired with a UTF-8 string value â
 ## 3. Parse and serialize
 
 ```java
-import com.github.flexca.enot.core.Enot;
-import com.github.flexca.enot.core.registry.EnotRegistry;
-import com.github.flexca.enot.core.serializer.context.SerializationContext;
-import com.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
-import com.github.flexca.enot.core.types.system.SystemTypeSpecification;
+import io.github.flexca.enot.core.Enot;
+import io.github.flexca.enot.core.registry.EnotRegistry;
+import io.github.flexca.enot.core.serializer.context.SerializationContext;
+import io.github.flexca.enot.core.types.asn1.Asn1TypeSpecification;
+import io.github.flexca.enot.core.types.system.SystemTypeSpecification;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
