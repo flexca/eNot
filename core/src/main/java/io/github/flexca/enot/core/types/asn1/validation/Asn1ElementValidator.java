@@ -35,9 +35,10 @@ public class Asn1ElementValidator implements EnotElementValidator {
             return;
         }
 
-        if (element.getAttributes().containsKey(Asn1Attribute.EXPLICIT) && element.getAttributes().containsKey(Asn1Attribute.IMPLICIT)) {
-            jsonErrors.add(EnotJsonError.of(parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME,
-                    "both implicit and explicit attributes are not allowed for single asn.1 element"));
+        EnotElementValidator elementValidator = tag.getSpecificElementValidator();
+        if (elementValidator != null) {
+            elementValidator.validateElement(element, parentPath, jsonErrors, enotContext);
         }
+
     }
 }

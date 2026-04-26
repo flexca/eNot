@@ -6,6 +6,7 @@ import io.github.flexca.enot.core.parser.EnotJsonError;
 import io.github.flexca.enot.core.parser.EnotParser;
 import io.github.flexca.enot.core.registry.EnotElementValidator;
 import io.github.flexca.enot.core.types.system.attribute.SystemAttribute;
+import io.github.flexca.enot.core.types.system.attribute.Uniqueness;
 import io.github.flexca.enot.core.util.PlaceholderUtils;
 
 import java.util.List;
@@ -70,6 +71,20 @@ public class SystemLoopValidator implements EnotElementValidator {
             if (minItems > maxItems) {
                 jsonErrors.add(EnotJsonError.of(attributesPath, "attribute " + SystemAttribute.MIN_ITEMS.getName()
                         + " must be less than or equals to " + SystemAttribute.MAX_ITEMS.getName()));
+            }
+        }
+
+        Object uniquenessObject = element.getAttribute(SystemAttribute.UNIQUENESS);
+        if (uniquenessObject != null) {
+            if (uniquenessObject instanceof String uniquenessString) {
+                Uniqueness uniqueness = Uniqueness.fromName(uniquenessString);
+                if (uniqueness == null) {
+                    jsonErrors.add(EnotJsonError.of(attributesPath + "/" + SystemAttribute.UNIQUENESS.getName(),
+                            "attribute " + SystemAttribute.UNIQUENESS.getName() + " must be one of " + Uniqueness.getNames()));
+                }
+            } else {
+                jsonErrors.add(EnotJsonError.of(attributesPath + "/" + SystemAttribute.UNIQUENESS.getName(),
+                        "attribute " + SystemAttribute.UNIQUENESS.getName() + " must be of type string"));
             }
         }
     }
