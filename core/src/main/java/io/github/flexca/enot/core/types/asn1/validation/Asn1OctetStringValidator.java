@@ -8,13 +8,16 @@ import io.github.flexca.enot.core.registry.EnotElementValidator;
 
 import java.util.List;
 
-public class Asn1ObjectIdentifierValidator implements EnotElementValidator {
+public class Asn1OctetStringValidator implements EnotElementValidator {
 
     @Override
     public void validateElement(EnotElement element, String parentPath, List<EnotJsonError> jsonErrors, EnotContext enotContext) {
 
         String attributesPath = parentPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME;
 
-        Asn1ValidationUtils.validateAndExtractAllowedTextValues(element, attributesPath, jsonErrors, true);
+        Long minLength = Asn1ValidationUtils.validateAndExtractMinLength(element, attributesPath, jsonErrors);
+        Long maxLength = Asn1ValidationUtils.validateAndExtractMaxLength(element, attributesPath, jsonErrors);
+
+        Asn1ValidationUtils.validateMinAndMaxLength(minLength, maxLength, attributesPath, jsonErrors);
     }
 }

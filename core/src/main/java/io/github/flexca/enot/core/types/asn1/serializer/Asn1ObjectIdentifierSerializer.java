@@ -4,16 +4,19 @@ import io.github.flexca.enot.core.element.EnotElement;
 import io.github.flexca.enot.core.element.value.CommonEnotValueType;
 import io.github.flexca.enot.core.exception.EnotSerializationException;
 import io.github.flexca.enot.core.parser.EnotJsonError;
+import io.github.flexca.enot.core.parser.EnotParser;
 import io.github.flexca.enot.core.serializer.ElementSerializationResult;
 import io.github.flexca.enot.core.serializer.EnotSerializer;
 import io.github.flexca.enot.core.serializer.SimpleElementSerializer;
 import io.github.flexca.enot.core.types.asn1.Asn1EnotValueType;
 import io.github.flexca.enot.core.types.asn1.Asn1Tag;
 import io.github.flexca.enot.core.types.asn1.attribute.Asn1Attribute;
+import io.github.flexca.enot.core.types.asn1.validation.Asn1ValidationUtils;
 import io.github.flexca.enot.core.util.OidUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,7 +47,12 @@ public class Asn1ObjectIdentifierSerializer extends SimpleElementSerializer {
         if (CommonEnotValueType.OBJECT_IDENTIFIER.equals(serializedBody.get(0).getValueType()) || CommonEnotValueType.TEXT.equals(serializedBody.get(0).getValueType())) {
             if (serializedBody.get(0).getData() instanceof String textBody) {
                 if (OidUtils.isValidOid(textBody)) {
-                    Set<String> allowedValues = getAllowedValues(element);
+                    List<EnotJsonError> jsonErrors = new ArrayList<>();
+                    Set<String> allowedValues = Asn1ValidationUtils.validateAndExtractAllowedTextValues(element, jsonPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME,
+                            jsonErrors, true);
+                    if (!jsonErrors.isEmpty()) {
+                        throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, jsonErrors.get(0));
+                    }
                     if (CollectionUtils.isNotEmpty(allowedValues) && !allowedValues.contains(textBody)) {
                         throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, Collections.singletonList(
                                 EnotJsonError.of(jsonPath, "value is not in a list of " + Asn1Attribute.ALLOWED_VALUES.getName())));
