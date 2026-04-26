@@ -22,7 +22,8 @@ public enum CommonEnotValueType implements EnotValueType {
     OBJECT_IDENTIFIER("object_identifier", Set.of(TEXT), false, new UnsupportedToBinaryConverter()),
     DATE_TIME("date_time", Set.of(TEXT), false, new UnsupportedToBinaryConverter()),
     ELEMENT("element", Collections.emptySet(), false, new UnsupportedToBinaryConverter()),
-    EMPTY("empty", Collections.emptySet(), false, new EmptyToBinaryConverter());
+    EMPTY("empty", Collections.emptySet(), false, new EmptyToBinaryConverter()),
+    ANY("any", Collections.emptySet(), true, new UnsupportedToBinaryConverter());
 
     private final String name;
     private final Set<EnotValueType> superTypes;

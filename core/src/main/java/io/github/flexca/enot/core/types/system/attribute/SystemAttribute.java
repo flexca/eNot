@@ -15,6 +15,7 @@ public enum SystemAttribute implements EnotAttribute {
     ITEMS_NAME("items_name", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     MIN_ITEMS("min_items", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
     MAX_ITEMS("max_items", new EnotValueSpecification(CommonEnotValueType.INTEGER, false)),
+    UNIQUENESS("uniqueness", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     BYTE_ORDER("byte_order", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     BIT_ORDER("bit_order", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     EXPRESSION("expression", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),

@@ -14,4 +14,12 @@ public class ShaUtils {
         md.update(input);
         return md.digest();
     }
+
+    public static byte[] sha256(byte[] input) throws NoSuchAlgorithmException {
+
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(input);
+        byte[] digest = md.digest();
+        return digest;
+    }
 }

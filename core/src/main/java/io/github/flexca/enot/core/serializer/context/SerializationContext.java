@@ -202,6 +202,22 @@ public class SerializationContext {
         return currentPath;
     }
 
+    public ContextNode getCurrentIterationNode() {
+
+        ContextNode currentContext = getCurrentContext();
+        if (currentContext instanceof ContextArray contextArray) {
+            ContextState contextState = currentPath.get(currentPath.size() - 1);
+            int size = contextArray.getItems() == null ? 0 : contextArray.getItems().size();
+            if (contextState.getIndex() >= size) {
+                return null;
+            }
+            ContextNode iterationNode = contextArray.getItems().get(contextState.getIndex());
+            return iterationNode;
+        } else {
+            return currentContext;
+        }
+    }
+
     /**
      * Builder for {@link SerializationContext}.
      *
