@@ -25,8 +25,8 @@ public class EnotSerializer {
         this.enotParser = enotParser;
     }
 
-    public List<byte[]> serialize(String json, SerializationContext context, EnotContext enotContext) throws EnotParsingException, EnotSerializationException {
-        List<EnotElement> elements = enotParser.parse(json, enotContext);
+    public List<byte[]> serialize(String jsonOrYaml, SerializationContext context, EnotContext enotContext) throws EnotParsingException, EnotSerializationException {
+        List<EnotElement> elements = enotParser.parse(jsonOrYaml, enotContext);
         if(CollectionUtils.isEmpty(elements)) {
             return Collections.emptyList();
         }
