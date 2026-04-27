@@ -9,6 +9,7 @@ import io.github.flexca.enot.core.serializer.EnotSerializer;
 import io.github.flexca.enot.core.serializer.SimpleElementSerializer;
 import io.github.flexca.enot.core.types.asn1.Asn1EnotValueType;
 import io.github.flexca.enot.core.types.asn1.Asn1Tag;
+import io.github.flexca.enot.core.types.asn1.validation.Asn1ValidationUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.asn1.DERBMPString;
 
@@ -37,6 +38,10 @@ public class Asn1BmpStringSerializer extends SimpleElementSerializer {
 
         if (CommonEnotValueType.TEXT.equals(serializedBody.get(0).getValueType())) {
             if(serializedBody.get(0).getData() instanceof String textBody) {
+
+                Asn1ValidationUtils.validateMinAndMaxLengthForTextDuringSerialization(element, jsonPath, textBody);
+                Asn1ValidationUtils.validateAllowedValuesForTextDuringSerialization(element, jsonPath, textBody);
+
                 return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
                         new DERBMPString(textBody)));
             }
