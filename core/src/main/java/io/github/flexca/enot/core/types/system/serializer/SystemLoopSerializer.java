@@ -42,16 +42,18 @@ public class SystemLoopSerializer extends BaseElementSerializer {
         while (context.hasNext()) {
             if (Uniqueness.ENFORCE.equals(uniqueness)) {
                 ContextNode currentContext = context.getCurrentIterationNode();
-                String currentContextSha256;
-                try {
-                    currentContextSha256 = currentContext.sha256Hex();
-                } catch (Exception e) {
-                    throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
-                            "issue during uniqueness check, reason: " + e.getMessage()), e);
-                }
-                if (!uniqueContextSha256.add(currentContextSha256)) {
-                    throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
-                            "non unique values are not allowed"));
+                if (currentContext != null) {
+                    String currentContextSha256;
+                    try {
+                        currentContextSha256 = currentContext.sha256Hex();
+                    } catch (Exception e) {
+                        throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
+                                "issue during uniqueness check, reason: " + e.getMessage()), e);
+                    }
+                    if (!uniqueContextSha256.add(currentContextSha256)) {
+                        throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
+                                "non unique values are not allowed"));
+                    }
                 }
             }
             result.addAll(serializeBody(loopElement.getBody(), context, jsonPath, enotContext));
