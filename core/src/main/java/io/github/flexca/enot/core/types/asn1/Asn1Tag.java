@@ -26,10 +26,14 @@ import io.github.flexca.enot.core.types.asn1.serializer.Asn1TaggedObjectSerializ
 import io.github.flexca.enot.core.types.asn1.serializer.Asn1UtcTimeSerializer;
 import io.github.flexca.enot.core.types.asn1.serializer.Asn1Utf8StringSerializer;
 import io.github.flexca.enot.core.types.asn1.serializer.Asn1VisibleStringSerializer;
+import io.github.flexca.enot.core.types.asn1.validation.Asn1BmpStringValidator;
+import io.github.flexca.enot.core.types.asn1.validation.Asn1Ia5StringValidator;
 import io.github.flexca.enot.core.types.asn1.validation.Asn1ObjectIdentifierValidator;
 import io.github.flexca.enot.core.types.asn1.validation.Asn1OctetStringValidator;
 import io.github.flexca.enot.core.types.asn1.validation.Asn1PrintableStringValidator;
 import io.github.flexca.enot.core.types.asn1.validation.Asn1TaggedObjectValidator;
+import io.github.flexca.enot.core.types.asn1.validation.Asn1Utf8StringValidator;
+import io.github.flexca.enot.core.types.asn1.validation.Asn1VisibleStringValidator;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -108,7 +112,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             Set.of(Asn1Attribute.TAG, Asn1Attribute.MIN_LENGTH, Asn1Attribute.MAX_LENGTH, Asn1Attribute.ALLOWED_VALUES),
             null,
             new Asn1Ia5StringSerializer(),
-            null),
+            new Asn1Ia5StringValidator()),
 
     VISIBLE_STRING("visible_string",
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
@@ -117,7 +121,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             Set.of(Asn1Attribute.TAG, Asn1Attribute.MIN_LENGTH, Asn1Attribute.MAX_LENGTH, Asn1Attribute.ALLOWED_VALUES),
             null,
             new Asn1VisibleStringSerializer(),
-            null),
+            new Asn1VisibleStringValidator()),
 
     UTF8_STRING("utf8_string",
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
@@ -126,7 +130,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             Set.of(Asn1Attribute.TAG, Asn1Attribute.MIN_LENGTH, Asn1Attribute.MAX_LENGTH, Asn1Attribute.ALLOWED_VALUES),
             null,
             new Asn1Utf8StringSerializer(),
-            null),
+            new Asn1Utf8StringValidator()),
 
     BMP_STRING("bmp_string",
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
@@ -135,7 +139,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             Set.of(Asn1Attribute.TAG, Asn1Attribute.MIN_LENGTH, Asn1Attribute.MAX_LENGTH, Asn1Attribute.ALLOWED_VALUES),
             null,
             new Asn1BmpStringSerializer(),
-            null),
+            new Asn1BmpStringValidator()),
 
     BIT_STRING("bit_string",
             new EnotValueSpecification(CommonEnotValueType.BINARY, false),
