@@ -1,10 +1,14 @@
 package io.github.flexca.enot.core.types.asn1.validation;
 
 import io.github.flexca.enot.core.element.EnotElement;
+import io.github.flexca.enot.core.exception.EnotSerializationException;
 import io.github.flexca.enot.core.parser.EnotJsonError;
+import io.github.flexca.enot.core.parser.EnotParser;
+import io.github.flexca.enot.core.serializer.EnotSerializer;
 import io.github.flexca.enot.core.types.asn1.attribute.Asn1Attribute;
 import io.github.flexca.enot.core.util.OidUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -106,6 +110,42 @@ public class Asn1ValidationUtils {
             }
         }
         return uniqueValues;
+    }
+
+    public static void validateMinAndMaxLengthForTextDuringSerialization(EnotElement element, String jsonPath, String textBody) throws EnotSerializationException {
+
+        String attributesPath = jsonPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME;
+        String bodyPath = jsonPath + "/" + EnotParser.ENOT_ELEMENT_BODY_NAME;
+        List<EnotJsonError> jsonErrors = new ArrayList<>();
+        Long minLength = Asn1ValidationUtils.validateAndExtractMinLength(element, attributesPath, jsonErrors);
+        if (!jsonErrors.isEmpty()) {
+            throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, jsonErrors.get(0));
+        }
+        if (minLength != null && textBody.length() < minLength) {
+            throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(bodyPath,
+                    "body length less than minimum allowed value: " + minLength));
+        }
+        Long maxLength = Asn1ValidationUtils.validateAndExtractMaxLength(element, attributesPath, jsonErrors);
+        if (!jsonErrors.isEmpty()) {
+            throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, jsonErrors.get(0));
+        }
+        if (maxLength != null && textBody.length() > maxLength) {
+            throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(bodyPath,
+                    "body length greater than maximum allowed value: " + maxLength));
+        }
+    }
+
+    public static void validateAllowedValuesForTextDuringSerialization(EnotElement element, String jsonPath, String textBody) throws EnotSerializationException {
+
+        String attributesPath = jsonPath + "/" + EnotParser.ENOT_ELEMENT_ATTRIBUTES_NAME;
+        String bodyPath = jsonPath + "/" + EnotParser.ENOT_ELEMENT_BODY_NAME;
+        List<EnotJsonError> jsonErrors = new ArrayList<>();
+        Set<String> allowedValues = Asn1ValidationUtils.validateAndExtractAllowedTextValues(element, attributesPath,
+                jsonErrors, false);
+        if (!allowedValues.isEmpty() && !allowedValues.contains(textBody)) {
+            throw new EnotSerializationException(EnotSerializer.COMMON_ERROR_MESSAGE, EnotJsonError.of(bodyPath,
+                    "body value is not allowed"));
+        }
     }
 
     private static String validateAndExtractSingleTextValue(Object value, String path, List<EnotJsonError> jsonErrors,

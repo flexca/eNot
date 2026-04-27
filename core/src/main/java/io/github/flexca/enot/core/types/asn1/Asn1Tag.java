@@ -28,6 +28,7 @@ import io.github.flexca.enot.core.types.asn1.serializer.Asn1Utf8StringSerializer
 import io.github.flexca.enot.core.types.asn1.serializer.Asn1VisibleStringSerializer;
 import io.github.flexca.enot.core.types.asn1.validation.Asn1ObjectIdentifierValidator;
 import io.github.flexca.enot.core.types.asn1.validation.Asn1OctetStringValidator;
+import io.github.flexca.enot.core.types.asn1.validation.Asn1PrintableStringValidator;
 import io.github.flexca.enot.core.types.asn1.validation.Asn1TaggedObjectValidator;
 
 import java.util.Collections;
@@ -98,7 +99,7 @@ public enum Asn1Tag implements EnotElementSpecification {
             Set.of(Asn1Attribute.TAG, Asn1Attribute.MIN_LENGTH, Asn1Attribute.MAX_LENGTH, Asn1Attribute.ALLOWED_VALUES),
             null,
             new Asn1PrintableStringSerializer(),
-            null),
+            new Asn1PrintableStringValidator()),
 
     IA5_STRING("ia5_string",
             new EnotValueSpecification(CommonEnotValueType.TEXT, false),
