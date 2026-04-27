@@ -98,7 +98,7 @@ public class ExampleParamsExtractor {
                 placeholder.ifPresent(variableName -> {
                     if (PlaceholderUtils.isGlobalVariable(variableName)) {
                         globalItems.put(variableName, contextPrimitive);
-                    } else if (!PlaceholderUtils.isSystemVariable(variableName)) {
+                    } else {
                         items.put(variableName, contextPrimitive);
                     }
                 });
@@ -152,7 +152,7 @@ public class ExampleParamsExtractor {
                 if (leafBlock.getValue() instanceof String stringValue) {
                     if (PlaceholderUtils.isGlobalVariable(stringValue)) {
                         globalItems.put(stringValue, contextPrimitive);
-                    } else if (!PlaceholderUtils.isSystemVariable(stringValue)) {
+                    } else {
                         items.put(stringValue, contextPrimitive);
                     }
                 }
