@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
 
 public class PlaceholderUtils {
 
-    public static final String SYSTEM_VARIABLE = "system";
-    public static final String SYSTEM_VARIABLE_PREFIX = SYSTEM_VARIABLE + ".";
     public static final String GLOBAL_PARAM = "global";
     public static final String GLOBAL_PARAM_PREFIX = GLOBAL_PARAM + ".";
 
@@ -60,9 +58,7 @@ public class PlaceholderUtils {
 
         String inputWithoutPrefix;
         if(takeIntoAccountPrefixes) {
-            if (input.startsWith(SYSTEM_VARIABLE_PREFIX)) {
-                inputWithoutPrefix = input.substring(SYSTEM_VARIABLE_PREFIX.length());
-            } else if (input.startsWith(GLOBAL_PARAM_PREFIX)) {
+            if (input.startsWith(GLOBAL_PARAM_PREFIX)) {
                 inputWithoutPrefix = input.substring(GLOBAL_PARAM_PREFIX.length());
             } else {
                 inputWithoutPrefix = input;
@@ -83,12 +79,4 @@ public class PlaceholderUtils {
         return input.startsWith(GLOBAL_PARAM_PREFIX);
     }
 
-    public static boolean isSystemVariable(String input) {
-
-        if(StringUtils.isBlank(input)) {
-            return false;
-        }
-
-        return input.startsWith(SYSTEM_VARIABLE_PREFIX);
-    }
 }

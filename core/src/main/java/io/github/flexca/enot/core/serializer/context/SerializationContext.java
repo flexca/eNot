@@ -311,9 +311,6 @@ public class SerializationContext {
 
             if (PlaceholderUtils.isGlobalVariable(key)) {
                 this.globalParams.put(key, value);
-            } else if (PlaceholderUtils.isSystemVariable(key)) {
-                throw new EnotInvalidArgumentException("system variables cannot be used in serialization context, register " +
-                        "EnotSystemVariableProvider in EnotRegistry to resolve system variable");
             } else {
                 this.params.put(key, value);
             }

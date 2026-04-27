@@ -455,9 +455,7 @@ public class Asn1ParamsExtractor {
      */
     private void assignPlaceholder(Object body, Object value, Map<String, Object> dest) {
         PlaceholderUtils.extractPlaceholder(body).ifPresent(name -> {
-            if (!PlaceholderUtils.isSystemVariable(name)) {
-                dest.put(name, value);
-            }
+            dest.put(name, value);
         });
     }
 
