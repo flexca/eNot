@@ -1,0 +1,27 @@
+type: asn.1
+attributes:
+  tag: sequence
+body:
+  - type: asn.1
+    attributes:
+      tag: object_identifier
+    body: "2.5.29.37"
+  - type: asn.1
+    attributes:
+      tag: octet_string
+    body:
+      type: asn.1
+      attributes:
+        tag: sequence
+      body:
+        type: system
+        attributes:
+          kind: loop
+          items_name: extended_key_usage
+          min_items: 1
+          max_items: 3
+        body:
+          type: asn.1
+          attributes:
+            tag: object_identifier
+          body: "${usage}"
