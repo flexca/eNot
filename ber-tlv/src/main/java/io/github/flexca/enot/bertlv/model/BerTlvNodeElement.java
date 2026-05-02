@@ -7,6 +7,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+/**
+ * A constructed (node) BER-TLV element whose value is a list of nested child
+ * {@link BerTlvElement} instances.
+ * <p>
+ * Encoding layout (definite form): {@code <tag> <total-child-length> <child1> <child2> ...}<br>
+ * Encoding layout (indefinite form): {@code <tag> 80 <child1> <child2> ... 00 00}
+ * <p>
+ * Example — tag {@code 73} containing a {@link BerTlvLeafElement} with tag {@code 04}, value {@code AA BB}:
+ * <pre>{@code
+ * 73 04 04 02 AA BB
+ * }</pre>
+ * Children are encoded recursively, supporting arbitrary nesting depth.
+ */
 public class BerTlvNodeElement extends BerTlvElement<List<BerTlvElement<?>>> {
 
     private List<BerTlvElement<?>> value;

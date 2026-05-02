@@ -1,6 +1,7 @@
 package io.github.flexca.enot.core.serializer;
 
 import io.github.flexca.enot.core.EnotContext;
+import io.github.flexca.enot.core.element.value.CommonEnotValueType;
 import io.github.flexca.enot.core.exception.EnotParsingException;
 import io.github.flexca.enot.core.exception.EnotSerializationException;
 import io.github.flexca.enot.core.parser.EnotJsonError;
@@ -64,7 +65,15 @@ public class EnotSerializer {
 
         List<byte[]> result = new ArrayList<>();
         for (ElementSerializationResult serializationResult : serializationResults) {
+            if (!CommonEnotValueType.BINARY.canConsume(serializationResult.getValueType())) {
+                throw new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
+                        "cannot serialize data of value type: " + serializationResult.getValueType()));
+            }
             EnotBinaryConverter binaryConverter = serializationResult.getValueType().getBinaryConverter();
+            if (binaryConverter == null) {
+                throw new EnotSerializationException(COMMON_ERROR_MESSAGE, EnotJsonError.of(jsonPath,
+                        "no binary converter found for value type " + serializationResult.getValueType()));
+            }
             try {
                 byte[] converted = binaryConverter.toBinary(serializationResult.getData());
                 if (converted != null && converted.length > 0) {

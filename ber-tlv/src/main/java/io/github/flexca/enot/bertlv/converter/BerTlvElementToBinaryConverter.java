@@ -8,6 +8,16 @@ import io.github.flexca.enot.core.registry.EnotBinaryConverter;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * Converts a {@link BerTlvElement} model object to its binary TLV encoding.
+ * <p>
+ * This converter is the final step in the BER-TLV serialization pipeline. It is registered
+ * as the binary converter for {@link BerTlvValueType#BER_TLV_ELEMENT} and is invoked by the
+ * eNot framework whenever a BER-TLV element result needs to be turned into raw bytes.
+ * <p>
+ * Encoding is delegated to {@link BerTlvElement#encodeToStream(java.io.OutputStream)},
+ * which recursively encodes the full TLV tree.
+ */
 public class BerTlvElementToBinaryConverter implements EnotBinaryConverter {
 
     @Override

@@ -30,14 +30,9 @@ public enum Asn1Attribute implements EnotAttribute {
     private final String name;
     private final EnotValueSpecification ValueSpecification;
 
-    private Asn1Attribute(String name, EnotValueSpecification ValueSpecification) {
+    Asn1Attribute(String name, EnotValueSpecification ValueSpecification) {
         this.name = name;
         this.ValueSpecification = ValueSpecification;
-    }
-
-    @Override
-    public Asn1Attribute fromName(String name) {
-        return StringUtils.isBlank(name) ? null : BY_NAME.get(name.toLowerCase());
     }
 
     @Override

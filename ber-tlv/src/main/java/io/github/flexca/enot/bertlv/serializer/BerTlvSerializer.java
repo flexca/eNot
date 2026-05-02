@@ -22,6 +22,25 @@ import java.util.Collections;
 import java.util.HexFormat;
 import java.util.List;
 
+/**
+ * Serializer for {@code ber-tlv} elements.
+ * <p>
+ * After the eNot framework has serialized an element's body, this serializer:
+ * <ol>
+ *   <li>Separates body results into nested {@link BerTlvElement} objects and raw binary values.</li>
+ *   <li>Creates a {@link BerTlvLeafElement} (all-binary body) or a
+ *       {@link BerTlvNodeElement} (all-BER-TLV body).
+ *       Mixing the two types in the same body is not permitted.</li>
+ *   <li>Reads and applies the {@link BerTlvAttribute#TAG},
+ *       {@link BerTlvAttribute#MIN_LENGTH}, {@link BerTlvAttribute#MAX_LENGTH},
+ *       and {@link BerTlvAttribute#INDEFINITE_FORM} attributes.</li>
+ *   <li>Validates runtime length constraints against the actual encoded value length.</li>
+ *   <li>Returns the result wrapped in an {@link ElementSerializationResult} carrying
+ *       value type {@link BerTlvValueType#BER_TLV_ELEMENT}.</li>
+ * </ol>
+ * A single shared instance is created by {@link BerTlvEnotTypeSpecification} and reused for
+ * all {@code ber-tlv} elements.
+ */
 public class BerTlvSerializer extends SimpleElementSerializer {
 
     @Override

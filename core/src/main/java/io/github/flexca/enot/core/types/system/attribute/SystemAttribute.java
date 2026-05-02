@@ -38,11 +38,6 @@ public enum SystemAttribute implements EnotAttribute {
     }
 
     @Override
-    public SystemAttribute fromName(String name) {
-        return fromJsonString(name);
-    }
-
-    @Override
     public String getName() {
         return this.name;
     }

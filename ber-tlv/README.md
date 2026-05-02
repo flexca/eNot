@@ -12,6 +12,31 @@ BER-TLV (Basic Encoding Rules — Tag-Length-Value) is a binary encoding format 
 
 This module lets you describe BER-TLV structures as eNot templates (JSON or YAML) and serialize them from parameter maps into binary output.
 
+## Registration
+
+Register `BerTlvEnotTypeSpecification` with `EnotRegistry` alongside any other type specifications you need:
+
+```java
+EnotRegistry registry = new EnotRegistry.Builder()
+        .withTypeSpecifications(
+                new SystemTypeSpecification(),   // loop, condition, hex_to_bin, …
+                new BerTlvEnotTypeSpecification()
+        )
+        .build();
+```
+
+### Bypassing tag validation for non-standard tags
+
+By default the validator checks that every tag conforms to the ITU-T X.690 structural rules.
+If your target specification uses proprietary tags that would otherwise fail this check,
+pass their hex strings to the constructor:
+
+```java
+new BerTlvEnotTypeSpecification("1F", "9F81")
+```
+
+The listed tags will skip the X.690 structural validation while all other checks remain active.
+
 ## Attributes
 
 | Attribute         | Type    | Required | Description                                                          |
@@ -27,7 +52,7 @@ A primitive TLV element contains a raw binary value. Use the `system` `hex_to_bi
 
 ```json
 {
-  "type": "ber_tlv",
+  "type": "ber-tlv",
   "attributes": {
     "tag": "5A"
   },
@@ -54,13 +79,13 @@ A constructed TLV element contains nested TLV children as its body list:
 
 ```json
 {
-  "type": "ber_tlv",
+  "type": "ber-tlv",
   "attributes": {
     "tag": "70"
   },
   "body": [
     {
-      "type": "ber_tlv",
+      "type": "ber-tlv",
       "attributes": {
         "tag": "9F02"
       },
@@ -71,7 +96,7 @@ A constructed TLV element contains nested TLV children as its body list:
       }
     },
     {
-      "type": "ber_tlv",
+      "type": "ber-tlv",
       "attributes": {
         "tag": "9F1A"
       },
@@ -90,16 +115,16 @@ A constructed TLV element contains nested TLV children as its body list:
 { "amount": "000000001000", "country_code": "0840" }
 ```
 
-**Output (hex):** `70 10 9F02 06 000000001000 9F1A 02 0840`
+**Output (hex):** `70 0E 9F 02 06 00 00 00 00 10 00 9F 1A 02 08 40`
 
 ## Equivalent YAML template
 
 ```yaml
-type: ber_tlv
+type: ber-tlv
 attributes:
   tag: "70"
 body:
-  - type: ber_tlv
+  - type: ber-tlv
     attributes:
       tag: "9F02"
     body:
@@ -107,7 +132,7 @@ body:
       attributes:
         kind: hex_to_bin
       body: "${amount}"
-  - type: ber_tlv
+  - type: ber-tlv
     attributes:
       tag: "9F1A"
     body:
@@ -123,7 +148,7 @@ You can enforce value byte length bounds using `min_length` and `max_length`:
 
 ```json
 {
-  "type": "ber_tlv",
+  "type": "ber-tlv",
   "attributes": {
     "tag": "5F20",
     "min_length": 1,
@@ -145,14 +170,14 @@ Setting `indefinite_form: true` encodes the length field as `0x80` and appends a
 
 ```json
 {
-  "type": "ber_tlv",
+  "type": "ber-tlv",
   "attributes": {
     "tag": "70",
     "indefinite_form": true
   },
   "body": [
     {
-      "type": "ber_tlv",
+      "type": "ber-tlv",
       "attributes": { "tag": "04" },
       "body": {
         "type": "system",

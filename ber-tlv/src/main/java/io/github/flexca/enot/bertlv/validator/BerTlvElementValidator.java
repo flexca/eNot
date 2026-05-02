@@ -14,12 +14,34 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Template parse-time validator for {@code ber-tlv} elements.
+ * <p>
+ * Validates element attribute values before serialization begins, collecting all
+ * errors into the shared {@code jsonErrors} list rather than failing on the first error.
+ * The following checks are performed:
+ * <ul>
+ *   <li>{@link BerTlvAttribute#TAG} must be present, a valid hex string, 1–4 bytes long,
+ *       and structurally correct per ITU-T X.690 (unless the tag is in the
+ *       {@code tagsToIgnore} set supplied at construction time).</li>
+ *   <li>{@link BerTlvAttribute#MIN_LENGTH} and {@link BerTlvAttribute#MAX_LENGTH},
+ *       when present, must be non-negative integers, and {@code min_length}
+ *       must be ≤ {@code max_length}.</li>
+ *   <li>{@link BerTlvAttribute#INDEFINITE_FORM}, when present, must be a boolean.</li>
+ * </ul>
+ */
 public class BerTlvElementValidator implements EnotElementValidator {
 
     private static final int MAX_TAG_LENGTH = 4;
 
     private final Set<String> tagsToIgnore;
 
+    /**
+     * Creates a new validator.
+     *
+     * @param tagsToIgnore hex tag strings (e.g. {@code "1F"}) that should skip the
+     *                     ITU-T X.690 structural tag validation. May be empty or {@code null}.
+     */
     public BerTlvElementValidator(String... tagsToIgnore) {
         this.tagsToIgnore = tagsToIgnore == null ? Collections.emptySet() : Set.of(tagsToIgnore);
     }

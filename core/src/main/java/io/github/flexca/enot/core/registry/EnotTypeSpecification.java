@@ -26,8 +26,12 @@ public interface EnotTypeSpecification {
     List<EnotValueType> getValueTypes();
 
     /**
+     * Returns the list of all attributes recognised by this element type.
      *
-     * @return
+     * <p>Used by the parser to enumerate the accepted attribute keys for this type.
+     * The list must include both required and optional attributes.
+     *
+     * @return the complete list of supported attributes; may be empty but must not be {@code null}
      */
     List<EnotAttribute> getAttributes();
 
@@ -61,6 +65,17 @@ public interface EnotTypeSpecification {
      */
     ElementSerializer getSerializer(EnotElement element);
 
+    /**
+     * Returns path-altering instructions that the serializer applies when navigating
+     * the parameter tree for the given element.
+     *
+     * <p>The default implementation returns {@link EnotElementPathAltering#none()},
+     * meaning the parameter-tree cursor is not moved. Override this method only in
+     * element types that drive their own path navigation (e.g. {@code loop}, {@code group}).
+     *
+     * @param element the element being serialized
+     * @return path-altering instructions; must not return {@code null}
+     */
     default EnotElementPathAltering getPathAltering(EnotElement element) {
         return EnotElementPathAltering.none();
     }
