@@ -95,4 +95,78 @@ public class EnotSerializeWithUniquenessTest {
         List<EnotJsonError> jsonErrors = serializationException.getJsonErrors();
         assertThat(jsonErrors).hasSize(1);
     }
+
+    @Test
+    void testExtendedKeyUsageThreeUniqueValues() throws Exception {
+
+        String template = ResourceReaderTestUtils.readResourceFileAsString("yaml/asn1/rfc/uniqueness/extended-key-usage-with-uniqueness.yaml");
+
+        String params = """
+                extended_key_usage:
+                - usage: "1.3.6.1.5.5.7.3.1"
+                - usage: "1.3.6.1.5.5.7.3.2"
+                - usage: "1.3.6.1.5.5.7.3.3"
+                """;
+
+        SerializationContext serializationContext = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParams(params)
+                .build();
+
+        List<byte[]> result = enotSerializer.serialize(template, serializationContext, enotContext);
+
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void testExtendedKeyUsageNonAdjacentDuplicateThrows() throws Exception {
+
+        // First and third entries share the same OID — not adjacent but still a uniqueness violation.
+        String template = ResourceReaderTestUtils.readResourceFileAsString("yaml/asn1/rfc/uniqueness/extended-key-usage-with-uniqueness.yaml");
+
+        String params = """
+                extended_key_usage:
+                - usage: "1.3.6.1.5.5.7.3.1"
+                - usage: "1.3.6.1.5.5.7.3.2"
+                - usage: "1.3.6.1.5.5.7.3.1"
+                """;
+
+        SerializationContext serializationContext = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParams(params)
+                .build();
+
+        EnotSerializationException serializationException = assertThrows(EnotSerializationException.class, () ->
+                enotSerializer.serialize(template, serializationContext, enotContext));
+
+        assertThat(serializationException.getJsonErrors()).hasSize(1);
+    }
+
+    @Test
+    void testExtendedKeyUsageAllSameValueThrows() throws Exception {
+
+        // All three entries are the same OID → uniqueness is violated.
+        // The validator reports a single error for the loop (not one per duplicate).
+        String template = ResourceReaderTestUtils.readResourceFileAsString("yaml/asn1/rfc/uniqueness/extended-key-usage-with-uniqueness.yaml");
+
+        String params = """
+                extended_key_usage:
+                - usage: "1.3.6.1.5.5.7.3.1"
+                - usage: "1.3.6.1.5.5.7.3.1"
+                - usage: "1.3.6.1.5.5.7.3.1"
+                """;
+
+        SerializationContext serializationContext = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .withParams(params)
+                .build();
+
+        EnotSerializationException serializationException = assertThrows(EnotSerializationException.class, () ->
+                enotSerializer.serialize(template, serializationContext, enotContext));
+
+        assertThat(serializationException.getJsonErrors()).isNotEmpty();
+    }
 }

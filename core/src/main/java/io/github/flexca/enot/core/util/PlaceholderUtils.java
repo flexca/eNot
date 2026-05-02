@@ -11,6 +11,7 @@ public class PlaceholderUtils {
     public static final String GLOBAL_PARAM_PREFIX = GLOBAL_PARAM + ".";
 
     private static final Pattern VARIABLE_NAME_REGEXP = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*$");
+    private static final Pattern TYPE_NAME_REGEXP = Pattern.compile("^[A-Za-z0-9._\\-+#]+$");
 
     private PlaceholderUtils() {
     }
@@ -79,4 +80,12 @@ public class PlaceholderUtils {
         return input.startsWith(GLOBAL_PARAM_PREFIX);
     }
 
+    public static boolean isValidTypeName(String input) {
+
+        if(StringUtils.isBlank(input)) {
+            return false;
+        }
+
+        return TYPE_NAME_REGEXP.matcher(input).matches();
+    }
 }

@@ -1,9 +1,12 @@
 package io.github.flexca.enot.core.registry;
 
+import io.github.flexca.enot.core.element.attribute.EnotAttribute;
 import io.github.flexca.enot.core.element.value.CommonEnotValueType;
+import io.github.flexca.enot.core.element.value.EnotValueSpecification;
 import io.github.flexca.enot.core.element.value.EnotValueType;
 import io.github.flexca.enot.core.exception.EnotInvalidArgumentException;
 import io.github.flexca.enot.core.exception.EnotInvalidConfigurationException;
+import io.github.flexca.enot.core.util.PlaceholderUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -54,9 +57,15 @@ public class EnotRegistry {
         }
 
         for (EnotTypeSpecification specification : specifications) {
+
             if (StringUtils.isBlank(specification.getTypeName())) {
                 throw new EnotInvalidConfigurationException("Type name is blank for " + specification.getClass().getName());
             }
+            if (!PlaceholderUtils.isValidTypeName(specification.getTypeName())) {
+                throw new EnotInvalidConfigurationException("Type name [" + specification.getTypeName() + "] contains restricted " +
+                        "chars. Use only letters, digits, underscore, hyphen, plus, dot or pound");
+            }
+
             if (CollectionUtils.isNotEmpty(specification.getValueTypes())) {
                 for (EnotValueType customValueType : specification.getValueTypes()) {
                     if (customValueType.haveCyclicDependency()) {
@@ -73,8 +82,47 @@ public class EnotRegistry {
                                 + " provided by eNot elements of type " + specification.getTypeName()
                                 + " getBinaryConverter return null");
                     }
+                    valueTypes.put(customValueType.getName(), customValueType);
                 }
             }
+
+            List<EnotAttribute> attributes = specification.getAttributes();
+            if (attributes == null) {
+                throw new EnotInvalidConfigurationException("EnotTypeSpecification getAttributes() method for element type ["
+                        + specification.getTypeName() + "] return null. Make sure, if you don't have custom attributes your specification " +
+                        "return an empty List, but not null");
+            }
+            if (CollectionUtils.isNotEmpty(attributes)) {
+
+                for(EnotAttribute attribute : attributes) {
+
+                    String attributeName = attribute.getName();
+                    if (StringUtils.isBlank(attributeName)) {
+                        throw new EnotInvalidConfigurationException("blank attribute name provided for eNot element type ["
+                                + specification.getTypeName() + "]");
+                    }
+                    if (!PlaceholderUtils.isValidVariableName(attributeName, false)) {
+                        throw new EnotInvalidConfigurationException("for eNot element type [" + specification.getTypeName() + "] " +
+                                "attribute name [" + attributeName + "] contains unsupported chars. Use only letters, digits and underscore");
+                    }
+
+                    EnotAttribute resolved = specification.resolveAttributeByName(attribute.getName());
+                    if (resolved == null || !attribute.getName().equals(resolved.getName())) {
+                        throw new EnotInvalidConfigurationException("for eNot element type [" + specification.getTypeName() + "] " +
+                                "resolveAttributeByName method implemented incorrectly");
+                    }
+                    EnotValueSpecification attributeValueSpecification = attribute.getValueSpecification();
+                    if (attributeValueSpecification == null) {
+                        throw new EnotInvalidConfigurationException("for eNot element type [" + specification.getTypeName() + "] " +
+                                "and attribute with name [" + attributeName + "] EnotValueSpecification is missing");
+                    }
+                    if (attributeValueSpecification.getType() == null) {
+                        throw new EnotInvalidConfigurationException("for eNot element type [" + specification.getTypeName() + "] " +
+                                "and attribute with name [" + attributeName + "] method EnotValueSpecification.getType() must not return null");
+                    }
+                }
+            }
+
             typeSpecifications.put(specification.getTypeName().toLowerCase(), specification);
         }
 
@@ -201,8 +249,8 @@ public class EnotRegistry {
          *
          * @return a new, immutable {@link EnotRegistry}
          * @throws io.github.flexca.enot.core.exception.EnotInvalidConfigurationException if any
-         *         registered specification has a blank type name, a duplicate value-type name, or
-         *         a value-type converter that returns {@code null}
+         *                                                                                registered specification has a blank type name, a duplicate value-type name, or
+         *                                                                                a value-type converter that returns {@code null}
          */
         public EnotRegistry build() {
             return new EnotRegistry(specifications, elementReferenceResolvers);

@@ -206,4 +206,26 @@ public class EnotParserReferenceResolverTest {
         assertThat(rightLeafBody).hasSize(1);
         assertThat(rightLeafBody.get(0).getAttribute(Asn1Attribute.TAG)).isEqualTo("object_identifier");
     }
+
+    @Test
+    void testUnregisteredReferenceTypeThrows() {
+
+        // A reference element whose reference_type has no registered resolver
+        // must cause a parse failure — the body resolver throws EnotInvalidArgumentException
+        // and the parser wraps it in an EnotParsingException.
+        String json = """
+                {
+                  "type": "system",
+                  "attributes": {
+                    "kind": "reference",
+                    "reference_type": "no_such_resolver",
+                    "reference_identifier": "some/path"
+                  }
+                }
+                """;
+
+        assertThatThrownBy(() -> enotParser.parse(json, enotContext))
+                .isInstanceOf(EnotParsingException.class)
+                .hasMessageContaining("no registered EnotElementReferenceResolver found for reference type");
+    }
 }

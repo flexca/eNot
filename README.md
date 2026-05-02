@@ -1,6 +1,6 @@
 # eNot — Encoding Notations
 
-[![Build](https://github.com/flexca/eNot/actions/workflows/maven-test.yml/badge.svg)](https://github.com/flexca/eNot/actions/workflows/maven-test.yml)
+[![Build](https://github.com/flexca/eNot/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/flexca/eNot/actions/workflows/continuous-integration.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.flexca/enot-core.svg)](https://central.sonatype.com/artifact/io.github.flexca/enot-core)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17%2B-blue)](https://openjdk.org)
