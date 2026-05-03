@@ -35,8 +35,8 @@
 
     <scm>
         <url>https://github.com/flexca/eNot</url>
-        <connection>scm:git:git://github.com/flexca/eNot.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/flexca/eNot.git</developerConnection>
+        <connection>scm:git:https://github.com/flexca/eNot.git</connection>
+        <developerConnection>scm:git:https://github.com/flexca/eNot.git</developerConnection>
     </scm>
 
     <properties>
