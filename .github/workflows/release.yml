@@ -54,7 +54,8 @@ jobs:
             -DlocalCheckout=true \
             -DscmCommentPrefix="[release] " \
             -Darguments="-DskipTests -Prelease" \
-            -DdeveloperConnection="scm:git:$REPO_URL"
+            -Dscm.url="scm:git:$REPO_URL" \
+            -Dscm.developerUrl="scm:git:$REPO_URL"
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
