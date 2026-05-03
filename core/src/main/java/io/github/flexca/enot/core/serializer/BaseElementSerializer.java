@@ -47,7 +47,6 @@ public abstract class BaseElementSerializer implements ElementSerializer {
      *   <li>{@link EnotElement} — the element's serializer is looked up and called.</li>
      *   <li>Everything else — treated as a primitive value or placeholder string.</li>
      * </ol>
-     * </p>
      *
      * @param body        the raw body object from the parsed element
      * @param context     the active serialization context for placeholder resolution

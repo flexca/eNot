@@ -22,7 +22,7 @@ import java.util.Optional;
  * Parses a condition expression string into an {@link ExpressionBlock} AST.
  *
  * <h2>Expression syntax</h2>
- * <pre>
+ * <pre>{@code
  *   expression  ::= binary | comparison | primitive | function
  *   binary      ::= expression ('&&' | '||') expression
  *                   (mixing '&&' and '||' at the same level is not allowed
@@ -34,7 +34,7 @@ import java.util.Optional;
  *   literal     ::= '\'' text '\''
  *   boolean     ::= 'true' | 'false'
  *   integer     ::= [0-9]+
- * </pre>
+ * }</pre>
  *
  * <p>Any sub-expression can be wrapped in parentheses to override precedence,
  * and any sub-expression or placeholder can be prefixed with {@code !} to
