@@ -42,15 +42,17 @@ jobs:
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/flexca/eNot.git
 
       - name: Release and Deploy
         run: |
           mvn --batch-mode release:prepare release:perform \
             -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
             -DdevelopmentVersion=${{ github.event.inputs.nextVersion }} \
+            -DpushChanges=false \
+            -DlocalCheckout=true \
             -DscmCommentPrefix="[release] " \
             -Darguments="-DskipTests -Prelease"
+          git push --follow-tags https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/flexca/eNot.git HEAD:main
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
