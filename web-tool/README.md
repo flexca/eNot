@@ -6,29 +6,40 @@ eNot web-tool is a lightweight web service with a user interface that allows you
 
 ## How to Run
 
+### Pull from docker hub and run
+
+eNot web-tool is available in docker hub. Use next commands to pull and run docker image:
+
+```shell
+docker pull flexca/enot-web-tool:1.0.0
+docker run -p 8080:8080 flexca/enot-web-tool:1.0.0
+```
+
+### Build locally
+
 Build eNot project, run from eNot root directory:
 
-```cmd
+```shell
 mvn clean install
 ```
 
-### Option 1: Build and Run with Docker
+#### Option 1: Build and Run with Docker
 
-```cmd
+```shell
 cd web-tool
 docker build -t enot-web-tool .
 docker run -d -p 8080:8080 --name enot-web-tool enot-web-tool
 ```
 
-### Option 2: Run the JAR Directly
+#### Option 2: Run the JAR Directly
 
-```cmd
+```shell
 cd web-tool/backend/target
 ```
 
 Replace `{version}` with the actual version, e.g., `1.0.0-SNAPSHOT`:
 
-```cmd
+```shell
 java -jar enot-web-tool-backend-{version}.jar
 ```
 
