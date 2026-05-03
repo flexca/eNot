@@ -1,4 +1,4 @@
-name: Publish Docker Image
+name: Publish Web-Tool Docker Image
 
 on:
   workflow_dispatch:
@@ -19,7 +19,8 @@ jobs:
       - name: Checkout released tag
         uses: actions/checkout@v4
         with:
-          ref: v${{ github.event.inputs.releaseVersion }}
+          ref: refs/tags/v${{ github.event.inputs.releaseVersion }}
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v4
