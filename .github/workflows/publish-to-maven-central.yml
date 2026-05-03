@@ -47,7 +47,7 @@ jobs:
         run: |
           REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
 
-          mvn --batch-mode release:prepare release:perform \
+          mvn --batch-mode -Prelease release:prepare release:perform \
             -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
             -DdevelopmentVersion=${{ github.event.inputs.nextVersion }} \
             -DpushChanges=true \
