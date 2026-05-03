@@ -25,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -42,10 +42,12 @@ jobs:
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
+          git config --global credential.helper store
+          echo "https://x-access-token:${{ secrets.RELEASE_GITHUB_TOKEN }}@github.com" > ~/.git-credentials
 
       - name: Release and Deploy
         run: |
-          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          REPO_URL="https://github.com/${{ github.repository }}.git"
 
           mvn --batch-mode -Prelease release:prepare release:perform \
             -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
