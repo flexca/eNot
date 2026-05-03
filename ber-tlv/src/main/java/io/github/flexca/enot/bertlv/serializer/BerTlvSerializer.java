@@ -38,7 +38,7 @@ import java.util.List;
  *   <li>Returns the result wrapped in an {@link ElementSerializationResult} carrying
  *       value type {@link BerTlvValueType#BER_TLV_ELEMENT}.</li>
  * </ol>
- * A single shared instance is created by {@link BerTlvEnotTypeSpecification} and reused for
+ * A single shared instance is created by {@link io.github.flexca.enot.bertlv.BerTlvEnotTypeSpecification} and reused for
  * all {@code ber-tlv} elements.
  */
 public class BerTlvSerializer extends SimpleElementSerializer {
