@@ -1,5 +1,5 @@
 {
-  "type": "ber_tlv",
+  "type": "ber-tlv",
   "attributes": {
     "tag": "04",
     "min_length": 1,

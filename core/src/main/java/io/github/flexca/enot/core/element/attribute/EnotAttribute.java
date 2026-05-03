@@ -36,16 +36,4 @@ public interface EnotAttribute {
      */
     EnotValueSpecification getValueSpecification();
 
-    /**
-     * A factory-like method to retrieve an attribute instance by its string name.
-     * <p>
-     * This is typically implemented in enums to allow dynamic lookup of an attribute
-     * by its name as parsed from a JSON payload. Implementations should perform a
-     * case-insensitive match.
-     *
-     * @param name The name of the attribute to find.
-     * @return The corresponding {@link EnotAttribute} instance, or {@code null} if no attribute
-     *         with the given name exists.
-     */
-    EnotAttribute fromName(String name);
 }

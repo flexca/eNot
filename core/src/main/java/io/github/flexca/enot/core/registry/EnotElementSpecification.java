@@ -6,11 +6,24 @@ import io.github.flexca.enot.core.element.value.EnotValueSpecification;
 import java.util.Set;
 
 /**
- * Single element specification purpose is to describe element:
- * - what element consume - expected type of eNot element body
- * - what element produce - type of data produced when element is serialized
- * - what is required attributes
- * - what is allowed attributes
+ * Describes the structural contract of a single eNot element within the generic
+ * validation pipeline.
+ *
+ * <p>The specification covers four aspects:
+ * <ul>
+ *   <li><b>consume type</b> — the {@link io.github.flexca.enot.core.element.value.EnotValueType}
+ *       of the element body this element accepts as input.</li>
+ *   <li><b>produce type</b> — the value type this element outputs after serialization,
+ *       used to validate compatibility with the parent element's consume type.</li>
+ *   <li><b>required attributes</b> — attributes that must be present; absence causes
+ *       an {@link io.github.flexca.enot.core.exception.EnotParsingException}.</li>
+ *   <li><b>allowed attributes</b> — the full set of permitted attributes; presence of
+ *       any other attribute causes an {@link io.github.flexca.enot.core.exception.EnotParsingException}.</li>
+ * </ul>
+ *
+ * <p>When {@link EnotTypeSpecification#getElementSpecification(io.github.flexca.enot.core.element.EnotElement)}
+ * returns {@code null}, the generic validation step is skipped entirely and validation
+ * is left to the type-specific {@link EnotElementValidator}.
  */
 public interface EnotElementSpecification {
 
@@ -43,5 +56,16 @@ public interface EnotElementSpecification {
      */
     Set<EnotAttribute> getAllowedAttributes();
 
+    /**
+     * Returns the {@link EnotElementBodyResolver} for this element, or {@code null}
+     * if the element's body is provided inline in the template and requires no
+     * external resolution.
+     *
+     * <p>A non-{@code null} resolver is called by the parser to fetch or compute
+     * the element body at parse time (e.g. for {@code system/reference} elements
+     * that load another template).
+     *
+     * @return the body resolver, or {@code null} for inline elements
+     */
     EnotElementBodyResolver getBodyResolver();
 }

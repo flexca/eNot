@@ -160,6 +160,29 @@ public class EnotSerializerReferenceResolverTest {
     // helpers
     // -----------------------------------------------------------------------
 
+    @Test
+    void testSerializeExtensionSanWithEmptyDnsListProducesOidAndEmptySequence() throws Exception {
+
+        // dns_name is an empty list → the optional loop produces no elements.
+        // The OCTET_STRING still wraps an (empty) inner SEQUENCE.
+        String json = ResourceReaderTestUtils.readResourceFileAsString("json/asn1/rfc/san/extension-san.json");
+
+        List<byte[]> result = enotSerializer.serialize(json, ctx(Map.of(
+                "san", Map.of("dns_name", List.of()))), enotContext);
+
+        assertThat(result).hasSize(1);
+
+        // outer SEQUENCE: OID + OCTET_STRING (no critical BOOLEAN, no dns entries)
+        ASN1Sequence root = (ASN1Sequence) ASN1Primitive.fromByteArray(result.get(0));
+        assertThat(root.size()).isEqualTo(2);
+        assertThat(((ASN1ObjectIdentifier) root.getObjectAt(0)).getId()).isEqualTo(SAN_OID);
+
+        // OCTET_STRING wraps an empty inner SEQUENCE
+        ASN1OctetString octetString = (ASN1OctetString) root.getObjectAt(1);
+        ASN1Sequence innerSeq = (ASN1Sequence) ASN1Primitive.fromByteArray(octetString.getOctets());
+        assertThat(innerSeq.size()).isEqualTo(0);
+    }
+
     /**
      * Asserts that the given DER blob is a context-specific implicit tag [2] (IA5String)
      * with the expected DNS name value — the encoding used for dNSName in SAN (RFC 5280).

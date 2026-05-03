@@ -22,8 +22,8 @@ public class OidUtils {
             return false;
         }
         try {
-            ASN1ObjectIdentifier.tryFromID(input);
-            return true;
+            ASN1ObjectIdentifier result = ASN1ObjectIdentifier.tryFromID(input);
+            return result != null;
         } catch(Exception e) {
             return false;
         }

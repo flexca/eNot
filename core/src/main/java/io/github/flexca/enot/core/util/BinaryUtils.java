@@ -1,10 +1,15 @@
 package io.github.flexca.enot.core.util;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class BinaryUtils {
 
     private BinaryUtils() {
+    }
+
+    public static byte[] concatenateBinary(byte[]... input) {
+        return concatenateBinary(Arrays.asList(input));
     }
 
     public static byte[] concatenateBinary(List<byte[]> input) {

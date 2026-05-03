@@ -5,6 +5,18 @@ import io.github.flexca.enot.bertlv.util.BerTlvUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * A primitive (leaf) BER-TLV element whose value is raw binary data.
+ * <p>
+ * Encoding layout (definite form): {@code <tag> <length> <value>}<br>
+ * Encoding layout (indefinite form): {@code <tag> 80 <value> 00 00}
+ * <p>
+ * Example — tag {@code 04}, value {@code AA BB}:
+ * <pre>{@code
+ * Definite:   04 02 AA BB
+ * Indefinite: 04 80 AA BB 00 00
+ * }</pre>
+ */
 public class BerTlvLeafElement extends BerTlvElement<byte[]> {
 
     private byte[] value;

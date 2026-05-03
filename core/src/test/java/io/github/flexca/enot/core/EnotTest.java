@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EnotTest {
@@ -184,6 +185,40 @@ public class EnotTest {
                         .withRegistry(registry)
                         .build());
         assertThat(ex.getMessage()).contains("at least one of jsonObjectMapper or yamlObjectMapper must be set");
+    }
+
+    @Test
+    void testParseJsonFailsWhenOnlyYamlMapperConfigured() {
+        EnotRegistry registry = new EnotRegistry.Builder()
+                .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
+                .build();
+        Enot yamlOnlyEnot = new Enot.Builder()
+                .withRegistry(registry)
+                .withYamlObjectMapper(yamlObjectMapper)
+                .build();
+
+        // JSON input detected, but no JSON ObjectMapper is configured
+        assertThatThrownBy(() -> yamlOnlyEnot.parse(commonNameJson))
+                .isInstanceOf(io.github.flexca.enot.core.exception.EnotParsingException.class)
+                .hasMessageContaining("jsonObjectMapper is not set");
+    }
+
+    @Test
+    void testParseYamlFailsWhenOnlyJsonMapperConfigured() throws Exception {
+        EnotRegistry registry = new EnotRegistry.Builder()
+                .withTypeSpecifications(new SystemTypeSpecification(), new Asn1TypeSpecification())
+                .build();
+        Enot jsonOnlyEnot = new Enot.Builder()
+                .withRegistry(registry)
+                .withJsonObjectMapper(jsonObjectMapper)
+                .build();
+
+        String yamlTemplate = ResourceReaderTestUtils.readResourceFileAsString("yaml/asn1/rfc/uniqueness/extended-key-usage-with-uniqueness.yaml");
+
+        // YAML input detected, but no YAML ObjectMapper is configured
+        assertThatThrownBy(() -> jsonOnlyEnot.parse(yamlTemplate))
+                .isInstanceOf(io.github.flexca.enot.core.exception.EnotParsingException.class)
+                .hasMessageContaining("yamlObjectMapper is not set");
     }
 
     // -----------------------------------------------------------------------

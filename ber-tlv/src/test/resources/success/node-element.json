@@ -1,11 +1,11 @@
 {
-  "type": "ber_tlv",
+  "type": "ber-tlv",
   "attributes": {
     "tag": "73"
   },
   "body": [
     {
-      "type": "ber_tlv",
+      "type": "ber-tlv",
       "attributes": {
         "tag": "04"
       },
