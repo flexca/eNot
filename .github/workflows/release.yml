@@ -45,14 +45,16 @@ jobs:
 
       - name: Release and Deploy
         run: |
+          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+
           mvn --batch-mode release:prepare release:perform \
             -DreleaseVersion=${{ github.event.inputs.releaseVersion }} \
             -DdevelopmentVersion=${{ github.event.inputs.nextVersion }} \
-            -DpushChanges=false \
+            -DpushChanges=true \
             -DlocalCheckout=true \
             -DscmCommentPrefix="[release] " \
-            -Darguments="-DskipTests -Prelease"
-          git push --follow-tags https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/flexca/eNot.git HEAD:main
+            -Darguments="-DskipTests -Prelease" \
+            -DdeveloperConnection="scm:git:$REPO_URL"
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
