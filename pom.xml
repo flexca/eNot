@@ -165,8 +165,11 @@
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
-                            <!-- Exclude modules with maven.deploy.skip=true (e.g. web-tool) -->
-                            <excludeMavenModules>true</excludeMavenModules>
+                            <excludeArtifacts>
+                                <artifact>enot-web-tool</artifact>
+                                <artifact>enot-web-tool-backend</artifact>
+                                <artifact>enot-web-tool-frontend</artifact>
+                            </excludeArtifacts>
                         </configuration>
                     </plugin>
 

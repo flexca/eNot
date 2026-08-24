@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-08-24
+
+### Added
+
+#### Core — public API extensions on `Enot`
+
+- `getParamsExampleYaml(String)` — returns example parameter values for all template placeholders as a YAML string (complementing the existing `getParamsExampleJson`)
+- `toJson(List<EnotElement>)` — serializes pre-parsed elements back to a JSON template string
+- `toYaml(List<EnotElement>)` — serializes pre-parsed elements back to a YAML template string; both are inverse of `parse` and useful for round-tripping, debugging, and JSON ↔ YAML conversion
+- `getJsonObjectMapper()` / `getYamlObjectMapper()` — expose the configured Jackson `ObjectMapper` instances for advanced/custom serialization use cases
+
+### Changed
+
+- Version alignment across all modules for the 1.1.0 release
+
 ## [1.0.0] - 2026-05-03
 
 ### Added
