@@ -162,6 +162,65 @@ public class EnotTest {
         assertThat(parsed.get("common_name")).isEqualTo("replace with your value");
     }
 
+    @Test
+    void testGetParamsExampleYamlIsValidYaml() throws Exception {
+        String yaml = enot.getParamsExampleYaml(commonNameJson);
+
+        assertThat(yaml).isNotBlank();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> parsed = yamlObjectMapper.readValue(yaml, Map.class);
+        assertThat(parsed).containsOnlyKeys("common_name");
+        assertThat(parsed.get("common_name")).isEqualTo("replace with your value");
+    }
+
+    // -----------------------------------------------------------------------
+    // toJson / toYaml
+    // -----------------------------------------------------------------------
+
+    @Test
+    void testToJsonProducesValidJson() throws Exception {
+        List<EnotElement> elements = enot.parse(commonNameJson);
+
+        String json = enot.toJson(elements);
+
+        assertThat(json).isNotBlank();
+        // must parse back without error
+        jsonObjectMapper.readValue(json, Object.class);
+    }
+
+    @Test
+    void testToYamlProducesValidYaml() throws Exception {
+        List<EnotElement> elements = enot.parse(commonNameJson);
+
+        String yaml = enot.toYaml(elements);
+
+        assertThat(yaml).isNotBlank();
+        // must parse back without error
+        yamlObjectMapper.readValue(yaml, Object.class);
+    }
+
+    @Test
+    void testToJsonRoundTrip() throws Exception {
+        List<EnotElement> elements = enot.parse(commonNameJson);
+
+        String json = enot.toJson(elements);
+        List<EnotElement> reparsed = enot.parse(json);
+
+        assertThat(reparsed).hasSize(elements.size());
+        assertThat(reparsed.get(0).getType()).isEqualTo(elements.get(0).getType());
+    }
+
+    @Test
+    void testToYamlRoundTrip() throws Exception {
+        List<EnotElement> elements = enot.parse(commonNameJson);
+
+        String yaml = enot.toYaml(elements);
+        List<EnotElement> reparsed = enot.parse(yaml);
+
+        assertThat(reparsed).hasSize(elements.size());
+        assertThat(reparsed.get(0).getType()).isEqualTo(elements.get(0).getType());
+    }
+
     // -----------------------------------------------------------------------
     // Builder failures
     // -----------------------------------------------------------------------

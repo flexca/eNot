@@ -5,7 +5,7 @@
     <groupId>io.github.flexca</groupId>
     <artifactId>enot-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <name>eNot parent</name>
     <description>
         eNot — a template engine for encoding X.509 certificate fields and extensions into ASN.1/DER binary using JSON
@@ -42,7 +42,7 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
         <lombok.version>1.18.44</lombok.version>
-        <jackson.version>3.1.1</jackson.version>
+        <jackson.version>3.2.1</jackson.version>
         <bouncycastle.version>1.84</bouncycastle.version>
         <commons-collections4.version>4.5.0</commons-collections4.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
@@ -165,6 +165,11 @@
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
+                            <excludeArtifacts>
+                                <artifact>enot-web-tool</artifact>
+                                <artifact>enot-web-tool-backend</artifact>
+                                <artifact>enot-web-tool-frontend</artifact>
+                            </excludeArtifacts>
                         </configuration>
                     </plugin>
 

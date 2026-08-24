@@ -123,12 +123,24 @@ public class Enot {
      * Parses an eNot template and returns a JSON string containing example
      * parameter values for all placeholders found in the template.
      *
-     * @param json the eNot template as a JSON or YAML string; must not be blank
+     * @param input the eNot template as a JSON or YAML string; must not be blank
      * @return a JSON object string mapping placeholder names to example values
      * @throws EnotParsingException if the template cannot be parsed
      */
-    public String getParamsExampleJson(String json) throws EnotParsingException {
-        return jsonObjectMapper.writeValueAsString(getParamsExample(json));
+    public String getParamsExampleJson(String input) throws EnotParsingException {
+        return jsonObjectMapper.writeValueAsString(getParamsExample(input));
+    }
+
+    /**
+     * Parses an eNot template and returns a YAML string containing example
+     * parameter values for all placeholders found in the template.
+     *
+     * @param input the eNot template as a JSON or YAML string; must not be blank
+     * @return a JSON object string mapping placeholder names to example values
+     * @throws EnotParsingException if the template cannot be parsed
+     */
+    public String getParamsExampleYaml(String input) throws EnotParsingException {
+        return yamlObjectMapper.writeValueAsString(getParamsExample(input));
     }
 
     /**
@@ -186,6 +198,54 @@ public class Enot {
      */
     public Map<String, Object> getParamsExample(List<EnotElement> elements) {
         return ParamUtils.toMap(exampleParamsExtractor.extractExampleParams(elements));
+    }
+
+    /**
+     * Serializes a list of pre-parsed {@link EnotElement} instances back to a
+     * JSON string that is structurally equivalent to the original eNot template.
+     *
+     * <p>This is useful for round-tripping, debugging, or converting a YAML
+     * template to its JSON equivalent after parsing.</p>
+     *
+     * @param elements the elements to serialize; must not be {@code null}
+     * @return a JSON array string representing the elements
+     */
+    public String toJson(List<EnotElement> elements) {
+        return jsonObjectMapper.writeValueAsString(elements);
+    }
+
+    /**
+     * Serializes a list of pre-parsed {@link EnotElement} instances back to a
+     * YAML string that is structurally equivalent to the original eNot template.
+     *
+     * <p>This is useful for round-tripping, debugging, or converting a JSON
+     * template to its YAML equivalent after parsing.</p>
+     *
+     * @param elements the elements to serialize; must not be {@code null}
+     * @return a YAML string representing the elements
+     */
+    public String toYaml(List<EnotElement> elements) {
+        return yamlObjectMapper.writeValueAsString(elements);
+    }
+
+    /**
+     * Returns the {@link ObjectMapper} configured for JSON processing.
+     *
+     * @return the JSON {@link ObjectMapper}, or {@code null} if none was provided
+     *         to the {@link Builder}
+     */
+    public ObjectMapper getJsonObjectMapper() {
+        return jsonObjectMapper;
+    }
+
+    /**
+     * Returns the {@link ObjectMapper} configured for YAML processing.
+     *
+     * @return the YAML {@link ObjectMapper}, or {@code null} if none was provided
+     *         to the {@link Builder}
+     */
+    public ObjectMapper getYamlObjectMapper() {
+        return yamlObjectMapper;
     }
 
     /**

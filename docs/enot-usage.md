@@ -20,7 +20,8 @@
   - [3.1 parse](#31-parse)
   - [3.2 serialize from pre-parsed elements](#32-serialize-from-pre-parsed-elements)
   - [3.3 getParamsExample](#33-getparamsexample)
-  - [3.4 Thread safety](#34-thread-safety)
+  - [3.4 toJson / toYaml](#34-tojson--toyaml)
+  - [3.5 Thread safety](#35-thread-safety)
 
 ---
 
@@ -469,18 +470,41 @@ Map<String, Object> example = enot.getParamsExample(elements.get(0));
 Map<String, Object> example = enot.getParamsExample(elements);
 ```
 
-To get the result as a JSON string instead of a `Map`:
+To get the result as a JSON or YAML string instead of a `Map`:
 
 ```java
 String exampleJson = enot.getParamsExampleJson(templateJson);
 // e.g. {"subject_cn":"replace with your value","country":"replace with your value"}
+
+String exampleYaml = enot.getParamsExampleYaml(templateJson);
+// e.g.
+// subject_cn: "replace with your value"
+// country: "replace with your value"
 ```
 
 This is handy for building tooling, debugging, or generating test fixtures from real templates.
 
 ---
 
-### 3.4 Thread safety
+### 3.4 toJson / toYaml
+
+`toJson` and `toYaml` serialize a list of pre-parsed {@link EnotElement} instances back into a template string. This is useful for round-tripping, debugging, or converting between formats.
+
+```java
+List<EnotElement> elements = enot.parse(templateJson);
+
+// Serialize back to JSON
+String json = enot.toJson(elements);
+
+// Serialize back to YAML
+String yaml = enot.toYaml(elements);
+```
+
+Both methods are the inverse of `parse` — the resulting string can be fed back into `parse` to reproduce the same element tree.
+
+---
+
+### 3.5 Thread safety
 
 | Object | Thread safety |
 |--------|--------------|
