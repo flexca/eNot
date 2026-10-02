@@ -25,6 +25,9 @@ import java.util.Objects;
  *     nested {@link EnotElement} objects, or {@code null} if the element has no body.</li>
  * </ul>
  * <p>
+ * In addition, each parsed element carries a {@code jsonPath} — the JSON Pointer (RFC 6901) path to this
+ * element within its template — which is useful for diagnostics and error reporting.
+ * <p>
  * This class is a plain data object. All parsing, validation, and serialization behaviour is handled by
  * {@link io.github.flexca.enot.core.parser.EnotParser}, {@link io.github.flexca.enot.core.registry.EnotTypeSpecification},
  * and {@link io.github.flexca.enot.core.serializer.EnotSerializer}.
@@ -62,6 +65,13 @@ public class EnotElement {
     private boolean optional = false;
 
     /**
+     * JSON Pointer (RFC 6901) path to this element within the parsed template, e.g. {@code "/body/2/body"}.
+     * The root element of a top-level parse has an empty path {@code ""}; a reference-resolved template
+     * restarts its path at the root since it is parsed as its own independent document.
+     */
+    private String jsonPath;
+
+    /**
      * A map containing metadata about the element. Attributes provide additional, type-specific information
      * that is not part of the core body. The keys are defined as {@link EnotAttribute} instances, and the values
      * can be of any type, as validated by the element's {@link EnotTypeSpecification}.
@@ -79,6 +89,7 @@ public class EnotElement {
         EnotElement clone = new EnotElement();
         clone.setType(type);
         clone.setOptional(optional);
+        clone.setJsonPath(jsonPath);
         Map<EnotAttribute, Object> cloneAttributes = new HashMap<>(attributes);
         clone.setAttributes(cloneAttributes);
         if (body instanceof EnotElement elementBody) {
@@ -116,6 +127,14 @@ public class EnotElement {
         this.optional = optional;
     }
 
+    public String getJsonPath() {
+        return jsonPath;
+    }
+
+    public void setJsonPath(String jsonPath) {
+        this.jsonPath = jsonPath;
+    }
+
     public Map<EnotAttribute, Object> getAttributes() {
         return attributes;
     }
@@ -141,18 +160,20 @@ public class EnotElement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EnotElement that = (EnotElement) o;
-        return optional == that.optional && Objects.equals(type, that.type) && Objects.equals(attributes, that.attributes) && Objects.equals(body, that.body);
+        return optional == that.optional && Objects.equals(type, that.type) && Objects.equals(jsonPath, that.jsonPath) && Objects.equals(attributes, that.attributes) && Objects.equals(body, that.body);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, optional, attributes, body);
+        return Objects.hash(type, optional, jsonPath, attributes, body);
     }
 
     @Override
     public String toString() {
         return "EnotElement{" +
                 "type='" + type + '\'' +
+                "optional='" + optional + '\'' +
+                "jsonPath='" + jsonPath + '\'' +
                 ", attributes=" + attributes +
                 ", body=" + body +
                 '}';

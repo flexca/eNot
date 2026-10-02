@@ -23,7 +23,7 @@ import io.github.flexca.enot.core.util.PlaceholderUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,8 +40,8 @@ public class ExampleParamsExtractor {
 
     public ContextMap extractExampleParams(List<EnotElement> elements) {
 
-        Map<String, ContextNode> items = new HashMap<>();
-        Map<String, ContextNode> globalItems = new HashMap<>();
+        Map<String, ContextNode> items = new LinkedHashMap<>();
+        Map<String, ContextNode> globalItems = new LinkedHashMap<>();
         for(EnotElement element : elements) {
             extractPlaceholdersFromElement(element, items, globalItems);
         }
@@ -61,7 +61,7 @@ public class ExampleParamsExtractor {
 
         EnotElementPathAltering pathAltering = typeSpecification.getPathAltering(element);
         if(EnotElementPathAlteringType.ARRAY_SCOPE.equals(pathAltering.getType())) {
-            Map<String, ContextNode> subItems = new HashMap<>();
+            Map<String, ContextNode> subItems = new LinkedHashMap<>();
             ContextMap subMap = new ContextMap();
             subMap.setItems(subItems);
             List<ContextNode> subArrayItems = new ArrayList<>();
@@ -71,7 +71,7 @@ public class ExampleParamsExtractor {
             items.put(pathAltering.getKey(), subArray);
             extractPlaceholdersFromElementBody(element.getBody(), elementSpecification, subItems, globalItems);
         } else if(EnotElementPathAlteringType.MAP_SCOPE.equals(pathAltering.getType())) {
-            Map<String, ContextNode> subItems = new HashMap<>();
+            Map<String, ContextNode> subItems = new LinkedHashMap<>();
             ContextMap subMap = new ContextMap();
             subMap.setItems(subItems);
             items.put(pathAltering.getKey(), subMap);
@@ -98,7 +98,7 @@ public class ExampleParamsExtractor {
                 placeholder.ifPresent(variableName -> {
                     if (PlaceholderUtils.isGlobalVariable(variableName)) {
                         globalItems.put(variableName, contextPrimitive);
-                    } else {
+                    } else if (!PlaceholderUtils.isSystemVariable(variableName)) {
                         items.put(variableName, contextPrimitive);
                     }
                 });
@@ -152,7 +152,7 @@ public class ExampleParamsExtractor {
                 if (leafBlock.getValue() instanceof String stringValue) {
                     if (PlaceholderUtils.isGlobalVariable(stringValue)) {
                         globalItems.put(stringValue, contextPrimitive);
-                    } else {
+                    } else if (!PlaceholderUtils.isSystemVariable(stringValue)) {
                         items.put(stringValue, contextPrimitive);
                     }
                 }

@@ -25,7 +25,7 @@
 
 - **[ASN.1 elements](asn1/index.md)** — All 16 supported DER tags: structural, primitive, string, time, and context-tagging. Each tag has its own page with attributes, body rules, and examples.
 
-- **[System elements](system/index.md)** — Control-flow and transformation elements: `loop`, `condition`, `group`, `reference`, `hex_to_bin`, `bin_to_hex`, `sha1`, `bit_map`.
+- **[System elements](system/index.md)** — Control-flow and transformation elements: `loop`, `condition`, `group`, `reference`, `hex_to_bin`, `bin_to_hex`, `base64_to_bin`, `bin_to_base64`, `ip_address_to_bytes`, `sha1`, `bit_map`.
 
 ### Extending eNot
 

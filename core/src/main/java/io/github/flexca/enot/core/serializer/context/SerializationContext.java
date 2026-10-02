@@ -33,6 +33,12 @@ import java.util.Map;
  *   <li><b>globalParams</b> – cross-cutting values that are always resolved
  *       from the root regardless of the current path. Placeholders must use
  *       the {@code global.} prefix, e.g. {@code ${global.env}}.</li>
+ *   <li><b>systemParams</b> – values supplied by the host application rather
+ *       than the template caller (e.g. CA-issued URLs). Placeholders must use
+ *       the {@code system.} prefix, e.g. {@code ${system.issuer_ocsp_url}}.</li>
+ *   <li><b>customParams</b> – opaque values made available to the parser (not
+ *       the placeholder resolver) when serializing directly from a template
+ *       string; see {@link #getCustomParams()}.</li>
  * </ul>
  *
  * <h2>Path navigation</h2>
@@ -57,14 +63,20 @@ public class SerializationContext {
     private final ContextNode params;
 
     private final Map<String, Object> globalParams;
+    private final Map<String, Object> systemParams;
+
+    private final Map<String, Object> customParams;
 
     private final List<ContextState> currentPath = new ArrayList<>();
 
-    private SerializationContext(Map<String, Object> params, Map<String, Object> globalParams) {
+    private SerializationContext(Map<String, Object> params, Map<String, Object> globalParams,  Map<String, Object> systemParams,
+                                 Map<String, Object> customParams) {
         Map<String, Object> additionalGlobalParams = new HashMap<>();
         this.params = fromMap(params, additionalGlobalParams);
         this.globalParams = new HashMap<>(globalParams);
         this.globalParams.putAll(additionalGlobalParams);
+        this.systemParams = systemParams;
+        this.customParams = customParams;
         this.currentPath.add(new ContextState(StringUtils.EMPTY, 0));
     }
 
@@ -73,6 +85,8 @@ public class SerializationContext {
      *
      * <p>If {@code name} starts with {@value PlaceholderUtils#GLOBAL_PARAM_PREFIX}
      * the value is looked up in the global params map (prefix is stripped first).
+     * If {@code name} starts with {@value PlaceholderUtils#SYSTEM_PARAM_PREFIX}
+     * the value is looked up in the system params map (prefix is stripped first).
      * Otherwise the lookup is performed against the node that the current path
      * points to:</p>
      * <ul>
@@ -91,6 +105,8 @@ public class SerializationContext {
     public Object resolvePlaceholderValue(String name) {
         if (PlaceholderUtils.isGlobalVariable(name)) {
             return globalParams.get(name);
+        } else if (PlaceholderUtils.isSystemVariable(name)) {
+            return systemParams.get(name);
         } else {
             ContextNode currentContext = getCurrentContext();
             if (currentContext instanceof ContextMap contextMap) {
@@ -198,6 +214,17 @@ public class SerializationContext {
         contextState.setIndex(0);
     }
 
+    /**
+     * Returns the custom params supplied to this context, passed through to
+     * the parser when serializing from a template string (see
+     * {@link io.github.flexca.enot.core.Enot#serialize(String, SerializationContext)}).
+     *
+     * @return the custom params map; never {@code null}
+     */
+    public Map<String, Object> getCustomParams() {
+        return customParams;
+    }
+
     public List<ContextState> getCurrentPath() {
         return currentPath;
     }
@@ -232,6 +259,8 @@ public class SerializationContext {
 
         private Map<String, Object> params = new HashMap<>();
         private Map<String, Object> globalParams = new HashMap<>();
+        private Map<String, Object> systemParams = new HashMap<>();
+        private Map<String, Object> customParams = new HashMap<>();
 
         /**
          * Creates a new builder with the given {@link ObjectMapper}.
@@ -311,10 +340,36 @@ public class SerializationContext {
 
             if (PlaceholderUtils.isGlobalVariable(key)) {
                 this.globalParams.put(key, value);
+            } else if (PlaceholderUtils.isSystemVariable(key)) {
+                this.systemParams.put(key, value);
             } else {
                 this.params.put(key, value);
             }
 
+            return this;
+        }
+
+        /**
+         * Merges a map of system param entries, resolved via the {@code system.} prefix
+         * (e.g. {@code ${system.issuer_ocsp_url}}).
+         *
+         * @param systemParams system params to merge in
+         * @return this builder
+         */
+        public Builder withSystemParams(Map<String, Object> systemParams) {
+            this.systemParams.putAll(systemParams);
+            return this;
+        }
+
+        /**
+         * Merges a map of custom params, made available to the parser (not the
+         * placeholder resolver) via {@link SerializationContext#getCustomParams()}.
+         *
+         * @param customParams custom params to merge in
+         * @return this builder
+         */
+        public Builder withCustomParams(Map<String, Object> customParams) {
+            this.customParams.putAll(customParams);
             return this;
         }
 
@@ -324,7 +379,7 @@ public class SerializationContext {
          * @return a new, immutable-params context ready for serialization
          */
         public SerializationContext build() {
-            return new SerializationContext(params, globalParams);
+            return new SerializationContext(params, globalParams, systemParams, customParams);
         }
     }
 
@@ -379,9 +434,9 @@ public class SerializationContext {
         contextMap.setItems(items);
         input.forEach((key, value) -> {
             if (key instanceof String stringKey) {
-                if(PlaceholderUtils.isGlobalVariable(stringKey)) {
+                if (PlaceholderUtils.isGlobalVariable(stringKey)) {
                     globalCandidates.put(stringKey, value);
-                } else {
+                } else if (!PlaceholderUtils.isSystemVariable(stringKey)) {
                     items.put(stringKey, extractNode(value, globalCandidates));
                 }
             } else {

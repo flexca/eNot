@@ -77,7 +77,7 @@ EnotRegistry registry = new EnotRegistry.Builder()
 
 | Specification | What it registers |
 |--------------|-------------------|
-| `SystemTypeSpecification` | All system elements: `loop`, `condition`, `group`, `reference`, `hex_to_bin`, `bin_to_hex`, `sha1`, `bit_map`. |
+| `SystemTypeSpecification` | All system elements: `loop`, `condition`, `group`, `reference`, `hex_to_bin`, `bin_to_hex`, `base64_to_bin`, `bin_to_base64`, `ip_address_to_bytes`, `sha1`, `bit_map`. |
 | `Asn1TypeSpecification` | All 16 ASN.1 DER tags. |
 | `BerTlvEnotTypeSpecification` | BER-TLV encoding (from the `enot-ber-tlv` module). |
 
