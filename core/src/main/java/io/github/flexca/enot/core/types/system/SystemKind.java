@@ -10,11 +10,14 @@ import io.github.flexca.enot.core.registry.EnotElementSpecification;
 import io.github.flexca.enot.core.registry.EnotElementValidator;
 import io.github.flexca.enot.core.serializer.ElementSerializer;
 import io.github.flexca.enot.core.types.system.attribute.SystemAttribute;
+import io.github.flexca.enot.core.types.system.serializer.SystemBase64ToBinSerializer;
+import io.github.flexca.enot.core.types.system.serializer.SystemBinToBase64Serializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemBinToHexSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemBitMapSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemConditionSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemGroupSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemHexToBinSerializer;
+import io.github.flexca.enot.core.types.system.serializer.SystemIpAddressToBytesSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemLoopSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemReferenceSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemSha1Serializer;
@@ -103,7 +106,34 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND),
             null,
             null,
-            new SystemBinToHexSerializer());
+            new SystemBinToHexSerializer()),
+
+    BASE64_TO_BIN("base64_to_bin",
+            new EnotValueSpecification(CommonEnotValueType.TEXT, false),
+            new EnotValueSpecification(CommonEnotValueType.BINARY, false),
+            Set.of(SystemAttribute.KIND),
+            Set.of(SystemAttribute.KIND),
+            null,
+            null,
+            new SystemBase64ToBinSerializer()),
+
+    BIN_TO_BASE64("bin_to_base64",
+            new EnotValueSpecification(CommonEnotValueType.BINARY, false),
+            new EnotValueSpecification(CommonEnotValueType.TEXT, false),
+            Set.of(SystemAttribute.KIND),
+            Set.of(SystemAttribute.KIND),
+            null,
+            null,
+            new SystemBinToBase64Serializer()),
+
+    IP_ADDRESS_TO_BYTES("ip_address_to_bytes",
+            new EnotValueSpecification(CommonEnotValueType.TEXT, false),
+            new EnotValueSpecification(CommonEnotValueType.BINARY, false),
+            Set.of(SystemAttribute.KIND),
+            Set.of(SystemAttribute.KIND),
+            null,
+            null,
+            new SystemIpAddressToBytesSerializer());
 
     private static final Map<String, SystemKind> BY_NAME = new HashMap<>();
     static {

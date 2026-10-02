@@ -37,7 +37,7 @@ EnotRegistry registry = new EnotRegistry.Builder()
         .build();
 ```
 
-No additional configuration is required. Once registered, all eight `kind` values listed below are available in templates.
+No additional configuration is required. Once registered, all eleven `kind` values listed below are available in templates.
 
 ---
 
@@ -53,3 +53,6 @@ No additional configuration is required. Once registered, all eight `kind` value
 | `sha1` | Computes the SHA-1 digest of its binary input and outputs the 20-byte digest as binary. | [sha1.md](sha1.md) |
 | `hex_to_bin` | Decodes a hexadecimal text string into raw binary bytes. | [hex_to_bin.md](hex_to_bin.md) |
 | `bin_to_hex` | Encodes a binary value as a lowercase hexadecimal text string. | [bin_to_hex.md](bin_to_hex.md) |
+| `base64_to_bin` | Decodes a Base64 text string into raw binary bytes. | [base64_to_bin.md](base64_to_bin.md) |
+| `bin_to_base64` | Encodes a binary value as a Base64 text string. | [bin_to_base64.md](bin_to_base64.md) |
+| `ip_address_to_bytes` | Converts a literal IPv4 or IPv6 address string into raw address bytes. | [ip_address_to_bytes.md](ip_address_to_bytes.md) |

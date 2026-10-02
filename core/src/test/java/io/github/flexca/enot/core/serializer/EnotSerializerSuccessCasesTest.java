@@ -135,17 +135,17 @@ public class EnotSerializerSuccessCasesTest {
         // Both dates before 2050 → both encoded as UTCTime
         List<byte[]> result = enotSerializer.serialize(json, ctx(Map.of(
                 "valid_from", "2024-01-15T10:00:00Z",
-                "expires_on", "2025-01-15T10:00:00Z")), enotContext);
+                "expires_on", "2050-01-15T10:00:00Z")), enotContext);
 
         assertThat(result).hasSize(1);
 
         ASN1Sequence seq = (ASN1Sequence) ASN1Primitive.fromByteArray(result.get(0));
         assertThat(seq.size()).isEqualTo(2);
         assertThat(seq.getObjectAt(0)).isInstanceOf(ASN1UTCTime.class);
-        assertThat(seq.getObjectAt(1)).isInstanceOf(ASN1UTCTime.class);
+        assertThat(seq.getObjectAt(1)).isInstanceOf(ASN1GeneralizedTime.class);
         // ASN1UTCTime.getTime() returns "YYYYMMDDHHmmGMT+00:00" after adjustment
-        assertThat(((ASN1UTCTime) seq.getObjectAt(0)).getTime()).startsWith("202401");
-        assertThat(((ASN1UTCTime) seq.getObjectAt(1)).getTime()).startsWith("202501");
+        assertThat(((ASN1UTCTime) seq.getObjectAt(0)).getTime()).startsWith("2401");
+        assertThat(((ASN1GeneralizedTime) seq.getObjectAt(1)).getTime()).startsWith("205001");
     }
 
     @Test

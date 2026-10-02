@@ -10,6 +10,9 @@ public class PlaceholderUtils {
     public static final String GLOBAL_PARAM = "global";
     public static final String GLOBAL_PARAM_PREFIX = GLOBAL_PARAM + ".";
 
+    public static final String SYSTEM_PARAM = "system";
+    public static final String SYSTEM_PARAM_PREFIX = SYSTEM_PARAM + ".";
+
     private static final Pattern VARIABLE_NAME_REGEXP = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*$");
     private static final Pattern TYPE_NAME_REGEXP = Pattern.compile("^[A-Za-z0-9._\\-+#]+$");
 
@@ -61,6 +64,8 @@ public class PlaceholderUtils {
         if(takeIntoAccountPrefixes) {
             if (input.startsWith(GLOBAL_PARAM_PREFIX)) {
                 inputWithoutPrefix = input.substring(GLOBAL_PARAM_PREFIX.length());
+            } else if (input.startsWith(SYSTEM_PARAM_PREFIX)) {
+                inputWithoutPrefix = input.substring(SYSTEM_PARAM_PREFIX.length());
             } else {
                 inputWithoutPrefix = input;
             }
@@ -78,6 +83,15 @@ public class PlaceholderUtils {
         }
 
         return input.startsWith(GLOBAL_PARAM_PREFIX);
+    }
+
+    public static boolean isSystemVariable(String input) {
+
+        if(StringUtils.isBlank(input)) {
+            return false;
+        }
+
+        return input.startsWith(SYSTEM_PARAM_PREFIX);
     }
 
     public static boolean isValidTypeName(String input) {

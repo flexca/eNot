@@ -5,7 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-10-02
+
+### Added
+
+#### Core — system params
+
+- `${system.*}` placeholder prefix — resolves values from a new `systemParams` map on `SerializationContext`, kept separate from regular template params so host applications can inject values (e.g. CA-issued URLs) that end users cannot override
+- `SerializationContext.Builder.withSystemParams(Map<String, Object>)` — supplies system params in bulk
+- `PlaceholderUtils.isSystemVariable(String)` / `SYSTEM_PARAM_PREFIX` — detects and strips the `system.` prefix, mirroring the existing `global.` handling
+
+#### Core — custom params
+
+- `Enot.parse(String, Map<String, Object>)` — parses a template while making a custom params map available to parser-level logic (distinct from placeholder resolution)
+- `SerializationContext.Builder.withCustomParams(Map<String, Object>)` / `SerializationContext.getCustomParams()` — custom params supplied on the context are forwarded to the parser when calling `Enot.serialize(String, SerializationContext)`
+- `Enot.getTypeSpecification(String)` — looks up a registered `EnotTypeSpecification` by element type name
+
+#### Core — element JSON path
+
+- `EnotElement.getJsonPath()` — exposes the JSON Pointer (RFC 6901) path of each parsed element within its template (e.g. `"/body/2/body"`), useful for diagnostics and error reporting; included in `equals`/`hashCode`/`toString`
+- `Enot.parse(String)` / `Enot.parse(String, Map<String, Object>)` — now populate `jsonPath` on every returned `EnotElement`, including elements resolved via `system/reference`
+
+#### Core — System elements
+
+- `base64_to_bin` — decodes a Base64 text string into raw binary bytes
+- `bin_to_base64` — encodes a binary value as a Base64 text string
+- `ip_address_to_bytes` — converts a literal IPv4 or IPv6 address string into raw address bytes (4 or 16 bytes); rejects hostnames so serialization never triggers a DNS lookup
+
+### Fixed
+
+- `SerializationContext.Builder.withParam(String, Object)` — a missing `else` meant global params (`global.*`) were also copied into the regular params map; single-param global values are now stored only in `globalParams`
+- `SerializationContext.Builder.withSystemParams(Map<String, Object>)` — was erroneously merging into `customParams` instead of `systemParams`, making it impossible to supply system params in bulk
+
 ## [1.1.0] - 2026-08-24
+
 
 ### Added
 
