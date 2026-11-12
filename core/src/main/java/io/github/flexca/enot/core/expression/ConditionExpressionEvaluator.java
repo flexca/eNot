@@ -203,7 +203,7 @@ public class ConditionExpressionEvaluator {
                 throw new EnotExpressionEvaluationException("unsupported operator for binary block: " + block.getOperator());
             }
         }
-        return result;
+        return block.isInverted() != result;
     }
 
     private Object evaluateFunction(ExpressionFunction block, SerializationContext serializationContext) throws EnotExpressionEvaluationException {
@@ -213,7 +213,14 @@ public class ConditionExpressionEvaluator {
             Object argument = evaluateBlock(argumentBlock, serializationContext);
             arguments.add(argument);
         }
-        return block.getConditionFunction().evaluate(arguments);
+        Object result = block.getConditionFunction().evaluate(arguments);
+        if (block.isInverted()) {
+            if (result instanceof Boolean booleanResult) {
+                return !booleanResult;
+            }
+            throw new EnotExpressionEvaluationException("non boolean function result cannot be inverted");
+        }
+        return result;
     }
 
     private Object evaluatePrimitiveValue(ExpressionLeaf block, SerializationContext serializationContext) throws EnotExpressionEvaluationException {

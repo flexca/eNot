@@ -3,6 +3,7 @@ package io.github.flexca.enot.core.expression.model;
 import io.github.flexca.enot.core.exception.EnotExpressionEvaluationException;
 import io.github.flexca.enot.core.util.DateTimeUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Array;
 import java.time.ZonedDateTime;
@@ -70,6 +71,26 @@ public enum ConditionFunction {
 
             Object argumentObject = arguments.get(0);
             return argumentObject == null;
+        }
+    },
+    IS_BLANK("is_blank", 1) {
+        @Override
+        public Object evaluate(List<Object> arguments) throws EnotExpressionEvaluationException {
+
+            if (CollectionUtils.isEmpty(arguments) || arguments.size() != 1) {
+                throw new EnotExpressionEvaluationException("expected only one arguments for is_blank function");
+            }
+
+            Object argumentObject = arguments.get(0);
+            if (argumentObject == null) {
+                return true;
+            }
+
+            if(argumentObject instanceof String argumentString) {
+                return StringUtils.isBlank(argumentString);
+            }
+
+            throw new EnotExpressionEvaluationException("expected string as argument for is_blank function");
         }
     };
 

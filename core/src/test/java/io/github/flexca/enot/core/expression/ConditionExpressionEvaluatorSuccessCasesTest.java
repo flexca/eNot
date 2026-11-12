@@ -195,6 +195,58 @@ public class ConditionExpressionEvaluatorSuccessCasesTest {
         assertThat(evaluator.evaluate("is_null(${name}) == false", ctx(Map.of("name", "Alice")))).isTrue();
     }
 
+    @Test
+    void evaluateInvertedIsNullOnPresentPlaceholderReturnsTrue() throws Exception {
+        assertThat(evaluator.evaluate("!is_null(${name})", ctx(Map.of("name", "Alice")))).isTrue();
+    }
+
+    @Test
+    void evaluateInvertedIsNullOnMissingPlaceholderReturnsFalse() throws Exception {
+        assertThat(evaluator.evaluate("!is_null(${missing})", ctx())).isFalse();
+    }
+
+    @Test
+    void evaluateInvertedIsNullCombinedWithLengthComparison() throws Exception {
+        String expression = "!is_null(${dns_name}) && length(${dns_name}) > 0";
+        assertThat(evaluator.evaluate(expression, ctx(Map.of("dns_name", List.of(Map.of("name", "example.com")))))).isTrue();
+        assertThat(evaluator.evaluate(expression, ctx(Map.of("dns_name", List.of())))).isFalse();
+        assertThat(evaluator.evaluate(expression, ctx())).isFalse();
+    }
+
+    // -----------------------------------------------------------------------
+    // is_blank function
+    // -----------------------------------------------------------------------
+
+    @Test
+    void evaluateIsBlankOnMissingPlaceholder() throws Exception {
+        assertThat(evaluator.evaluate("is_blank(${missing}) == true", ctx())).isTrue();
+    }
+
+    @Test
+    void evaluateIsBlankOnEmptyString() throws Exception {
+        assertThat(evaluator.evaluate("is_blank(${name})", ctx(Map.of("name", "")))).isTrue();
+    }
+
+    @Test
+    void evaluateIsBlankOnWhitespaceOnlyString() throws Exception {
+        assertThat(evaluator.evaluate("is_blank(${name})", ctx(Map.of("name", "   ")))).isTrue();
+    }
+
+    @Test
+    void evaluateIsBlankOnNonBlankString() throws Exception {
+        assertThat(evaluator.evaluate("is_blank(${name}) == false", ctx(Map.of("name", "Alice")))).isTrue();
+    }
+
+    @Test
+    void evaluateInvertedIsBlankOnNonBlankStringReturnsTrue() throws Exception {
+        assertThat(evaluator.evaluate("!is_blank(${name})", ctx(Map.of("name", "Alice")))).isTrue();
+    }
+
+    @Test
+    void evaluateInvertedIsBlankOnMissingPlaceholderReturnsFalse() throws Exception {
+        assertThat(evaluator.evaluate("!is_blank(${missing})", ctx())).isFalse();
+    }
+
     // -----------------------------------------------------------------------
     // Binary logical operators
     // -----------------------------------------------------------------------
@@ -238,6 +290,18 @@ public class ConditionExpressionEvaluatorSuccessCasesTest {
     @Test
     void evaluateInvertedComparisonReturnsFalse() throws Exception {
         assertThat(evaluator.evaluate("!(${name} == 'Alice')", ctx(Map.of("name", "Alice")))).isFalse();
+    }
+
+    @Test
+    void evaluateInvertedAndGroupNegatesResult() throws Exception {
+        assertThat(evaluator.evaluate("!(${a} == 'x' && ${b} == 'y')", ctx(Map.of("a", "x", "b", "y")))).isFalse();
+        assertThat(evaluator.evaluate("!(${a} == 'x' && ${b} == 'y')", ctx(Map.of("a", "x", "b", "z")))).isTrue();
+    }
+
+    @Test
+    void evaluateInvertedOrGroupNegatesResult() throws Exception {
+        assertThat(evaluator.evaluate("!(${a} == 'x' || ${b} == 'y')", ctx(Map.of("a", "q", "b", "z")))).isTrue();
+        assertThat(evaluator.evaluate("!(${a} == 'x' || ${b} == 'y')", ctx(Map.of("a", "x", "b", "z")))).isFalse();
     }
 
     // -----------------------------------------------------------------------

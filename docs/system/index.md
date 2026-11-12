@@ -37,7 +37,7 @@ EnotRegistry registry = new EnotRegistry.Builder()
         .build();
 ```
 
-No additional configuration is required. Once registered, all eleven `kind` values listed below are available in templates.
+No additional configuration is required. Once registered, all twelve `kind` values listed below are available in templates.
 
 ---
 
@@ -56,3 +56,4 @@ No additional configuration is required. Once registered, all eleven `kind` valu
 | `base64_to_bin` | Decodes a Base64 text string into raw binary bytes. | [base64_to_bin.md](base64_to_bin.md) |
 | `bin_to_base64` | Encodes a binary value as a Base64 text string. | [bin_to_base64.md](bin_to_base64.md) |
 | `ip_address_to_bytes` | Converts a literal IPv4 or IPv6 address string into raw address bytes. | [ip_address_to_bytes.md](ip_address_to_bytes.md) |
+| `random_generator` | Generates a cryptographically random alphanumeric text string of a configurable length. | [random_generator.md](random_generator.md) |

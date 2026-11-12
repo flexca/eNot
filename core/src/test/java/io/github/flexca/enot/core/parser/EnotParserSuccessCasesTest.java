@@ -1062,4 +1062,27 @@ public class EnotParserSuccessCasesTest {
         assertThat(ipAddressToBytesElement.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "ip_address_to_bytes"));
         assertThat((String) ipAddressToBytesElement.getBody()).isEqualTo("${address}");
     }
+
+    @Test
+    void testParseRandomGeneratorJsonSuccess() throws Exception {
+
+        String json = """
+                {
+                  "type": "system",
+                  "attributes": { "kind": "random_generator", "random_string_length": 12 }
+                }
+                """;
+
+        List<EnotElement> actual = enotParser.parse(json, enotContext);
+
+        assertThat(actual).hasSize(1);
+
+        EnotElement root = actual.get(0);
+        assertThat(root.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
+        assertThat(root.getJsonPath()).isEqualTo("");
+        assertThat(root.isOptional()).isFalse();
+        assertThat(root.getAttributes()).isEqualTo(Map.of(SystemAttribute.KIND, "random_generator",
+                SystemAttribute.RANDOM_STRING_LENGTH, 12));
+        assertThat(root.getBody()).isNull();
+    }
 }

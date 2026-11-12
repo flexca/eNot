@@ -75,7 +75,7 @@ public abstract class BaseElementSerializer implements ElementSerializer {
         return result;
     }
 
-    private List<ElementSerializationResult> serializeBodyElement(EnotElement element, SerializationContext context, String jsonPath,
+    protected List<ElementSerializationResult> serializeBodyElement(EnotElement element, SerializationContext context, String jsonPath,
                                                                   EnotContext enotContext) throws EnotSerializationException {
 
         EnotTypeSpecification typeSpecification = enotContext.getEnotRegistry().getTypeSpecification(element.getType()).orElseThrow(() ->

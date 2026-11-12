@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `base64_to_bin` — decodes a Base64 text string into raw binary bytes
 - `bin_to_base64` — encodes a binary value as a Base64 text string
 - `ip_address_to_bytes` — converts a literal IPv4 or IPv6 address string into raw address bytes (4 or 16 bytes); rejects hostnames so serialization never triggers a DNS lookup
+- `random_generator` — generates a cryptographically secure random alphanumeric text string; length is controlled by the required `random_string_length` attribute (1–4096)
+
+#### Core — condition expressions
+
+- `is_blank(argument)` function — returns `true` when the argument is `null`, an empty string, or a whitespace-only string; usable in `system/condition` expressions alongside `is_null`, `length`, and `date_time`
 
 ### Fixed
 

@@ -230,4 +230,78 @@ public class EnotSerializerFailureCasesTest {
         assertThatThrownBy(() -> enotSerializer.serialize("   ", ctx(Map.of()), enotContext))
                 .isInstanceOf(Exception.class);
     }
+
+    // -----------------------------------------------------------------------
+    // random_generator — invalid random_string_length values
+    // -----------------------------------------------------------------------
+
+    @Test
+    void testSerializationFailsWhenRandomStringLengthIsZero() {
+
+        String json = """
+                {
+                  "type": "system",
+                  "attributes": { "kind": "random_generator", "random_string_length": 0 }
+                }
+                """;
+
+        assertThatThrownBy(() -> enotSerializer.serialize(json, ctx(Map.of()), enotContext))
+                .isInstanceOf(EnotParsingException.class);
+    }
+
+    @Test
+    void testSerializationFailsWhenRandomStringLengthIsNegative() {
+
+        String json = """
+                {
+                  "type": "system",
+                  "attributes": { "kind": "random_generator", "random_string_length": -5 }
+                }
+                """;
+
+        assertThatThrownBy(() -> enotSerializer.serialize(json, ctx(Map.of()), enotContext))
+                .isInstanceOf(EnotParsingException.class);
+    }
+
+    @Test
+    void testSerializationFailsWhenRandomStringLengthExceedsMax() {
+
+        String json = """
+                {
+                  "type": "system",
+                  "attributes": { "kind": "random_generator", "random_string_length": 4097 }
+                }
+                """;
+
+        assertThatThrownBy(() -> enotSerializer.serialize(json, ctx(Map.of()), enotContext))
+                .isInstanceOf(EnotParsingException.class);
+    }
+
+    @Test
+    void testSerializationFailsWhenRandomStringLengthIsNotInteger() {
+
+        String json = """
+                {
+                  "type": "system",
+                  "attributes": { "kind": "random_generator", "random_string_length": "10" }
+                }
+                """;
+
+        assertThatThrownBy(() -> enotSerializer.serialize(json, ctx(Map.of()), enotContext))
+                .isInstanceOf(EnotParsingException.class);
+    }
+
+    @Test
+    void testSerializationFailsWhenRandomStringLengthMissing() {
+
+        String json = """
+                {
+                  "type": "system",
+                  "attributes": { "kind": "random_generator" }
+                }
+                """;
+
+        assertThatThrownBy(() -> enotSerializer.serialize(json, ctx(Map.of()), enotContext))
+                .isInstanceOf(EnotParsingException.class);
+    }
 }

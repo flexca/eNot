@@ -315,6 +315,27 @@ is_null(argument)
 
 ---
 
+#### is_blank
+
+Returns `true` if the argument is `null`, an empty string, or a string containing only whitespace; `false` otherwise. Use this to guard against both absent and empty-string param values in a single check.
+
+```
+is_blank(argument)
+```
+
+| Argument type | Behaviour |
+|---------------|-----------|
+| `String` | `true` when empty or all-whitespace |
+| `null` | `true` |
+| Other | Serialization error |
+
+```
+"is_blank(${organization})"
+"!is_blank(${common_name})"
+```
+
+---
+
 ### Type rules
 
 The **final result of the top-level expression must be a boolean**. Expressions that produce a string, number, or any other type throw a serialization error.
@@ -325,6 +346,7 @@ The **final result of the top-level expression must be a boolean**. Expressions 
 | Boolean operator (`&&`, `\|\|`) | `Boolean` |
 | Inversion (`!`) | `Boolean` |
 | `is_null(...)` | `Boolean` |
+| `is_blank(...)` | `Boolean` |
 | `date_time(...)` | `ZonedDateTime` — must be used inside a comparison |
 | `length(...)` | `Integer` — must be used inside a comparison |
 | Bare placeholder | Type of the resolved value — must be `Boolean` when used as the full expression |

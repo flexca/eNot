@@ -19,12 +19,14 @@ import io.github.flexca.enot.core.types.system.serializer.SystemGroupSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemHexToBinSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemIpAddressToBytesSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemLoopSerializer;
+import io.github.flexca.enot.core.types.system.serializer.SystemRandomGeneratorSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemReferenceSerializer;
 import io.github.flexca.enot.core.types.system.serializer.SystemSha1Serializer;
 import io.github.flexca.enot.core.types.system.validation.SystemBitMapValidator;
 import io.github.flexca.enot.core.types.system.validation.SystemConditionValidator;
 import io.github.flexca.enot.core.types.system.validation.SystemGroupValidator;
 import io.github.flexca.enot.core.types.system.validation.SystemLoopValidator;
+import io.github.flexca.enot.core.types.system.validation.SystemRandomGeneratorValidator;
 import io.github.flexca.enot.core.types.system.validation.SystemReferenceValidator;
 
 import java.util.Collections;
@@ -133,7 +135,16 @@ public enum SystemKind implements EnotElementSpecification {
             Set.of(SystemAttribute.KIND),
             null,
             null,
-            new SystemIpAddressToBytesSerializer());
+            new SystemIpAddressToBytesSerializer()),
+
+    RANDOM_GENERATOR("random_generator",
+            new EnotValueSpecification(CommonEnotValueType.EMPTY, false),
+            new EnotValueSpecification(CommonEnotValueType.TEXT, false),
+            Set.of(SystemAttribute.KIND, SystemAttribute.RANDOM_STRING_LENGTH),
+            Set.of(SystemAttribute.KIND, SystemAttribute.RANDOM_STRING_LENGTH),
+            null,
+            new SystemRandomGeneratorValidator(),
+            new SystemRandomGeneratorSerializer());
 
     private static final Map<String, SystemKind> BY_NAME = new HashMap<>();
     static {
