@@ -25,7 +25,7 @@ public class Asn1SequenceSerializer extends SimpleElementSerializer {
             if (element.isOptional()) {
                 return Collections.emptyList();
             } else {
-                Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT, new DERSequence()));
+                return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT, new DERSequence()));
             }
         }
 

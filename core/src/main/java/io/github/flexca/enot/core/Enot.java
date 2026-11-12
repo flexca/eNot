@@ -9,6 +9,7 @@ import io.github.flexca.enot.core.expression.ConditionExpressionParser;
 import io.github.flexca.enot.core.extractor.ExampleParamsExtractor;
 import io.github.flexca.enot.core.parser.EnotParser;
 import io.github.flexca.enot.core.registry.EnotRegistry;
+import io.github.flexca.enot.core.registry.EnotTypeSpecification;
 import io.github.flexca.enot.core.serializer.EnotSerializer;
 import io.github.flexca.enot.core.serializer.context.SerializationContext;
 import io.github.flexca.enot.core.util.ParamUtils;
@@ -17,6 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Main entry point for the eNot library.
@@ -70,13 +72,31 @@ public class Enot {
      * (multiple root elements), or equivalent YAML. Format is detected
      * automatically.</p>
      *
-     * @param json the eNot template as a JSON or YAML string; must not be blank
+     * @param jsonOrYaml the eNot template as a JSON or YAML string; must not be blank
      * @return a non-empty list of parsed root elements
      * @throws EnotParsingException if the input is blank, malformed, or contains
      *                              structural or type errors
      */
-    public List<EnotElement> parse(String json) throws EnotParsingException {
-        return enotParser.parse(json, enotContext);
+    public List<EnotElement> parse(String jsonOrYaml) throws EnotParsingException {
+        return enotParser.parse(jsonOrYaml, enotContext);
+    }
+
+    /**
+     * Parses an eNot template string into a list of {@link EnotElement} instances,
+     * making the given custom params available to the parser.
+     *
+     * <p>Unlike {@link SerializationContext} params, custom params are not resolved
+     * against {@code ${name}} placeholders; they are opaque values consulted by
+     * parser-level logic (e.g. custom body resolvers).</p>
+     *
+     * @param jsonOrYaml   the eNot template as a JSON or YAML string; must not be blank
+     * @param customParams custom params to make available during parsing; must not be {@code null}
+     * @return a non-empty list of parsed root elements
+     * @throws EnotParsingException if the input is blank, malformed, or contains
+     *                              structural or type errors
+     */
+    public List<EnotElement> parse(String jsonOrYaml, Map<String, Object> customParams) throws EnotParsingException {
+        return enotParser.parse(jsonOrYaml, customParams, enotContext);
     }
 
     /**
@@ -85,14 +105,14 @@ public class Enot {
      * <p>This is a convenience overload that combines {@link #parse(String)} and
      * {@link #serialize(List, SerializationContext)} in a single call.</p>
      *
-     * @param json    the eNot template as a JSON or YAML string; must not be blank
+     * @param jsonOrYaml    the eNot template as a JSON or YAML string; must not be blank
      * @param context the serialization context supplying runtime parameter values
      * @return one DER-encoded byte array per root element
      * @throws EnotParsingException      if the template cannot be parsed
      * @throws EnotSerializationException if serialization of any element fails
      */
-    public List<byte[]> serialize(String json, SerializationContext context) throws EnotParsingException, EnotSerializationException {
-        return enotSerializer.serialize(json, context, enotContext);
+    public List<byte[]> serialize(String jsonOrYaml, SerializationContext context) throws EnotParsingException, EnotSerializationException {
+        return enotSerializer.serialize(jsonOrYaml, context, enotContext);
     }
 
     /**
@@ -246,6 +266,16 @@ public class Enot {
      */
     public ObjectMapper getYamlObjectMapper() {
         return yamlObjectMapper;
+    }
+
+    /**
+     * Looks up the {@link EnotTypeSpecification} registered for the given element type name.
+     *
+     * @param elementType the element type name (e.g. {@code "asn.1"} or {@code "system"})
+     * @return the matching type specification, or {@link Optional#empty()} if none is registered
+     */
+    public Optional<EnotTypeSpecification> getTypeSpecification(String elementType) {
+        return enotContext.getEnotRegistry().getTypeSpecification(elementType);
     }
 
     /**

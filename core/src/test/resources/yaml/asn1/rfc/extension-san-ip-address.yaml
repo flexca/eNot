@@ -1,0 +1,18 @@
+type: system
+attributes:
+  kind: loop
+  items_name: ip_address
+body:
+  type: asn.1
+  attributes:
+    tag: tagged_object
+    implicit: 7
+  body:
+    type: asn.1
+    attributes:
+      tag: octet_string
+    body:
+      type: system
+      attributes:
+        kind: ip_address_to_bytes
+      body: "${address}"

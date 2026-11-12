@@ -53,6 +53,5 @@ public class SystemReferenceValidator implements EnotElementValidator {
             jsonErrors.add(EnotJsonError.of(attributesPath + "/" + SystemAttribute.REFERENCE_IDENTIFIER.getName(),
                     "attribute " + SystemAttribute.REFERENCE_IDENTIFIER.getName() + " must be of type string"));
         }
-
     }
 }

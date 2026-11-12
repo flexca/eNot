@@ -20,7 +20,8 @@ public enum SystemAttribute implements EnotAttribute {
     BIT_ORDER("bit_order", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     EXPRESSION("expression", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
     REFERENCE_TYPE("reference_type", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
-    REFERENCE_IDENTIFIER("reference_identifier", new EnotValueSpecification(CommonEnotValueType.TEXT, false));
+    REFERENCE_IDENTIFIER("reference_identifier", new EnotValueSpecification(CommonEnotValueType.TEXT, false)),
+    RANDOM_STRING_LENGTH("random_string_length", new EnotValueSpecification(CommonEnotValueType.INTEGER, false));
 
     private static final Map<String, SystemAttribute> BY_NAME = new HashMap<>();
     static {

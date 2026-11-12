@@ -57,6 +57,7 @@ public class EnotParserReferenceResolverTest {
         assertThat(actual).hasSize(1);
         EnotElement root = actual.get(0);
         assertThat(root.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(root.getJsonPath()).isEqualTo("");
         assertThat(root.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
         assertThat(root.getBody()).isInstanceOf(List.class);
 
@@ -69,12 +70,14 @@ public class EnotParserReferenceResolverTest {
         // [0] OID "2.5.29.17"
         EnotElement oidElement = rootBody.get(0);
         assertThat(oidElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(oidElement.getJsonPath()).isEqualTo("/body/0");
         assertThat(oidElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "object_identifier"));
         assertThat(oidElement.getBody()).isEqualTo("2.5.29.17");
 
         // [1] optional BOOLEAN placeholder
         EnotElement boolElement = rootBody.get(1);
         assertThat(boolElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(boolElement.getJsonPath()).isEqualTo("/body/1");
         assertThat(boolElement.isOptional()).isTrue();
         assertThat(boolElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "boolean"));
         assertThat(boolElement.getBody()).isEqualTo("${san_critical}");
@@ -82,15 +85,18 @@ public class EnotParserReferenceResolverTest {
         // [2] OCTET_STRING wrapping a SEQUENCE wrapping a GROUP("san")
         EnotElement octetStringElement = rootBody.get(2);
         assertThat(octetStringElement.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(octetStringElement.getJsonPath()).isEqualTo("/body/2");
         assertThat(octetStringElement.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "octet_string"));
 
         EnotElement outerSequence = (EnotElement) octetStringElement.getBody();
         assertThat(outerSequence.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(outerSequence.getJsonPath()).isEqualTo("/body/2/body");
         assertThat(outerSequence.getAttributes()).isEqualTo(Map.of(Asn1Attribute.TAG, "sequence"));
 
         // The GROUP("san") element
         EnotElement groupElement = (EnotElement) outerSequence.getBody();
         assertThat(groupElement.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
+        assertThat(groupElement.getJsonPath()).isEqualTo("/body/2/body/body");
         assertThat(groupElement.getAttribute(SystemAttribute.KIND)).isEqualTo("group");
         assertThat(groupElement.getAttribute(SystemAttribute.GROUP_NAME)).isEqualTo("san");
 
@@ -104,6 +110,7 @@ public class EnotParserReferenceResolverTest {
         // the resolved content (no longer a raw JSON structure, resolution happened at parse time).
         EnotElement referenceElement = groupBody.get(0);
         assertThat(referenceElement.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
+        assertThat(referenceElement.getJsonPath()).isEqualTo("/body/2/body/body/body/0");
         assertThat(referenceElement.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
         assertThat(referenceElement.getAttribute(SystemAttribute.REFERENCE_TYPE)).isEqualTo("test_resources");
         assertThat(referenceElement.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
@@ -116,8 +123,10 @@ public class EnotParserReferenceResolverTest {
         assertThat(resolvedBody).hasSize(1);
 
         // san-dns.json parses to a single system LOOP element
+        // Resolution starts a fresh top-level parse, so jsonPath restarts at "" for the resolved document.
         EnotElement resolvedLoop = resolvedBody.get(0);
         assertThat(resolvedLoop.getType()).isEqualTo(SystemTypeSpecification.TYPE_NAME);
+        assertThat(resolvedLoop.getJsonPath()).isEqualTo("");
         assertThat(resolvedLoop.getAttribute(SystemAttribute.KIND)).isEqualTo("loop");
         assertThat(resolvedLoop.getAttribute(SystemAttribute.ITEMS_NAME)).isEqualTo("dns_name");
         assertThat(resolvedLoop.isOptional()).isTrue();
@@ -125,6 +134,7 @@ public class EnotParserReferenceResolverTest {
         assertThat(resolvedLoop.getBody()).isInstanceOf(EnotElement.class);
         EnotElement taggedObject = (EnotElement) resolvedLoop.getBody();
         assertThat(taggedObject.getType()).isEqualTo(Asn1TypeSpecification.TYPE_NAME);
+        assertThat(taggedObject.getJsonPath()).isEqualTo("/body");
         assertThat(taggedObject.getAttribute(Asn1Attribute.TAG)).isEqualTo("tagged_object");
     }
 
@@ -168,7 +178,9 @@ public class EnotParserReferenceResolverTest {
         // root is an array → two reference elements
         assertThat(actual).hasSize(2);
 
+        // root is a JSON array, so paths for its direct children are index-based
         EnotElement leftRef = actual.get(0);
+        assertThat(leftRef.getJsonPath()).isEqualTo("/0");
         assertThat(leftRef.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
         assertThat(leftRef.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
                 .isEqualTo("json/cyclic/diamond-left.json");
@@ -177,7 +189,9 @@ public class EnotParserReferenceResolverTest {
         @SuppressWarnings("unchecked")
         List<EnotElement> leftBody = (List<EnotElement>) leftRef.getBody();
         assertThat(leftBody).hasSize(1);
+        // resolution starts a fresh top-level parse, so jsonPath restarts at "" for the resolved document
         EnotElement leftLeafRef = leftBody.get(0);
+        assertThat(leftLeafRef.getJsonPath()).isEqualTo("");
         assertThat(leftLeafRef.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
         assertThat(leftLeafRef.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
                 .isEqualTo("json/cyclic/diamond-leaf.json");
@@ -185,9 +199,12 @@ public class EnotParserReferenceResolverTest {
         @SuppressWarnings("unchecked")
         List<EnotElement> leftLeafBody = (List<EnotElement>) leftLeafRef.getBody();
         assertThat(leftLeafBody).hasSize(1);
-        assertThat(leftLeafBody.get(0).getAttribute(Asn1Attribute.TAG)).isEqualTo("object_identifier");
+        EnotElement leftLeafOid = leftLeafBody.get(0);
+        assertThat(leftLeafOid.getJsonPath()).isEqualTo("");
+        assertThat(leftLeafOid.getAttribute(Asn1Attribute.TAG)).isEqualTo("object_identifier");
 
         EnotElement rightRef = actual.get(1);
+        assertThat(rightRef.getJsonPath()).isEqualTo("/1");
         assertThat(rightRef.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
         assertThat(rightRef.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
                 .isEqualTo("json/cyclic/diamond-right.json");
@@ -197,6 +214,7 @@ public class EnotParserReferenceResolverTest {
         List<EnotElement> rightBody = (List<EnotElement>) rightRef.getBody();
         assertThat(rightBody).hasSize(1);
         EnotElement rightLeafRef = rightBody.get(0);
+        assertThat(rightLeafRef.getJsonPath()).isEqualTo("");
         assertThat(rightLeafRef.getAttribute(SystemAttribute.KIND)).isEqualTo("reference");
         assertThat(rightLeafRef.getAttribute(SystemAttribute.REFERENCE_IDENTIFIER))
                 .isEqualTo("json/cyclic/diamond-leaf.json");
@@ -204,7 +222,9 @@ public class EnotParserReferenceResolverTest {
         @SuppressWarnings("unchecked")
         List<EnotElement> rightLeafBody = (List<EnotElement>) rightLeafRef.getBody();
         assertThat(rightLeafBody).hasSize(1);
-        assertThat(rightLeafBody.get(0).getAttribute(Asn1Attribute.TAG)).isEqualTo("object_identifier");
+        EnotElement rightLeafOid = rightLeafBody.get(0);
+        assertThat(rightLeafOid.getJsonPath()).isEqualTo("");
+        assertThat(rightLeafOid.getAttribute(Asn1Attribute.TAG)).isEqualTo("object_identifier");
     }
 
     @Test

@@ -49,7 +49,7 @@ public class Asn1UtcTimeSerializer extends SimpleElementSerializer {
                 }
 
                 if (input != null) {
-                    String asn1Input = DateTimeUtils.formatForAsn1(input);
+                    String asn1Input = DateTimeUtils.formatForUtcAsn1(input);
                     return Collections.singletonList(ElementSerializationResult.of(Asn1EnotValueType.ASN1_ELEMENT,
                             new DERUTCTime(asn1Input)));
                 }

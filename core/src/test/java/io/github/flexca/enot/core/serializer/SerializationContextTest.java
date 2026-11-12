@@ -610,6 +610,17 @@ public class SerializationContextTest {
         assertThat(ctx.resolvePlaceholderValue("country")).isEqualTo("PL");
     }
 
+    @Test
+    void withParamSystemVariableThrows() {
+
+        SerializationContext ctx = new SerializationContext.Builder()
+                .withJsonObjectMapper(jsonObjectMapper)
+                .withParam("system.some_var", "value")
+                .build();
+
+        assertThat(ctx.resolvePlaceholderValue("system.some_var")).isEqualTo("value");
+    }
+
     // --- Builder validation failures ---
 
     @Test
@@ -627,15 +638,6 @@ public class SerializationContextTest {
                 new SerializationContext.Builder()
                         .withJsonObjectMapper(jsonObjectMapper)
                         .withParam("invalid name", "value")
-        ).isInstanceOf(EnotInvalidArgumentException.class);
-    }
-
-    @Test
-    void withParamSystemVariableThrows() {
-        assertThatThrownBy(() ->
-                new SerializationContext.Builder()
-                        .withJsonObjectMapper(jsonObjectMapper)
-                        .withParam("system.some_var", "value")
         ).isInstanceOf(EnotInvalidArgumentException.class);
     }
 

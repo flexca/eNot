@@ -113,6 +113,12 @@ public class ConditionExpressionEvaluatorFailureCasesTest {
     }
 
     @Test
+    void evaluateIsBlankOnNonStringTypeThrows() {
+        assertThatThrownBy(() -> evaluator.evaluate("is_blank(${count})", ctx(Map.of("count", 42))))
+                .isInstanceOf(EnotExpressionEvaluationException.class);
+    }
+
+    @Test
     void evaluateResultIsNotBooleanThrows() {
         // A plain text placeholder resolves to a string вЂ” not a valid boolean top-level result
         assertThatThrownBy(() -> evaluator.evaluate("${name}", ctx(Map.of("name", "Alice"))))

@@ -135,17 +135,16 @@ public class EnotSerializerSuccessCasesTest {
         // Both dates before 2050 → both encoded as UTCTime
         List<byte[]> result = enotSerializer.serialize(json, ctx(Map.of(
                 "valid_from", "2024-01-15T10:00:00Z",
-                "expires_on", "2025-01-15T10:00:00Z")), enotContext);
+                "expires_on", "2050-01-15T10:00:00Z")), enotContext);
 
         assertThat(result).hasSize(1);
 
         ASN1Sequence seq = (ASN1Sequence) ASN1Primitive.fromByteArray(result.get(0));
         assertThat(seq.size()).isEqualTo(2);
         assertThat(seq.getObjectAt(0)).isInstanceOf(ASN1UTCTime.class);
-        assertThat(seq.getObjectAt(1)).isInstanceOf(ASN1UTCTime.class);
-        // ASN1UTCTime.getTime() returns "YYYYMMDDHHmmGMT+00:00" after adjustment
-        assertThat(((ASN1UTCTime) seq.getObjectAt(0)).getTime()).startsWith("202401");
-        assertThat(((ASN1UTCTime) seq.getObjectAt(1)).getTime()).startsWith("202501");
+        assertThat(seq.getObjectAt(1)).isInstanceOf(ASN1GeneralizedTime.class);
+        assertThat(((ASN1UTCTime) seq.getObjectAt(0)).getTime()).startsWith("2401");
+        assertThat(((ASN1GeneralizedTime) seq.getObjectAt(1)).getTime()).startsWith("205001");
     }
 
     @Test
@@ -164,7 +163,6 @@ public class EnotSerializerSuccessCasesTest {
         assertThat(seq.size()).isEqualTo(2);
         assertThat(seq.getObjectAt(0)).isInstanceOf(ASN1GeneralizedTime.class);
         assertThat(seq.getObjectAt(1)).isInstanceOf(ASN1GeneralizedTime.class);
-        // ASN1GeneralizedTime.getTime() returns "YYYYMMDDHHmmss'Z'" raw string
         assertThat(((ASN1GeneralizedTime) seq.getObjectAt(0)).getTime()).startsWith("205006");
         assertThat(((ASN1GeneralizedTime) seq.getObjectAt(1)).getTime()).startsWith("205106");
     }
@@ -417,8 +415,63 @@ public class EnotSerializerSuccessCasesTest {
     }
 
     // -----------------------------------------------------------------------
+    // random_generator — produces an alphanumeric text value of the requested length
+    // -----------------------------------------------------------------------
+
+    @Test
+    void testRandomGeneratorProducesRequestedLength() throws Exception {
+        String result = serializeRandomGenerator(16);
+        assertThat(result).hasSize(16);
+        assertThat(result).matches("[a-zA-Z0-9]{16}");
+    }
+
+    @Test
+    void testRandomGeneratorProducesSingleCharacter() throws Exception {
+        String result = serializeRandomGenerator(1);
+        assertThat(result).hasSize(1);
+        assertThat(result).matches("[a-zA-Z0-9]");
+    }
+
+    @Test
+    void testRandomGeneratorProducesMaxLength() throws Exception {
+        String result = serializeRandomGenerator(4096);
+        assertThat(result).hasSize(4096);
+        assertThat(result).matches("[a-zA-Z0-9]{4096}");
+    }
+
+    @Test
+    void testRandomGeneratorProducesDifferentValuesOnEachCall() throws Exception {
+        String first = serializeRandomGenerator(32);
+        String second = serializeRandomGenerator(32);
+        assertThat(first).isNotEqualTo(second);
+    }
+
+    // -----------------------------------------------------------------------
     // helpers
     // -----------------------------------------------------------------------
+
+    private String serializeRandomGenerator(int length) throws Exception {
+        // random_generator produces a TEXT value, which must be wrapped by a
+        // parent element able to turn TEXT into BINARY (e.g. asn.1 utf8_string).
+        String json = """
+                {
+                  "type": "asn.1",
+                  "attributes": { "tag": "utf8_string" },
+                  "body": {
+                    "type": "system",
+                    "attributes": {
+                      "kind": "random_generator",
+                      "random_string_length": %d
+                    }
+                  }
+                }
+                """.formatted(length);
+
+        List<byte[]> result = enotSerializer.serialize(json, ctx(Map.of()), enotContext);
+        assertThat(result).hasSize(1);
+        DERUTF8String utf8String = (DERUTF8String) ASN1Primitive.fromByteArray(result.get(0));
+        return utf8String.getString();
+    }
 
     private byte[] serializeBitMap(String byteOrder, String bitOrder, List<Boolean> bits) throws Exception {
         // Build body as JSON array of individually named placeholders: ["${b0}", "${b1}", ...]

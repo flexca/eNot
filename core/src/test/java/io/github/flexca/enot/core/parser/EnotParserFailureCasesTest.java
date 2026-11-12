@@ -257,6 +257,36 @@ public class EnotParserFailureCasesTest {
     }
 
     @Test
+    void testRandomGeneratorMissingLengthAttributeCase() throws Exception {
+        String json = "{\"type\": \"system\", \"attributes\": {\"kind\": \"random_generator\"}}";
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/attributes",
+                "missing required attribute: [random_string_length]", jsonErrors)).isTrue();
+    }
+
+    @Test
+    void testRandomGeneratorLengthNotIntegerCase() throws Exception {
+        String json = "{\"type\": \"system\", \"attributes\": {\"kind\": \"random_generator\", \"random_string_length\": \"abc\"}}";
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/attributes",
+                "attribute random_string_length must be of type integer", jsonErrors)).isTrue();
+    }
+
+    @Test
+    void testRandomGeneratorLengthOutOfRangeCase() throws Exception {
+        String json = "{\"type\": \"system\", \"attributes\": {\"kind\": \"random_generator\", \"random_string_length\": 0}}";
+        EnotParsingException parsingException = assertThrows(EnotParsingException.class,
+                () -> enotParser.parse(json, enotContext));
+        List<EnotJsonError> jsonErrors = parsingException.getJsonErrors();
+        assertThat(isJsonErrorPresent("/attributes",
+                "attribute random_string_length must be greater than zero", jsonErrors)).isTrue();
+    }
+
+    @Test
     void testInvalidFieldTypeCases() throws Exception {
         String path = "json/asn1/failures/invalid-field-type-cases.json";
         String json = ResourceReaderTestUtils.readResourceFileAsString(path);

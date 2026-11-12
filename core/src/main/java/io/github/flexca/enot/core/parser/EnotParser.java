@@ -71,7 +71,27 @@ public class EnotParser {
      *                              contains structural or type errors
      */
     public List<EnotElement> parse(String jsonOrYaml, EnotContext enotContext) throws EnotParsingException {
-        ParsingContext parsingContext = new ParsingContext();
+        ParsingContext parsingContext = new ParsingContext(Collections.emptyMap());
+        return parse(jsonOrYaml, enotContext, parsingContext);
+    }
+
+    /**
+     * Parses {@code jsonOrYaml} into a list of {@link EnotElement} instances using a
+     * fresh {@link ParsingContext}, making the given custom params available to
+     * parser-level logic (e.g. custom body resolvers) via {@link ParsingContext#getCustomParams()}.
+     *
+     * <p>Unlike serialization params, custom params are not resolved against
+     * {@code ${name}} placeholders.</p>
+     *
+     * @param jsonOrYaml   the eNot template as a JSON or YAML string; must not be blank
+     * @param customParams custom params to make available during parsing; must not be {@code null}
+     * @param enotContext  the registry and shared services for this parse run
+     * @return a non-empty list of parsed root elements
+     * @throws EnotParsingException if the input is blank, not valid JSON, or
+     *                              contains structural or type errors
+     */
+    public List<EnotElement> parse(String jsonOrYaml, Map<String, Object> customParams, EnotContext enotContext) throws EnotParsingException {
+        ParsingContext parsingContext = new ParsingContext(customParams);
         return parse(jsonOrYaml, enotContext, parsingContext);
     }
 
@@ -220,7 +240,7 @@ public class EnotParser {
 
         boolean optional = extractOptional(jsonElement, parentPath, jsonErrors);
         element.setOptional(optional);
-
+        element.setJsonPath(parentPath);
         Map<EnotAttribute, Object> attributes = extractElementAttributes(jsonElement, typeSpecification, parentPath, jsonErrors);
         element.setAttributes(attributes);
 

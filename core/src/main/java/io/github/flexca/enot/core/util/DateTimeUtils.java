@@ -15,6 +15,7 @@ public class DateTimeUtils {
     private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC  = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER_ASN1  = DateTimeFormatter.ofPattern("yyyyMMddHHmmss'Z'");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER_UTC_ASN1  = DateTimeFormatter.ofPattern("yyMMddHHmmss'Z'");
 
     private DateTimeUtils() {
     }
@@ -33,6 +34,10 @@ public class DateTimeUtils {
 
     public static String formatForAsn1(ZonedDateTime input) {
         return input == null ? null : input.format(DATE_TIME_FORMATTER_ASN1);
+    }
+
+    public static String formatForUtcAsn1(ZonedDateTime input) {
+        return input == null ? null : input.format(DATE_TIME_FORMATTER_UTC_ASN1);
     }
 
     public static ZonedDateTime toZonedDateTime(Date input) {
